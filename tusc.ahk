@@ -32,11 +32,8 @@ Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/for
 TODO
 ----
 
- * starttusc_init
- * PUBLIC VERSION NEEDS TO MOSTLY WORK OUT OF THE BOX
  * clean up code
-     * refactor
-     * eliminate duplicate lines/routines
+     * refactor duplicate lines
  * add front end menu options where it is feasible, like enabling "annoy"
  * Either eliminate external file dependencies or document them
  * Document needed external software
@@ -128,6 +125,7 @@ prog_icon = %A_ScriptDir%\%f_FileNoExt%.ico
 mute_icon = %A_ScriptDir%\%f_FileNoExt%_mute.ico
 
 cb_dir = %A_ScriptDir%\cb
+shortcuts_dir = %A_ScriptDir%\shortcuts
 
 index=0
 Loop,10
@@ -764,7 +762,7 @@ return
 &Firefox:
 C&hrome:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\firefox.lnk
+    target = %shortcuts_dir%\firefox.lnk
     GoApp("fox", "Mozilla Firefox", target, 1)
 return
 
@@ -772,7 +770,7 @@ return
 ;------------------------------------------------------------------------------
 old&Firefox:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\chrome.lnk
+    target = %shortcuts_dir%\chrome.lnk
     GoApp("chrome", "Chrome", target, 1)
 return
 
@@ -780,7 +778,7 @@ return
 ;------------------------------------------------------------------------------
 &Cygwin:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\cygwin.lnk
+    target = %shortcuts_dir%\cygwin.lnk
     GoApp("cygw","ahk_class PuTTY", target, 1,"","","","","",1)
 return
 
@@ -803,7 +801,7 @@ return
 ;------------------------------------------------------------------------------
 V&PN:
 ;------------------------------------------------------------------------------
-    Run, %sys_drive%\shortcuts\vpn.lnk
+    Run, %shortcuts_dir%\glob.lnk
 return
 
 
@@ -818,7 +816,7 @@ return
 ;------------------------------------------------------------------------------
 &Outlook:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\outlook.lnk
+    target = %shortcuts_dir%\outlook.lnk
     GoApp("outl","Outlook",target,1)
     Gosub, outlook_keys
 return
@@ -827,7 +825,7 @@ return
 ;------------------------------------------------------------------------------
 Internet&Explorer:
 ;------------------------------------------------------------------------------
-    app_run=%sys_drive%\shortcuts\ie.lnk
+    app_run=%shortcuts_dir%\ie.lnk
     GoApp("ie","zaxtjeq",app_run,1)
 return
 
@@ -843,7 +841,7 @@ return
 ;------------------------------------------------------------------------------
 &vi:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\gvim.lnk
+    target = %shortcuts_dir%\gvim.lnk
     GoApp("vi","GVIM",target,1)
 return
 
@@ -851,7 +849,7 @@ return
 ;------------------------------------------------------------------------------
 &Scratch:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\gvim.lnk
+    target = %shortcuts_dir%\gvim.lnk
     scratch = %A_ScriptDir%\scratch.txt
     GoApp("scr","scratch",target,0,scratch)
 return
@@ -869,7 +867,7 @@ GoF&ile:
         WinActivate
         return
     }
-    Run, %sys_drive%\shortcuts\gvim.lnk "%f_path%",,Max
+    Run, %shortcuts_dir%\gvim.lnk "%f_path%",,Max
     WinWait, %f_param%,,%timeout%
     WinActivate
     WinMaximize
@@ -965,7 +963,7 @@ return
 ;------------------------------------------------------------------------------
 E&xplore:
 ;------------------------------------------------------------------------------
-    target = %sys_drive%\shortcuts\freecommander.lnk
+    target = %shortcuts_dir%\freecommander.lnk
     GoApp("fcx","reeComm",target,1,"","","","","",1)
 return
 
@@ -989,10 +987,12 @@ return
 E&ventLog:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
-    SendInput, "David Bradford" <davembradford@gmail.com>
+    SendInput, "David Bradford" <davembradford@gmail.com>, {tab}
     SendInput, Event Log{space}
     Gosub, timestamp_x
-    SendInput, {space}xeventlog xOct11 xvn{tab}
+    SendInput, {space}xeventlog x
+    Gosub, timestamp_l
+    SendInput, {space}xvn{tab}
     SendInput, Event Log{enter}
     SendInput, ---------------{enter}
     SendInput, * David:{space}this_is_blank{enter}
@@ -1958,6 +1958,14 @@ return
 timestamp_x:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, yyyy-MM-dd dddd
+    SendInput, %TimeString%
+return
+
+
+;------------------------------------------------------------------------------
+timestamp_l:
+;------------------------------------------------------------------------------
+    FormatTime, TimeString,, MMMyy
     SendInput, %TimeString%
 return
 
