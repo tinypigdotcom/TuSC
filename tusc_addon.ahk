@@ -161,25 +161,6 @@ END_ALL_LISTS
 
     menu, tray, add
     menu, tray, add, Capslock
-    menu, tray, add
-    menu, tray, add, C&hrome
-    menu, tray, add, &Cygwin
-    menu, tray, add, E&xplore
-    menu, tray, add, &Firefox
-    menu, tray, add, &GaimWin
-    menu, tray, add, Re&mote
-    menu, tray, add, &Outlook
-    menu, tray, add, &QuickStart
-    menu, tray, add, &RTM
-    menu, tray, add, Remin&ders
-    menu, tray, add, &Scratch
-    menu, tray, add, Internet&Explorer
-    menu, tray, add, &vi
-    menu, tray, add
-    menu, tray, add, Scri&pt, :script
-    menu, tray, add, F&unctions, :functions
-    menu, tray, add, Applica&tions, :applications
-    menu, tray, add
 
     menu, FooBar&dev, add
 
@@ -209,7 +190,6 @@ END_ALL_LISTS
             menu, %menu_choice%, add
             f_MenuItemCount = 1
             menu, main, add, %menu_choice%, :%menu_choice%
-            menu, tray, add, %menu_choice%, :%menu_choice%
             continue
         }
         If f_AtStartingPos = n
@@ -254,13 +234,6 @@ END_ALL_LISTS
 
     menu, main, add
     menu, main, add, &JustQuit
-
-    menu, tray, add
-    menu, tray, add, &JustQuit
-
-    menu, tray, add
-    menu, tray, add, M&aximizeCurrent
-    menu, tray, add, Wor&kstation, :workst
 
     menu, tray, click, 1
     menu, tray, default, Capslock
