@@ -224,36 +224,44 @@ CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
 if(posx = p_width and posy = p_height)
 {
-    GetKeyState, state, LButton
-    if(state = "D")
-        return
-    GetKeyState, state, RButton
-    if(state = "D")
-        return
-    locker_touched++
-    if(!locker_display)
+    if(!no_multilock_flag)
     {
-        locker_display++
-        Progress, m2 b fs18 zh0, Hotspot Activated`nComputer will lock soon., , , Courier New
-        WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
+        GetKeyState, state, LButton
+        if(state = "D")
+            return
+        GetKeyState, state, RButton
+        if(state = "D")
+            return
+        locker_touched++
+        if(!locker_display)
+        {
+            locker_display++
+            Progress, m2 b fs18 zh0, Hotspot Activated`nComputer will lock soon., , , Courier New
+            WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
+        }
+        locker_count++
+        if(locker_count > 5)
+        {
+            locker_count=0
+            locker_display=0
+            locker_touched=0
+            no_multilock_flag++
+            Progress, Off
+            Gosub, &Lock
+        }
     }
-    locker_count++
-    if(locker_count > 5)
+}
+else
+{
+    no_multilock_flag=0
+    if(locker_touched)
     {
-        MouseMove,-1,-1,0,R
+        locker_touched=0
         locker_count=0
         locker_display=0
-        locker_touched=0
         Progress, Off
         Gosub, &Lock
     }
-}
-else if(locker_touched)
-{
-    locker_touched=0
-    locker_count=0
-    locker_display=0
-    Progress, Off
 }
 return
 
@@ -527,6 +535,42 @@ DisableDebugToolTip:
     return
 }
 
+;GoApp parameters
+;    Parameter             Default      Explain
+;                                       --------------------------------------
+;    =========             ============ =======
+; 1. unique_identifier                  This can be any string as long as it
+;                                       doesn't match any other application's
+;                                       unique identifier.
+; 2. search_text                        Each open window will have its title
+;                                       checked for the search text.
+; 3. command                            If the window can't be located, the
+;                                       program will be launched.
+; 4. title_match_mode      0            If 0, search_text can be found
+;                                       anywhere in the window's title.  For
+;                                       example, "pad" will match "Notepad".
+;                                       If 1, search_text has to match the
+;                                       beginning of the window's title.
+; 5. parameters            empty string Parameters to pass to the program in
+;                                       "command".
+; 6. dont_maximize         empty string Do not maximize the window after
+;                                       launching the program.
+; 7. exclude_text          empty string Do NOT match the window if the title
+;                                       contains this text.
+; 8. working_directory     empty string Provide a working directory for the
+;                                       program in "command".
+; 9. alternate_search_text empty string Alternate text to use to try to find
+;                                       a match in a window's title.
+;10. ask_user_which_one    0            This is useful if more than one
+;                                       window might match.  If this is set
+;                                       to 1, when the user tries to activate
+;                                       the window, each window that matches
+;                                       will be presented to the user, and the
+;                                       user will be asked if this is the
+;                                       window being searched for.  If none
+;                                       match, the program in "command" will
+;                                       be launched.
+
 ;------------------------------------------------------------------------------
 GoApp(unique_identifier
 ,search_text
@@ -777,7 +821,7 @@ return
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
-    GoApp("cygw","ahk_class PuTTY", target, 1,"","","","","",1)
+    GoApp("cygw","ahk_class ConsoleWindowClass",target,1,"",1,"","","",1)
 return
 
 
