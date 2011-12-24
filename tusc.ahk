@@ -145,6 +145,7 @@ cb_prefix = ECB
 Gosub, cb_init
 
 Gosub, menufocus_init
+Gosub, starttusc_init
 
 CoordMode, Menu
 CoordMode, ToolTip, Screen
@@ -198,6 +199,7 @@ Gosub, initialize_favorites
 
 return
 
+
 ;------------------------------------------------------------------------------
 build_ini:
 ;------------------------------------------------------------------------------
@@ -222,9 +224,13 @@ return
 ;--------------------
 CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
+;ID := WinExist("A")
+;Debug("Active window ID: " . ID)
+Debug("posx: " . posx)
+Debug("posy: " . posy)
 if(posx = p_width and posy = p_height)
 {
-    if(!no_multilock_flag)
+    if(!double_lock_prevention)
     {
         GetKeyState, state, LButton
         if(state = "D")
@@ -245,22 +251,21 @@ if(posx = p_width and posy = p_height)
             locker_count=0
             locker_display=0
             locker_touched=0
-            no_multilock_flag++
             Progress, Off
+            double_lock_prevention++
             Gosub, &Lock
         }
     }
 }
 else
 {
-    no_multilock_flag=0
+    double_lock_prevention=0
     if(locker_touched)
     {
         locker_touched=0
         locker_count=0
         locker_display=0
         Progress, Off
-        Gosub, &Lock
     }
 }
 return
@@ -354,23 +359,20 @@ Return
      annoy:         ;
 ;--------------------
 SetTitleMatchMode, 2
-IfWinExist, Microsoft Outlook
+FormatTime, nowmins, , mmss
+if(nowmins = 0000 or nowmins = 1500 or nowmins = 3000 or nowmins = 4500)
 {
-    FormatTime, nowmins, , mmss
-    if(nowmins = 0000 or nowmins = 1500 or nowmins = 3000 or nowmins = 4500)
+    Loop
     {
-        Loop
+        InputBox, temp_input, ToDo, Enter work comment.  Type 'ok' to continue., , , , , , , 120
+        If temp_input = ok
         {
-            InputBox, temp_input, ToDo, Enter work comment.  Type 'ok' to continue.
-            If temp_input = ok
-            {
-                break
-            }
+            Gosub, &aNote
+            break
         }
     }
 }
 return
-
 
 ;------------------------------------------------------------------------------
 CenterMouse:
@@ -821,7 +823,7 @@ return
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
-    GoApp("cygw","ahk_class ConsoleWindowClass",target,1,"",1,"","","",1)
+    GoApp("cygw","ahk_class PuTTY", target, 1,"","","","","",1)
 return
 
 
@@ -850,7 +852,7 @@ return
 ;------------------------------------------------------------------------------
 Re&mote:
 ;------------------------------------------------------------------------------
-    remote=%sys_drive%\shortcuts\putty.lnk
+    remote=%shortcuts_dir%\putty.lnk
     GoApp("wksh","ahk_class PuTTY",remote,"","-load NO_remote","","","","xrm",1)
 return
 
@@ -1200,6 +1202,24 @@ return
 &P:
 return
 */
+
+
+
+;------------------------------------------------------------------------------
+starttusc_init:
+;------------------------------------------------------------------------------
+FileDelete, %A_ScriptDir%\starttusc.ahk
+FileAppend,
+(
+#NoTrayIcon
+#SingleInstance force
+
+#j::
+Run, %A_ScriptDir%\tusc.ahk
+return
+), %A_ScriptDir%\starttusc.ahk
+Run, %A_ScriptDir%\starttusc.ahk
+return
 
 
 
@@ -2374,7 +2394,7 @@ o_x_key:
     IfWinActive, ahk_class rctrl_renwnd32
     {
       Suspend, On
-      SendInput, ^y{home}i{enter}
+      SendInput, ^y{home}h{enter}
       Suspend, Off
     }
     else
