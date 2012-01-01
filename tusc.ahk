@@ -12,6 +12,7 @@ Capslock_menu_section
 Clipboard_section
 Control_j_menu_section
 Favorites_section
+Function_section
 ____Approximate_middle_of_table_of_contents
 Initialization_section
 Mouse_mode_section
@@ -32,6 +33,9 @@ Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/for
 TODO
 ----
 
+ * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
+ * add snooze option to "annoy"
+ * re-check section headings/comments now that script is split up
  * clean up code
      * refactor duplicate lines
  * add front end menu options where it is feasible, like enabling "annoy"
@@ -46,6 +50,10 @@ TODO, Older
    can't, just goes on.  Should try to re-read each time a mystring is
    entered
  * fix freecommander without using "ask"
+
+DONE
+----
+ * get rid of sleeps where appropriate - use timers instead
 
 */
 
@@ -85,7 +93,6 @@ debug_text=
 clicktooltip=0
 disabled_flag=0
 game_mode=0
-guishown=0
 timeout=20
 z_flag=0
 
@@ -133,6 +140,8 @@ Loop,10
     index+=1
 }
 
+Gosub, read_settings
+
 Hotkey, CapsLock, cappy, on
 
 FileRead, cb_index, %cb_dir%\CB_index
@@ -154,10 +163,7 @@ SetFormat, float, 0.0
 IniRead, vol_Master_save, %ini_file%, state, sound, 1
 
 SoundGet, vol_j, Master
-if(vol_j)
-  menu,tray,icon,%prog_icon%
-else
-  menu,tray,icon,%mute_icon%
+process_volume_icon(vol_j)
 
 StringLen, cb_max, cb_key_legal
 StringLen, cb_rotate_max, cb_key_rotate
@@ -167,18 +173,10 @@ debug_x      := A_ScreenWidth  - 400
 perm_debug_y := A_ScreenHeight - 75
 debug_y      := perm_debug_y
 
-p_width  := A_ScreenWidth  - 1
-p_height := A_ScreenHeight - 1
-c_width  := A_ScreenWidth  / 2
-c_height := A_ScreenHeight / 2
-Transform, c_width,  Round, %c_width%
-Transform, c_height, Round, %c_height%
-s_width  := A_ScreenWidth  / 2 - 90
-s_height := A_ScreenHeight / 2 - 300
-Transform, s_width,  Round, %s_width%
-Transform, s_height, Round, %s_height%
-
 Debug("started")
+
+ocred_msecs=500
+SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
 ;SetTimer,annoy,%annoy_msecs%
@@ -226,9 +224,9 @@ CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
 ;ID := WinExist("A")
 ;Debug("Active window ID: " . ID)
-Debug("posx: " . posx)
-Debug("posy: " . posy)
-if(posx = p_width and posy = p_height)
+;Debug("posx: " . posx)
+;Debug("posy: " . posy)
+if(posx = f_width() and posy = f_height())
 {
     if(!double_lock_prevention)
     {
@@ -276,7 +274,6 @@ return
 ;--------------------
 CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
-;if(posx = p_width and posy = 0)
 if(posx = 0 and posy = 0)
 {
     corner_counter++
@@ -294,66 +291,83 @@ return
 
 
 ;-------------------------
-     old_corner_menu:    ;
+     old_options_gui:    ;
 ;-------------------------
-CoordMode, Mouse, Screen
-MouseGetPos, posx, posy
-if(posx = 0 and posy = 0)
+    Gosub, read_settings
+    Gui, Add, Tab2,, Settings|Other
+    Gui, Add, Checkbox, vSettingRotate Checked%SettingRotate%, Rotate tray icon when mute
+    Gui, Add, Checkbox, vSettingStartup Checked%SettingStartup%, Run Startup routine
+    Gui, Add, Checkbox, vSettingAnnoy Checked%SettingAnnoy%, Run "Annoy" routine
+    Gui, Tab, 2
+    Gui, Add, Radio, vMyRadio, Sample radio1
+    Gui, Add, Radio,, Sample radio2
+    Gui, Tab  ; i.e. subsequently-added controls will not belong to the tab control.
+    Gui, Add, Button, default xm, OK  ; xm puts it at the bottom left corner.
+    Gui, Show
+return
+
+;---------------------
+     options_gui:    ;
+;---------------------
+    Gosub, read_settings
+    Gui, Add, Button, default x236 y307 w100 h30 , OK
+    Gui, Add, Button, x346 y307 w100 h30 , Cancel
+    Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
+    Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
+    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
+    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
+    Gui, Tab, Other
+    Gui, Add, Radio, x26 y47 w390 h20 , Radio
+    Gui, Add, Radio, x26 y77 w390 h20 , Radio
+    Gui, Add, Radio, x26 y107 w390 h20 , Radio
+    ; Generated using SmartGUI Creator 4.0
+    Gui, Show, x131 y91 h341 w450, TuSC Options
+return
+
+ButtonOK:
+GuiClose:
+    Gui, Submit  ; Save each control's contents to its associated variable.
+    IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
+    IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
+    IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
+    process_volume_icon()
+    process_annoy()
+ButtonCancel:
+GuiEscape:
+    Gui Destroy  ; Destroy the Gui.
+return
+
+
+;-------------------------
+     read_settings:      ;
+;-------------------------
+    IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
+    IniRead, SettingStartup, %ini_file%, settings, run_startup_routine,        0
+    IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine,          0
+return
+
+
+;--------------------
+     ocred:         ;
+;--------------------
+SetKeyDelay, 25
+WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
+IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
 {
-    if(!guishown)
-    {
-        guishown++
-        Gui, Add, Button, X0 Y0  W50 H20, &Lock
-        Gui, Add, Button, X0 Y21 W50 H20, GoCappy
-        Gui, Margin, 0, 0
-        Gui, Show, X0 Y0,Corner
-
-        Gui, +Lastfound
-        Gui_ID := WinExist()
-        SetTimer, Mouse_Leave, On
-
-    }
+    Gosub, esc_key
+    WinActivate
+    Send, !p%mystring0%
+    Send, {enter}
+}
+IfWinExist, Connecting to my.web.att.com ahk_class #32770
+{
+    Gosub, esc_key
+    WinActivate
+    Send, !uitservices\db5170
+    Send, !p%mystring0%
+    Send, {enter}
 }
 return
-
-;------------------------------------------------------------------------------
-Buttoncappy:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-    Gosub, GoCappy
-return
-
-
-;------------------------------------------------------------------------------
-ButtonLock:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-    Gosub, &Lock
-return
-
-
-;------------------------------------------------------------------------------
-GuiClose:
-;------------------------------------------------------------------------------
-GuiEscape:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-return
-
-
-;------------------------------------------------------------------------------
-Mouse_Leave:
-;------------------------------------------------------------------------------
-    CoordMode, Mouse, Screen
-    MouseGetPos, , , Mouse_ID
-    If (guishown and Mouse_ID <> Gui_ID)
-    {
-        SetTimer, Mouse_Leave, Off
-        Gui, Destroy
-        guishown=0
-    }
-Return
-
 
 ;--------------------
      annoy:         ;
@@ -378,7 +392,7 @@ return
 CenterMouse:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
-    MouseMove, %c_width%, %c_height%, 0
+    MouseMove % f_cwidth(), f_cheight(), 0
 return
 
 
@@ -820,6 +834,13 @@ return
 
 
 ;------------------------------------------------------------------------------
+Options&b:
+;------------------------------------------------------------------------------
+    Gosub, options_gui
+return
+
+
+;------------------------------------------------------------------------------
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
@@ -1246,6 +1267,51 @@ BlockInput, Off
 return
 
 
+;=============================================================================+
+;=============================================================================+
+;                                                                             |
+;    Function_section                                                         |
+;                                                                             |
+;=============================================================================+
+
+f_width()
+{
+    return A_ScreenWidth  - 1
+}
+
+f_height()
+{
+    return A_ScreenHeight - 1
+}
+
+f_cwidth()
+{
+    retval := A_ScreenWidth / 2
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_cheight()
+{
+    retval := A_ScreenHeight / 2
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_sheight()
+{
+    retval := A_ScreenHeight / 2 - 300
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_swidth()
+{
+    retval  := A_ScreenWidth  / 2 - 90
+    Transform, retval,  Round, %retval%
+    return retval
+}
+
 
 ;=============================================================================+
 ;=============================================================================+
@@ -1326,9 +1392,12 @@ return
     {
         show_tip := j_show_tip
         Gosub, big_tip
-        sleep, 1000
-        ToolTip
+        SetTimer,clear_tooltip,-1000
     }
+return
+
+clear_tooltip:
+    ToolTip
 return
 
 
@@ -1470,13 +1539,15 @@ cappy:
 
     Gosub, esc_key
 
-    MouseMove, %s_width%, %s_height%, 0
+    swidth := f_swidth()
+    sheight := f_sheight()
+    MouseMove, %swidth%, %sheight%, 0
 
     Run, menufocus.ahk
 
     BlockInput, Off
 
-    menu, main, show, %s_width%, %s_height%
+    menu, main, show, %swidth%, %sheight%
 return
 
 
@@ -1612,8 +1683,7 @@ GetKey:
       ToolTip
       show_tip=Operation Cancelled
       Gosub, big_tip
-      sleep, 1000
-      ToolTip
+      SetTimer,clear_tooltip,-1000
       exit
     }
     ToolTip
@@ -1646,8 +1716,7 @@ oYank:
       cb_add := cb_buf_%cb_prefix%_%cb_index_letter%
       show_tip=Copied %cb_add%
       Gosub, big_tip
-      sleep, 1000
-      ToolTip
+      SetTimer,clear_tooltip,-1000
     }
 return
 
@@ -1673,8 +1742,7 @@ if(ClipBoard)
   cb_add := cb_buf_%cb_prefix%_%buffer_key%
   show_tip=Copied %cb_add%
   Gosub, big_tip
-  sleep, 1000
-  ToolTip
+  SetTimer,clear_tooltip,-1000
 }
 return
 
@@ -1952,15 +2020,69 @@ vol_MasterMute:
       vol_Master_save=%vol_j%
       IniWrite, %vol_Master_save%, %ini_file%, state, sound
       SoundSet, 0
-      menu,tray,icon,%mute_icon%
     }
     else
     {
       SoundSet, %vol_Master_save%
-      menu,tray,icon,%prog_icon%
     }
+    process_volume_icon(0)
     Gosub, volume_keys
 return
+
+
+;------------------------------------------------------------------------------
+process_volume_icon(volume=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_volume_icon")
+    Debug("    volume: " . volume)
+    if(volume=-1)
+    {
+        SoundGet, volume, Master
+    }
+    Debug("    volume: " . volume)
+    Debug("    SettingRotate: " . SettingRotate)
+    if(volume or !SettingRotate)
+    {
+        Debug("    setting prog icon:" . prog_icon)
+        menu,tray,icon,%prog_icon%
+    }
+    else
+    {
+        Debug("    setting mute icon:" . mute_icon)
+        menu,tray,icon,%mute_icon%
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
+process_annoy(annoy_status=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_annoy")
+    Debug("    annoy_status: " . annoy_status)
+    if(annoy_status=-1)
+    {
+        IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine, 0
+        annoy_status := SettingAnnoy
+    }
+    Debug("    annoy_status: " . annoy_status)
+    Debug("    SettingAnnoy: " . SettingAnnoy)
+    if(annoy_status)
+    {
+        Debug("    enabling annoy")
+        SetTimer,annoy,%annoy_msecs%
+    }
+    else
+    {
+        Debug("    disabling annoy")
+        SetTimer,annoy,Off
+    }
+    return
+}
 
 
 ;------------------------------------------------------------------------------
@@ -1983,10 +2105,7 @@ vol_ShowBars:
     SoundGet, vol_Wave, Wave
     Progress, 1:%vol_Master%
     Progress, 2:%vol_Wave%
-    if vol_Master > 0
-        menu,tray,icon,%prog_icon%
-    else
-        menu,tray,icon,%mute_icon%
+    process_volume_icon(vol_Master)
     SetTimer, esc_key, Off
     SetTimer, esc_key, %vol_DisplayTime%
 return
@@ -2145,7 +2264,7 @@ f_DisplayMenu:
         else if f_class not in ConsoleWindowClass,PuTTY,bosa_sdm_Mso96,gdkWindowToplevel
             return ; Since it's some other window type, don't display menu.
     }
-    Menu, Favorites, show, %s_width%, %s_height%
+    Menu % Favorites, show, f_swidth(), f_sheight()
 return
 
 
@@ -2603,7 +2722,7 @@ mouse_mid:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
     MouseGetPos, posx, posy
-    MouseMove,%posx%,%c_height%
+    MouseMove % %posx%, f_cheight()
 return
 
 

@@ -27,6 +27,7 @@ E&ventLog:
 
 return
 
+
 ;------------------------------------------------------------------------------
 GoFooBar&dev:
 ;------------------------------------------------------------------------------
@@ -68,6 +69,7 @@ return
 ;------------------------------------------------------------------------------
 initialize_main_menu:
 ;------------------------------------------------------------------------------
+
 /* Main Menu Data
 START_LIST;F&ile
 &Home                  ; %A_ScriptFullPath% ; %A_ScriptName%
@@ -138,7 +140,7 @@ END_ALL_LISTS
     menu, functions, add, &JustQuit
 
     menu, main, add, Wor&kstation, :workst
-    menu, main, add, M&aximizeCurrent
+    menu, main, add, &aNote
     menu, main, add
     menu, main, add, C&hrome
     menu, main, add, &Cygwin
@@ -147,6 +149,7 @@ END_ALL_LISTS
     menu, main, add, &GaimWin
     menu, main, add, Re&mote
     menu, main, add, &Outlook
+    menu, main, add, Options&b
     menu, main, add, &QuickStart
     menu, main, add, &RTM
     menu, main, add, Remin&ders
@@ -239,8 +242,6 @@ END_ALL_LISTS
     menu, tray, default, Capslock
 
 return
-
-
 
 
 ;=============================================================================+
