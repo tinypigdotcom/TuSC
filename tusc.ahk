@@ -12,6 +12,7 @@ Capslock_menu_section
 Clipboard_section
 Control_j_menu_section
 Favorites_section
+Function_section
 ____Approximate_middle_of_table_of_contents
 Initialization_section
 Mouse_mode_section
@@ -32,6 +33,9 @@ Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/for
 TODO
 ----
 
+ * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
+ * add snooze option to "annoy"
+ * re-check section headings/comments now that script is split up
  * clean up code
      * refactor duplicate lines
  * add front end menu options where it is feasible, like enabling "annoy"
@@ -46,6 +50,10 @@ TODO, Older
    can't, just goes on.  Should try to re-read each time a mystring is
    entered
  * fix freecommander without using "ask"
+
+DONE
+----
+ * get rid of sleeps where appropriate - use timers instead
 
 */
 
@@ -85,7 +93,6 @@ debug_text=
 clicktooltip=0
 disabled_flag=0
 game_mode=0
-guishown=0
 timeout=20
 z_flag=0
 
@@ -133,6 +140,8 @@ Loop,10
     index+=1
 }
 
+Gosub, read_settings
+
 Hotkey, CapsLock, cappy, on
 
 FileRead, cb_index, %cb_dir%\CB_index
@@ -154,10 +163,7 @@ SetFormat, float, 0.0
 IniRead, vol_Master_save, %ini_file%, state, sound, 1
 
 SoundGet, vol_j, Master
-if(vol_j)
-  menu,tray,icon,%prog_icon%
-else
-  menu,tray,icon,%mute_icon%
+process_volume_icon(vol_j)
 
 StringLen, cb_max, cb_key_legal
 StringLen, cb_rotate_max, cb_key_rotate
@@ -167,18 +173,11 @@ debug_x      := A_ScreenWidth  - 400
 perm_debug_y := A_ScreenHeight - 75
 debug_y      := perm_debug_y
 
-p_width  := A_ScreenWidth  - 1
-p_height := A_ScreenHeight - 1
-c_width  := A_ScreenWidth  / 2
-c_height := A_ScreenHeight / 2
-Transform, c_width,  Round, %c_width%
-Transform, c_height, Round, %c_height%
-s_width  := A_ScreenWidth  / 2 - 90
-s_height := A_ScreenHeight / 2 - 300
-Transform, s_width,  Round, %s_width%
-Transform, s_height, Round, %s_height%
-
+Gosub, reset_screen_coordinates
 Debug("started")
+
+ocred_msecs=500
+SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
 ;SetTimer,annoy,%annoy_msecs%
@@ -226,8 +225,8 @@ CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
 ;ID := WinExist("A")
 ;Debug("Active window ID: " . ID)
-Debug("posx: " . posx)
-Debug("posy: " . posy)
+;Debug("posx: " . posx)
+;Debug("posy: " . posy)
 if(posx = p_width and posy = p_height)
 {
     if(!double_lock_prevention)
@@ -294,66 +293,63 @@ return
 
 
 ;-------------------------
-     old_corner_menu:    ;
+     options_gui:        ;
 ;-------------------------
-CoordMode, Mouse, Screen
-MouseGetPos, posx, posy
-if(posx = 0 and posy = 0)
+Gosub, read_settings
+Gui, Add, Tab2,, Settings|Other
+Gui, Add, Checkbox, vSettingRotate Checked%SettingRotate%, Rotate tray icon when mute
+Gui, Add, Checkbox, vSettingStartup Checked%SettingStartup%, Run Startup routine
+Gui, Add, Checkbox, vSettingAnnoy Checked%SettingAnnoy%, Run "Annoy" routine
+Gui, Tab, 2
+Gui, Add, Radio, vMyRadio, Sample radio1
+Gui, Add, Radio,, Sample radio2
+Gui, Tab  ; i.e. subsequently-added controls will not belong to the tab control.
+Gui, Add, Button, default xm, OK  ; xm puts it at the bottom left corner.
+Gui, Show
+return
+
+ButtonOK:
+GuiClose:
+Gui, Submit  ; Save each control's contents to its associated variable.
+IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
+IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
+IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
+process_volume_icon()
+GuiEscape:
+Gui Destroy  ; Destroy the Gui.
+return
+
+
+;-------------------------
+     read_settings:      ;
+;-------------------------
+    IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
+    IniRead, SettingStartup, %ini_file%, settings, run_startup_routine,        0
+    IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine,          0
+return
+
+
+;--------------------
+     ocred:         ;
+;--------------------
+SetKeyDelay, 25
+WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
+IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
 {
-    if(!guishown)
-    {
-        guishown++
-        Gui, Add, Button, X0 Y0  W50 H20, &Lock
-        Gui, Add, Button, X0 Y21 W50 H20, GoCappy
-        Gui, Margin, 0, 0
-        Gui, Show, X0 Y0,Corner
-
-        Gui, +Lastfound
-        Gui_ID := WinExist()
-        SetTimer, Mouse_Leave, On
-
-    }
+    Gosub, esc_key
+    WinActivate
+    Send, !p%mystring0%
+    Send, {enter}
+}
+IfWinExist, Connecting to my.web.att.com ahk_class #32770
+{
+    Gosub, esc_key
+    WinActivate
+    Send, !uitservices\db5170
+    Send, !p%mystring0%
+    Send, {enter}
 }
 return
-
-;------------------------------------------------------------------------------
-Buttoncappy:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-    Gosub, GoCappy
-return
-
-
-;------------------------------------------------------------------------------
-ButtonLock:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-    Gosub, &Lock
-return
-
-
-;------------------------------------------------------------------------------
-GuiClose:
-;------------------------------------------------------------------------------
-GuiEscape:
-;------------------------------------------------------------------------------
-    Gui, Destroy
-return
-
-
-;------------------------------------------------------------------------------
-Mouse_Leave:
-;------------------------------------------------------------------------------
-    CoordMode, Mouse, Screen
-    MouseGetPos, , , Mouse_ID
-    If (guishown and Mouse_ID <> Gui_ID)
-    {
-        SetTimer, Mouse_Leave, Off
-        Gui, Destroy
-        guishown=0
-    }
-Return
-
 
 ;--------------------
      annoy:         ;
@@ -820,6 +816,13 @@ return
 
 
 ;------------------------------------------------------------------------------
+Options&b:
+;------------------------------------------------------------------------------
+    Gosub, options_gui
+return
+
+
+;------------------------------------------------------------------------------
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
@@ -1246,6 +1249,28 @@ BlockInput, Off
 return
 
 
+;=============================================================================+
+;=============================================================================+
+;                                                                             |
+;    Function_section                                                         |
+;                                                                             |
+;=============================================================================+
+
+;------------------------------------------------------------------------------
+reset_screen_coordinates:
+;------------------------------------------------------------------------------
+    p_width  := A_ScreenWidth  - 1
+    p_height := A_ScreenHeight - 1
+    c_width  := A_ScreenWidth  / 2
+    c_height := A_ScreenHeight / 2
+    Transform, c_width,  Round, %c_width%
+    Transform, c_height, Round, %c_height%
+    s_width  := A_ScreenWidth  / 2 - 90
+    s_height := A_ScreenHeight / 2 - 300
+    Transform, s_width,  Round, %s_width%
+    Transform, s_height, Round, %s_height%
+return
+
 
 ;=============================================================================+
 ;=============================================================================+
@@ -1326,9 +1351,12 @@ return
     {
         show_tip := j_show_tip
         Gosub, big_tip
-        sleep, 1000
-        ToolTip
+        SetTimer,clear_tooltip,-1000
     }
+return
+
+clear_tooltip:
+    ToolTip
 return
 
 
@@ -1612,8 +1640,7 @@ GetKey:
       ToolTip
       show_tip=Operation Cancelled
       Gosub, big_tip
-      sleep, 1000
-      ToolTip
+      SetTimer,clear_tooltip,-1000
       exit
     }
     ToolTip
@@ -1646,8 +1673,7 @@ oYank:
       cb_add := cb_buf_%cb_prefix%_%cb_index_letter%
       show_tip=Copied %cb_add%
       Gosub, big_tip
-      sleep, 1000
-      ToolTip
+      SetTimer,clear_tooltip,-1000
     }
 return
 
@@ -1673,8 +1699,7 @@ if(ClipBoard)
   cb_add := cb_buf_%cb_prefix%_%buffer_key%
   show_tip=Copied %cb_add%
   Gosub, big_tip
-  sleep, 1000
-  ToolTip
+  SetTimer,clear_tooltip,-1000
 }
 return
 
@@ -1952,15 +1977,41 @@ vol_MasterMute:
       vol_Master_save=%vol_j%
       IniWrite, %vol_Master_save%, %ini_file%, state, sound
       SoundSet, 0
-      menu,tray,icon,%mute_icon%
     }
     else
     {
       SoundSet, %vol_Master_save%
-      menu,tray,icon,%prog_icon%
     }
+    process_volume_icon(0)
     Gosub, volume_keys
 return
+
+
+;------------------------------------------------------------------------------
+process_volume_icon(volume=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_volume_icon")
+    Debug("    volume: " . volume)
+    if(volume=-1)
+    {
+        SoundGet, volume, Master
+    }
+    Debug("    volume: " . volume)
+    Debug("    SettingRotate: " . SettingRotate)
+    if(volume or !SettingRotate)
+    {
+        Debug("    setting prog icon:" . prog_icon)
+        menu,tray,icon,%prog_icon%
+    }
+    else
+    {
+        Debug("    setting mute icon:" . mute_icon)
+        menu,tray,icon,%mute_icon%
+    }
+    return
+}
 
 
 ;------------------------------------------------------------------------------
@@ -1983,10 +2034,7 @@ vol_ShowBars:
     SoundGet, vol_Wave, Wave
     Progress, 1:%vol_Master%
     Progress, 2:%vol_Wave%
-    if vol_Master > 0
-        menu,tray,icon,%prog_icon%
-    else
-        menu,tray,icon,%mute_icon%
+    process_volume_icon(vol_Master)
     SetTimer, esc_key, Off
     SetTimer, esc_key, %vol_DisplayTime%
 return
