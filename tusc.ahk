@@ -173,7 +173,6 @@ debug_x      := A_ScreenWidth  - 400
 perm_debug_y := A_ScreenHeight - 75
 debug_y      := perm_debug_y
 
-Gosub, reset_screen_coordinates
 Debug("started")
 
 ocred_msecs=500
@@ -227,7 +226,7 @@ MouseGetPos, posx, posy
 ;Debug("Active window ID: " . ID)
 ;Debug("posx: " . posx)
 ;Debug("posy: " . posy)
-if(posx = p_width and posy = p_height)
+if(posx = f_width() and posy = f_height())
 {
     if(!double_lock_prevention)
     {
@@ -275,7 +274,6 @@ return
 ;--------------------
 CoordMode, Mouse, Screen
 MouseGetPos, posx, posy
-;if(posx = p_width and posy = 0)
 if(posx = 0 and posy = 0)
 {
     corner_counter++
@@ -293,30 +291,50 @@ return
 
 
 ;-------------------------
-     options_gui:        ;
+     old_options_gui:    ;
 ;-------------------------
-Gosub, read_settings
-Gui, Add, Tab2,, Settings|Other
-Gui, Add, Checkbox, vSettingRotate Checked%SettingRotate%, Rotate tray icon when mute
-Gui, Add, Checkbox, vSettingStartup Checked%SettingStartup%, Run Startup routine
-Gui, Add, Checkbox, vSettingAnnoy Checked%SettingAnnoy%, Run "Annoy" routine
-Gui, Tab, 2
-Gui, Add, Radio, vMyRadio, Sample radio1
-Gui, Add, Radio,, Sample radio2
-Gui, Tab  ; i.e. subsequently-added controls will not belong to the tab control.
-Gui, Add, Button, default xm, OK  ; xm puts it at the bottom left corner.
-Gui, Show
+    Gosub, read_settings
+    Gui, Add, Tab2,, Settings|Other
+    Gui, Add, Checkbox, vSettingRotate Checked%SettingRotate%, Rotate tray icon when mute
+    Gui, Add, Checkbox, vSettingStartup Checked%SettingStartup%, Run Startup routine
+    Gui, Add, Checkbox, vSettingAnnoy Checked%SettingAnnoy%, Run "Annoy" routine
+    Gui, Tab, 2
+    Gui, Add, Radio, vMyRadio, Sample radio1
+    Gui, Add, Radio,, Sample radio2
+    Gui, Tab  ; i.e. subsequently-added controls will not belong to the tab control.
+    Gui, Add, Button, default xm, OK  ; xm puts it at the bottom left corner.
+    Gui, Show
+return
+
+;---------------------
+     options_gui:    ;
+;---------------------
+    Gosub, read_settings
+    Gui, Add, Button, default x236 y307 w100 h30 , OK
+    Gui, Add, Button, x346 y307 w100 h30 , Cancel
+    Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
+    Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
+    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
+    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
+    Gui, Tab, Other
+    Gui, Add, Radio, x26 y47 w390 h20 , Radio
+    Gui, Add, Radio, x26 y77 w390 h20 , Radio
+    Gui, Add, Radio, x26 y107 w390 h20 , Radio
+    ; Generated using SmartGUI Creator 4.0
+    Gui, Show, x131 y91 h341 w450, TuSC Options
 return
 
 ButtonOK:
 GuiClose:
-Gui, Submit  ; Save each control's contents to its associated variable.
-IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
-IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
-IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
-process_volume_icon()
+    Gui, Submit  ; Save each control's contents to its associated variable.
+    IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
+    IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
+    IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
+    process_volume_icon()
+    process_annoy()
+ButtonCancel:
 GuiEscape:
-Gui Destroy  ; Destroy the Gui.
+    Gui Destroy  ; Destroy the Gui.
 return
 
 
@@ -374,7 +392,7 @@ return
 CenterMouse:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
-    MouseMove, %c_width%, %c_height%, 0
+    MouseMove % f_cwidth(), f_cheight(), 0
 return
 
 
@@ -1256,20 +1274,43 @@ return
 ;                                                                             |
 ;=============================================================================+
 
-;------------------------------------------------------------------------------
-reset_screen_coordinates:
-;------------------------------------------------------------------------------
-    p_width  := A_ScreenWidth  - 1
-    p_height := A_ScreenHeight - 1
-    c_width  := A_ScreenWidth  / 2
-    c_height := A_ScreenHeight / 2
-    Transform, c_width,  Round, %c_width%
-    Transform, c_height, Round, %c_height%
-    s_width  := A_ScreenWidth  / 2 - 90
-    s_height := A_ScreenHeight / 2 - 300
-    Transform, s_width,  Round, %s_width%
-    Transform, s_height, Round, %s_height%
-return
+f_width()
+{
+    return A_ScreenWidth  - 1
+}
+
+f_height()
+{
+    return A_ScreenHeight - 1
+}
+
+f_cwidth()
+{
+    retval := A_ScreenWidth / 2
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_cheight()
+{
+    retval := A_ScreenHeight / 2
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_sheight()
+{
+    retval := A_ScreenHeight / 2 - 300
+    Transform, retval, Round, %retval%
+    return retval
+}
+
+f_swidth()
+{
+    retval  := A_ScreenWidth  / 2 - 90
+    Transform, retval,  Round, %retval%
+    return retval
+}
 
 
 ;=============================================================================+
@@ -1498,13 +1539,15 @@ cappy:
 
     Gosub, esc_key
 
-    MouseMove, %s_width%, %s_height%, 0
+    swidth := f_swidth()
+    sheight := f_sheight()
+    MouseMove, %swidth%, %sheight%, 0
 
     Run, menufocus.ahk
 
     BlockInput, Off
 
-    menu, main, show, %s_width%, %s_height%
+    menu, main, show, %swidth%, %sheight%
 return
 
 
@@ -2015,6 +2058,34 @@ process_volume_icon(volume=-1)
 
 
 ;------------------------------------------------------------------------------
+process_annoy(annoy_status=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_annoy")
+    Debug("    annoy_status: " . annoy_status)
+    if(annoy_status=-1)
+    {
+        IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine, 0
+        annoy_status := SettingAnnoy
+    }
+    Debug("    annoy_status: " . annoy_status)
+    Debug("    SettingAnnoy: " . SettingAnnoy)
+    if(annoy_status)
+    {
+        Debug("    enabling annoy")
+        SetTimer,annoy,%annoy_msecs%
+    }
+    else
+    {
+        Debug("    disabling annoy")
+        SetTimer,annoy,Off
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
 vol_ShowBars:
 ;------------------------------------------------------------------------------
     IfWinNotExist, vol_Wave
@@ -2193,7 +2264,7 @@ f_DisplayMenu:
         else if f_class not in ConsoleWindowClass,PuTTY,bosa_sdm_Mso96,gdkWindowToplevel
             return ; Since it's some other window type, don't display menu.
     }
-    Menu, Favorites, show, %s_width%, %s_height%
+    Menu % Favorites, show, f_swidth(), f_sheight()
 return
 
 
@@ -2651,7 +2722,7 @@ mouse_mid:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
     MouseGetPos, posx, posy
-    MouseMove,%posx%,%c_height%
+    MouseMove % %posx%, f_cheight()
 return
 
 
