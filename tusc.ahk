@@ -46,9 +46,6 @@ TODO
 TODO, Older
 -----------
 
- * doesn't handle mystring reads desirably - tries to read once and if it
-   can't, just goes on.  Should try to re-read each time a mystring is
-   entered
  * fix freecommander without using "ask"
 
 DONE
@@ -133,16 +130,9 @@ mute_icon = %A_ScriptDir%\%f_FileNoExt%_mute.ico
 cb_dir = %A_ScriptDir%\cb
 shortcuts_dir = %A_ScriptDir%\shortcuts
 
-index=0
-Loop,10
-{
-    IniRead, mystring%index%, %ini_file%, string, mystring%index%, %index%
-    index+=1
-}
-
 Gosub, read_settings
 
-Hotkey, CapsLock, cappy, on
+Hotkey, CapsLock, Capslock, on
 
 FileRead, cb_index, %cb_dir%\CB_index
 if ErrorLevel = 1
@@ -169,9 +159,7 @@ StringLen, cb_max, cb_key_legal
 StringLen, cb_rotate_max, cb_key_rotate
 StringLen, cb_static_max, cb_key_static
 
-debug_x      := A_ScreenWidth  - 400
-perm_debug_y := A_ScreenHeight - 75
-debug_y      := perm_debug_y
+debug_y_offset = 0
 
 Debug("started")
 
@@ -201,8 +189,12 @@ return
 ;------------------------------------------------------------------------------
 build_ini:
 ;------------------------------------------------------------------------------
-    IniWrite, 1,           %ini_file%, state, sound
-    IniWrite, 0,           %ini_file%, state, run_startup
+    IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
+    IniWrite, 0,           %ini_file%, settings, run_startup_routine
+    IniWrite, 0,           %ini_file%, settings, run_annoy_routine
+
+    IniWrite, 1,           %ini_file%, state,  sound
+
     IniWrite, one,         %ini_file%, string, mystring1
     IniWrite, two,         %ini_file%, string, mystring2
     IniWrite, three,       %ini_file%, string, mystring3
@@ -290,22 +282,6 @@ else
 return
 
 
-;-------------------------
-     old_options_gui:    ;
-;-------------------------
-    Gosub, read_settings
-    Gui, Add, Tab2,, Settings|Other
-    Gui, Add, Checkbox, vSettingRotate Checked%SettingRotate%, Rotate tray icon when mute
-    Gui, Add, Checkbox, vSettingStartup Checked%SettingStartup%, Run Startup routine
-    Gui, Add, Checkbox, vSettingAnnoy Checked%SettingAnnoy%, Run "Annoy" routine
-    Gui, Tab, 2
-    Gui, Add, Radio, vMyRadio, Sample radio1
-    Gui, Add, Radio,, Sample radio2
-    Gui, Tab  ; i.e. subsequently-added controls will not belong to the tab control.
-    Gui, Add, Button, default xm, OK  ; xm puts it at the bottom left corner.
-    Gui, Show
-return
-
 ;---------------------
      options_gui:    ;
 ;---------------------
@@ -356,6 +332,7 @@ IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
 {
     Gosub, esc_key
     WinActivate
+    refresh_ini_value("mystring0", "string")
     Send, !p%mystring0%
     Send, {enter}
 }
@@ -364,6 +341,7 @@ IfWinExist, Connecting to my.web.att.com ahk_class #32770
     Gosub, esc_key
     WinActivate
     Send, !uitservices\db5170
+    refresh_ini_value("mystring0", "string")
     Send, !p%mystring0%
     Send, {enter}
 }
@@ -517,10 +495,11 @@ Debug(dtext)
 ;------------------------------------------------------------------------------
 {
     global debug_on
-    global debug_x
-    global debug_y
     global debug_text
     global lastwin
+
+    debug_x := A_ScreenWidth  - 400
+    debug_y := A_ScreenHeight - 75
 
     FormatTime, TimeString,, yyyy-MM-dd HH:mm
     if debug_on
@@ -535,8 +514,9 @@ Debug(dtext)
         {
             debug_text = .    %dtext%
         }
-        debug_y -= 12
-        ToolTip,%debug_text%    `n, %debug_x%, %debug_y%,3
+        debug_y_offset += 12
+        tmp_debug_y := debug_y - debug_y_offset
+        ToolTip,%debug_text%    `n, %debug_x%, %tmp_debug_y%,3
         SetTimer, DisableDebugToolTip, 9000
     }
     return
@@ -545,7 +525,7 @@ Debug(dtext)
 DisableDebugToolTip:
 {
     debug_text=
-    debug_y = %perm_debug_y%
+    debug_y_offset = 0
     SetTimer, DisableDebugToolTip, Off
     ToolTip, , , ,3
     return
@@ -1312,6 +1292,18 @@ f_swidth()
     return retval
 }
 
+refresh_ini_value(var, section)
+{
+    global
+    Debug("var=" . var)
+    Debug("section=" . section)
+    Debug("ini_file=" . ini_file)
+    Debug("mystring2=" . mystring2)
+    IniRead, %var%, %ini_file%, %section%, %var%
+    Debug("mystring2=" . mystring2)
+    return
+}
+
 
 ;=============================================================================+
 ;=============================================================================+
@@ -1404,6 +1396,7 @@ return
 ;------------------------------------------------------------------------------
 control_0:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring0", "string")
     SendInput, {Raw}%mystring0%
 return
 
@@ -1411,20 +1404,23 @@ return
 ;------------------------------------------------------------------------------
 control_1:
 ;------------------------------------------------------------------------------
-     SendInput, {Raw}%mystring1%
+    refresh_ini_value("mystring1", "string")
+    SendInput, {Raw}%mystring1%
 return
 
 
 ;------------------------------------------------------------------------------
 control_2:
 ;------------------------------------------------------------------------------
-     SendInput, {Raw}%mystring2%
+    refresh_ini_value("mystring2", "string")
+    SendInput, {Raw}%mystring2%
 return
 
 
 ;------------------------------------------------------------------------------
 control_3:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring3", "string")
     SendInput, {Raw}%mystring3%
 return
 
@@ -1432,6 +1428,7 @@ return
 ;------------------------------------------------------------------------------
 control_4:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring4", "string")
     SendInput, {Raw}%mystring4%
 return
 
@@ -1439,6 +1436,7 @@ return
 ;------------------------------------------------------------------------------
 control_5:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring5", "string")
     SendInput, {Raw}%mystring5%
 return
 
@@ -1447,6 +1445,7 @@ return
 ^!6::
 control_6:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring6", "string")
     SendInput, {Raw}%mystring6%
 return
 
@@ -1454,6 +1453,7 @@ return
 ;------------------------------------------------------------------------------
 control_7:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring7", "string")
     SendInput, {Raw}%mystring7%
 return
 
@@ -1461,6 +1461,7 @@ return
 ;------------------------------------------------------------------------------
 control_8:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring8", "string")
     SendInput, {Raw}%mystring8%
 return
 
@@ -1469,6 +1470,7 @@ return
 ^!9::
 control_9:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("mystring9", "string")
     SendInput, {Raw}%mystring9%
 return
 
@@ -1525,11 +1527,9 @@ control_z:
 
 
 ;------------------------------------------------------------------------------
-Capslock:
-    sleep, 500
 GoCappy:
     Debug("GoCappy = No key press")
-cappy:
+Capslock:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
