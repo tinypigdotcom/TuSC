@@ -314,8 +314,8 @@ Loop, Read, %A_LineFile%
     }
 }
 
-IniRead, var_run_startup, %ini_file%, state, run_startup, 0
-if (var_run_startup)
+IniRead, SettingStartup, %ini_file%, settings, run_startup_routine, 0
+if (SettingStartup)
 {
     MsgBox , 3, Startup, Run Startup?, 120
     IfMsgBox Yes
