@@ -13,6 +13,7 @@ Clipboard_section
 Control_j_menu_section
 Favorites_section
 Function_section
+GUI_section
 ____Approximate_middle_of_table_of_contents
 Initialization_section
 Mouse_mode_section
@@ -33,12 +34,16 @@ Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/for
 TODO
 ----
 
- * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
+ * Use GUI instead of menu
+ * If more than one window is found, automatically ask the first time
+ * When a window is not found and the program has to be launched, the new
+   window's id should automatically be acquired
+ * NOTHING runs only at startup because when values are gathered, they can
+   ALWAYS change
  * add snooze option to "annoy"
  * re-check section headings/comments now that script is split up
  * clean up code
      * refactor duplicate lines
- * add front end menu options where it is feasible, like enabling "annoy"
  * Either eliminate external file dependencies or document them
  * Document needed external software
      * Launchy
@@ -51,6 +56,7 @@ TODO, Older
 DONE
 ----
  * get rid of sleeps where appropriate - use timers instead
+   this applies to the timeout on win* commands as well ex: winactivate
 
 */
 
@@ -182,6 +188,7 @@ Gosub, initialize_volume
 SetBatchLines, 10ms
 
 Gosub, initialize_favorites
+Gosub, init_guis
 
 return
 
@@ -286,31 +293,20 @@ return
      options_gui:    ;
 ;---------------------
     Gosub, read_settings
-    Gui, Add, Button, default x236 y307 w100 h30 , OK
-    Gui, Add, Button, x346 y307 w100 h30 , Cancel
-    Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
-    Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
-    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
-    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
-    Gui, Tab, Other
-    Gui, Add, Radio, x26 y47 w390 h20 , Radio
-    Gui, Add, Radio, x26 y77 w390 h20 , Radio
-    Gui, Add, Radio, x26 y107 w390 h20 , Radio
-    ; Generated using SmartGUI Creator 4.0
-    Gui, Show, x131 y91 h341 w450, TuSC Options
+    Gui, 9:Show, x131 y91 h341 w450, TuSC Options
 return
 
-ButtonOK:
-GuiClose:
-    Gui, Submit  ; Save each control's contents to its associated variable.
+9ButtonOK:
+9GuiClose:
+    Gui, 9:Submit  ; Save each control's contents to its associated variable.
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
     IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
     process_volume_icon()
     process_annoy()
-ButtonCancel:
-GuiEscape:
-    Gui Destroy  ; Destroy the Gui.
+9ButtonCancel:
+9GuiEscape:
+    Gui 9:Hide  ; Destroy the Gui.
 return
 
 
@@ -390,6 +386,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonMinimizeAll:
+    Gosub, hide_guis
 M&inimizeAll:
 ;------------------------------------------------------------------------------
     SendInput, #m
@@ -397,6 +395,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonHibernate:
+    Gosub, hide_guis
 &Hibernate:
 ;------------------------------------------------------------------------------
     Sleep, 5000
@@ -405,6 +405,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonLock:
+    Gosub, hide_guis
 &Lock:
 ;------------------------------------------------------------------------------
     Sleep, 1000
@@ -413,6 +415,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonRemind:
+    Gosub, hide_guis
 Remin&ders:
 ;------------------------------------------------------------------------------
     SetTitleMatchMode, 2
@@ -421,6 +425,8 @@ Goto, ActApp
 
 
 ;------------------------------------------------------------------------------
+7ButtonCMD:
+    Gosub, hide_guis
 C&MD:
 ;------------------------------------------------------------------------------
     Run, cmd
@@ -703,6 +709,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonQuickStart:
+    Gosub, hide_guis
 &QuickStart:
 ;------------------------------------------------------------------------------
     SendInput, #{F10}
@@ -710,6 +718,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonGaimWin:
+    Gosub, hide_guis
 &GaimWin:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %gaim_id%
@@ -797,6 +807,9 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonFirefox:
+2ButtonChrome:
+    Gosub, hide_guis
 &Firefox:
 C&hrome:
 ;------------------------------------------------------------------------------
@@ -814,6 +827,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonOptionsb:
+    Gosub, hide_guis
 Options&b:
 ;------------------------------------------------------------------------------
     Gosub, options_gui
@@ -821,14 +836,19 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonCygwin:
+    Gosub, hide_guis
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
-    GoApp("cygw","ahk_class PuTTY", target, 1,"","","","","",1)
+;    GoApp("cygw","ahk_class mintty", target, 1,"","","","","",1)
+    GoApp("cygw","ahk_class mintty", target, 1)
 return
 
 
 ;------------------------------------------------------------------------------
+7ButtonPaint:
+    Gosub, hide_guis
 P&aint:
 ;------------------------------------------------------------------------------
     target = %sys_drive%\Program Files\Paint.NET\PaintDotNet.exe
@@ -837,6 +857,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+7ButtonCalculator:
+    Gosub, hide_guis
 &Calculator:
 ;------------------------------------------------------------------------------
     GoApp("clc","Calculator","calc","","",1)
@@ -844,6 +866,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+7ButtonVPN:
+    Gosub, hide_guis
 V&PN:
 ;------------------------------------------------------------------------------
     Run, %shortcuts_dir%\glob.lnk
@@ -851,6 +875,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonRemote:
+    Gosub, hide_guis
 Re&mote:
 ;------------------------------------------------------------------------------
     remote=%shortcuts_dir%\putty.lnk
@@ -859,6 +885,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonOutlook:
+    Gosub, hide_guis
 &Outlook:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\outlook.lnk
@@ -868,6 +896,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonIE:
+    Gosub, hide_guis
 Internet&Explorer:
 ;------------------------------------------------------------------------------
     app_run=%shortcuts_dir%\ie.lnk
@@ -876,6 +906,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonRTM:
+    Gosub, hide_guis
 &RTM:
 ;------------------------------------------------------------------------------
     app_run=http://www.rememberthemilk.com
@@ -884,6 +916,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonVi:
+    Gui 2:Hide
 &vi:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\gvim.lnk
@@ -892,6 +926,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonScratch:
+    Gosub, hide_guis
 &Scratch:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\gvim.lnk
@@ -996,6 +1032,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonExplore:
+    Gosub, hide_guis
 E&xplore:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\freecommander.lnk
@@ -1004,6 +1042,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+4ButtonReload:
+    Gosub, hide_guis
 &Reload:
 ;------------------------------------------------------------------------------
     Reload
@@ -1011,6 +1051,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonDumpstd:
+    Gosub, hide_guis
 &DumpSTDERR:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1019,6 +1061,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonEjectAll:
+    Gosub, hide_guis
 &EjectAll:
 ;------------------------------------------------------------------------------
     drive=65
@@ -1032,6 +1076,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonPrintstd:
+    Gosub, hide_guis
 &PrintSTDERR:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1040,6 +1086,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonMadeit:
+    Gosub, hide_guis
 &Madeit:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1048,6 +1096,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonUsedump:
+    Gosub, hide_guis
 &UseDataDumper:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1056,6 +1106,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+4ButtonCompile:
+    Gosub, hide_guis
 &Compile:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1246,6 +1298,124 @@ BlockInput, Off
 ), %A_ScriptDir%\menufocus.ahk
 return
 
+
+;=============================================================================+
+;=============================================================================+
+;                                                                             |
+;    GUI_section                                                              |
+;                                                                             |
+;=============================================================================+
+
+;------------------------------------------------------------------------------
+init_guis:
+;------------------------------------------------------------------------------
+    Gui, 2:Add, Button, x6 y7 w70 h20    , Wor&kstation
+    Gui, 2:Add, Button, x6 y37 w70 h20   , &aNote
+    Gui, 2:Add, Button, x6 y67 w70 h20   , C&hrome
+    Gui, 2:Add, Button, x6 y97 w70 h20   , &Cygwin
+    Gui, 2:Add, Button, x6 y127 w70 h20  , E&xplore
+    Gui, 2:Add, Button, x6 y157 w70 h20  , &Firefox
+    Gui, 2:Add, Button, x6 y187 w70 h20  , &GaimWin
+    Gui, 2:Add, Button, x6 y217 w70 h20  , Re&mote
+    Gui, 2:Add, Button, x6 y247 w70 h20  , NewCappy&l
+    Gui, 2:Add, Button, x6 y277 w70 h20  , &Outlook
+    Gui, 2:Add, Button, x6 y307 w70 h20  , Options&b
+    Gui, 2:Add, Button, x6 y337 w70 h20  , &QuickStart
+    Gui, 2:Add, Button, x86 y7 w70 h20   , &RTM
+    Gui, 2:Add, Button, x86 y37 w70 h20  , Remin&ders
+    Gui, 2:Add, Button, x86 y67 w70 h20  , &Scratch
+    Gui, 2:Add, Button, x86 y97 w70 h20  , I&E
+    Gui, 2:Add, Button, x86 y127 w70 h20 , &vi
+    Gui, 2:Add, Button, x86 y157 w70 h20 , Scri&pt
+    Gui, 2:Add, Button, x86 y187 w70 h20 , F&unctions
+    Gui, 2:Add, Button, x86 y217 w70 h20 , Applica&tions
+;    Gui, 2:Add, Button, x86 y247 w70 h20 , Button
+;    Gui, 2:Add, Button, x86 y277 w70 h20 , Button
+;    Gui, 2:Add, Button, x86 y307 w70 h20 , Button
+    Gui, 2:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Wor&kstation
+    Gui, 3:Add, Button, x6 y7 w70 h20    , &Hibernate
+    Gui, 3:Add, Button, x6 y37 w70 h20   , &Lock
+    Gui, 3:Add, Button, x6 y67 w70 h20   , M&ouseKeys
+    Gui, 3:Add, Button, x6 y97 w70 h20   , M&inimizeAll
+    Gui, 3:Add, Button, x6 y127 w70 h20  , &Mute
+    Gui, 3:Add, Button, x6 y157 w70 h20  , &Volume
+    Gui, 3:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Scri&pt
+    Gui, 4:Add, Button, x6 y7 w70 h20    , &Exit
+    Gui, 4:Add, Button, x6 y37 w70 h20   , &Reload
+    Gui, 4:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; F&unctions
+    Gui, 5:Add, Button, x6 y7 w70 h20    , &Compile
+    Gui, 5:Add, Button, x6 y37 w70 h20   , &Dumpstd
+    Gui, 5:Add, Button, x6 y67 w70 h20   , &EjectAll
+    Gui, 5:Add, Button, x6 y97 w70 h20   , E&ventLog
+    Gui, 5:Add, Button, x6 y127 w70 h20  , &Madeit
+    Gui, 5:Add, Button, x6 y157 w70 h20  , &GamKeys
+    Gui, 5:Add, Button, x6 y187 w70 h20  , &Printstd
+    Gui, 5:Add, Button, x6 y217 w70 h20  , &Usedump
+    Gui, 5:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; &GamKeys
+    Gui, 6:Add, Button, x6 y7 w70 h20    , Set&GaimWin
+    Gui, 6:Add, Button, x6 y37 w70 h20   , Set&Cygwin
+    Gui, 6:Add, Button, x6 y67 w70 h20   , SetE&xplore
+    Gui, 6:Add, Button, x6 y97 w70 h20   , Set&Firefox
+    Gui, 6:Add, Button, x6 y127 w70 h20  , SetRe&mote
+    Gui, 6:Add, Button, x6 y157 w70 h20  , Set&Outlook
+    Gui, 6:Add, Button, x6 y187 w70 h20  , Set&RTM
+    Gui, 6:Add, Button, x6 y217 w70 h20  , SetRemin&d
+    Gui, 6:Add, Button, x6 y247 w70 h20  , Set&Scratch
+    Gui, 6:Add, Button, x6 y277 w70 h20  , Set&vi
+    Gui, 6:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Applica&tions
+    Gui, 7:Add, Button, x6 y7 w70 h20    , &Calculator
+    Gui, 7:Add, Button, x6 y37 w70 h20   , C&MD
+    Gui, 7:Add, Button, x6 y67 w70 h20   , P&aint
+    Gui, 7:Add, Button, x6 y97 w70 h20   , V&PN
+    Gui, 7:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+;    Gui, 8:Add, Button, x6 y7 w70 h20    , Wor&kstation
+;    Gui, 8:Add, Button, x6 y37 w70 h20   , &aNote
+;    Gui, 8:Add, Button, x6 y67 w70 h20   , C&hrome
+;    Gui, 8:Add, Button, x6 y97 w70 h20   , &Cygwin
+;    Gui, 8:Add, Button, x6 y127 w70 h20  , E&xplore
+;    Gui, 8:Add, Button, x6 y157 w70 h20  , &Firefox
+;    Gui, 8:Add, Button, x6 y187 w70 h20  , &GaimWin
+;    Gui, 8:Add, Button, x6 y217 w70 h20  , Re&mote
+;    Gui, 8:Add, Button, x6 y247 w70 h20  , NewCappy&l
+;    Gui, 8:Add, Button, x6 y277 w70 h20  , &Outlook
+;    Gui, 8:Add, Button, x6 y307 w70 h20  , Options&b
+;    Gui, 8:Add, Button, x6 y337 w70 h20  , &QuickStart
+;    Gui, 8:Add, Button, x86 y7 w70 h20   , &RTM
+;    Gui, 8:Add, Button, x86 y37 w70 h20  , Remin&ders
+;    Gui, 8:Add, Button, x86 y67 w70 h20  , &Scratch
+;    Gui, 8:Add, Button, x86 y97 w70 h20  , I&E
+;    Gui, 8:Add, Button, x86 y127 w70 h20 , &vi
+;    Gui, 8:Add, Button, x86 y157 w70 h20 , Scri&pt
+;    Gui, 8:Add, Button, x86 y187 w70 h20 , F&unctions
+;    Gui, 8:Add, Button, x86 y217 w70 h20 , Applica&tions
+;    Gui, 8:Add, Button, x86 y247 w70 h20 , Button
+;    Gui, 8:Add, Button, x86 y277 w70 h20 , Button
+;    Gui, 8:Add, Button, x86 y307 w70 h20 , Button
+;    Gui, 8:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    Gui, 9:Add, Button, default x236 y307 w100 h30 , OK
+    Gui, 9:Add, Button, x346 y307 w100 h30 , Cancel
+    Gui, 9:Add, Tab, x6 y7 w440 h290 , Settings|Other
+    Gui, 9:Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
+    Gui, 9:Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
+    Gui, 9:Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
+    Gui, 9:Tab, Other
+    Gui, 9:Add, Radio, x26 y47 w390 h20 , Radio
+    Gui, 9:Add, Radio, x26 y77 w390 h20 , Radio
+    Gui, 9:Add, Radio, x26 y107 w390 h20 , Radio
+    ; Generated using SmartGUI Creator 4.0
+return
 
 ;=============================================================================+
 ;=============================================================================+
@@ -1483,9 +1653,11 @@ Goto, paste_routine
 
 
 ;------------------------------------------------------------------------------
+4ButtonExit:
+    Gosub, hide_guis
+&Exit:
 control_k:
 ;------------------------------------------------------------------------------
-    &Exit:
     ExitApp
 return
 
@@ -1528,8 +1700,159 @@ control_z:
 
 ;------------------------------------------------------------------------------
 GoCappy:
-    Debug("GoCappy = No key press")
+NewCappy&l:
+    Debug("GoNewCappy = No key press")
 Capslock:
+;------------------------------------------------------------------------------
+    CoordMode, Mouse, Screen
+    WinGet, lastwin, ID, A
+    Debug("(new)lastwin=" . lastwin)
+
+    Gosub, esc_key
+
+    swidth := f_swidth()
+    sheight := f_sheight()
+    MouseMove, %swidth%, %sheight%, 0
+
+    Gosub, cappy_gui
+return
+
+;-------------------
+     cappy_gui:    ;
+;-------------------
+    Debug("cappy_gui")
+    Gui, 2:Show, x131 y91 h377 w170, TuSC
+return
+
+2ButtonOK:
+2GuiClose:
+    Gui, 2:Submit  ; Save each control's contents to its associated variable.
+2ButtonCancel:
+2GuiEscape:
+2ButtonJustQuit:
+    Gui 2:Hide
+return
+
+
+;----------------------------
+     2ButtonWorkstation:    ;
+;----------------------------
+    Debug("2ButtonWorkstation")
+    Gosub, hide_guis
+    Gui, 3:Show, x131 y91 h377 w170, Workstation
+return
+
+3ButtonOK:
+3GuiClose:
+    Gui, 3:Submit
+3ButtonCancel:
+3GuiEscape:
+3ButtonJustQuit:
+    Gui 3:Hide
+return
+
+
+;-----------------------
+     2ButtonScript:    ;
+;-----------------------
+    Debug("2ButtonScript")
+    Gosub, hide_guis
+    Gui, 4:Show, x131 y91 h377 w170, Script
+return
+
+4ButtonOK:
+4GuiClose:
+    Gui, 4:Submit
+4ButtonCancel:
+4GuiEscape:
+4ButtonJustQuit:
+    Gui 4:Hide
+return
+
+
+;---------------------------
+     2ButtonFunctions:    ;
+;---------------------------
+    Debug("2ButtonFunctions")
+    Gosub, hide_guis
+    Gui, 5:Show, x131 y91 h377 w170, Functions
+return
+
+5ButtonOK:
+5GuiClose:
+    Gui, 5:Submit
+5ButtonCancel:
+5GuiEscape:
+5ButtonJustQuit:
+    Gui 5:Hide
+return
+
+
+;---------------------------
+     2ButtonApplications:    ;
+;---------------------------
+    Debug("2ButtonApplications")
+    Gosub, hide_guis
+    Gui, 7:Show, x131 y91 h377 w170, Applications
+return
+
+7ButtonOK:
+7GuiClose:
+    Gui, 7:Submit
+7ButtonCancel:
+7GuiEscape:
+7ButtonJustQuit:
+    Gui 7:Hide
+return
+
+
+;------------------------
+     5ButtonGamKeys:    ;
+;------------------------
+    Debug("5ButtonGamKeys")
+    Gosub, hide_guis
+    Gui, 6:Show, x131 y91 h377 w170, GamKeys
+return
+
+6ButtonOK:
+6GuiClose:
+    Gui, 6:Submit
+6ButtonCancel:
+6GuiEscape:
+6ButtonJustQuit:
+    Gui 6:Hide
+return
+
+
+;--------------
+hide_guis:    ;
+;--------------
+    Gui 2:Hide
+    Gui 3:Hide
+    Gui 4:Hide
+    Gui 5:Hide
+    Gui 6:Hide
+    Gui 7:Hide
+return
+
+
+;------------------------------------------------------------------------------
+new_cappy_keys:
+;------------------------------------------------------------------------------
+    Hotkey, r, o_r_key
+    Hotkey, e, o_e_key
+    Hotkey, r, On
+    Hotkey, e, On
+    outlook_esc =1
+return
+
+
+
+
+;------------------------------------------------------------------------------
+old_GoCappy:
+    Debug("GoCappy = No key press")
+old_Capslock:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
@@ -1867,6 +2190,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonVolume:
+    Gosub, hide_guis
 &Volume:
 ;------------------------------------------------------------------------------
     volume_keys:
@@ -2011,6 +2336,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonMute:
+    Gosub, hide_guis
 &Mute:
 vol_MasterMute:
 ;------------------------------------------------------------------------------
@@ -2640,6 +2967,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonMouseKeys:
+    Gosub, hide_guis
 M&ouseKeys:
 mouse_keys:
 ;------------------------------------------------------------------------------
@@ -2919,3 +3248,66 @@ j_menu=Mouse Mode %mouse_step%
 return
 
 #Include tusc_addon.ahk
+
+
+
+
+
+; *** Notes ***
+; I think this data structure is perfect.
+; * If next entry starts with four spaces, then current entry is a submenu
+; * Consider show/hide for sub menus versus destroy. Workstation can be gui 3,
+;  script can be gui 4, etc
+; *** End Notes ***
+
+; Wor&kstation
+;     &Hibernate
+;     &Lock
+;     M&ouseKeys
+;     M&inimizeAll
+;     &Mute
+;     &Volume
+; &aNote
+; C&hrome
+; &Cygwin
+; E&xplore
+; &Firefox
+; &GaimWin
+; Re&mote
+; NewCappy&l
+; &Outlook
+; Options&b
+; &QuickStart
+; &RTM
+; Remin&ders
+; &Scratch
+; I&E
+; &vi
+; Scri&pt
+;     &Exit
+;     &Reload
+; F&unctions
+;     &Compile
+;     &DumpSTDERR
+;     &EjectAll
+;     E&ventLog
+;     &Madeit
+;     &GamKeys
+;         Set&GaimWin
+;         Set&Cygwin
+;         SetE&xplore
+;         Set&Firefox
+;         SetRe&mote
+;         Set&Outlook
+;         Set&RTM
+;         SetRemin&ders
+;         Set&Scratch
+;         Set&vi
+;     &PrintSTDERR
+;     &UseDataDumper
+; Applica&tions
+;     &Calculator
+;     C&MD
+;     P&aint
+;     V&PN
+
