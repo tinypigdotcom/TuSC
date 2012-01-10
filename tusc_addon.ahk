@@ -139,6 +139,9 @@ END_ALL_LISTS
     menu, functions, add
     menu, functions, add, &JustQuit
 
+    compname = Host: %A_ComputerName%
+    menu, main, add, %compname%, computername
+    menu, main, disable, %compname%
     menu, main, add, Wor&kstation, :workst
     menu, main, add, &aNote
     menu, main, add
@@ -241,6 +244,10 @@ END_ALL_LISTS
     menu, tray, click, 1
     menu, tray, default, Capslock
 
+return
+
+computername:
+;do nothing
 return
 
 
