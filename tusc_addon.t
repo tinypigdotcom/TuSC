@@ -1,8 +1,10 @@
 ;------------------------------------------------------------------------------
+5ButtonEventLog:
+    Gosub, hide_guis
 E&ventLog:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
-    SendInput, "David Bradford" <davembradford@gmail.com>, {tab}
+    SendInput, "David Bradford" {% $my_emails %},{tab}
     SendInput, Event Log{space}
     Gosub, timestamp_x
     SendInput, {space}xeventlog x
@@ -11,6 +13,7 @@ E&ventLog:
     SendInput, Event Log{enter}
     SendInput, ---------------{enter}
     SendInput, * David:{space}this_is_blank{enter}
+{% $additional_people %}
     SendInput, * Extended family members:{space}{enter}
     SendInput, * Blurb:{space}{enter}{enter}
     SendInput, Things to track:{enter}
@@ -29,17 +32,19 @@ return
 
 
 ;------------------------------------------------------------------------------
-GoFooBar&dev:
+GoMy&dev:
 ;------------------------------------------------------------------------------
-    StringTrimLeft, f_path, f_pathFooBar%A_ThisMenuItemPos%, 0
+    StringTrimLeft, f_path, f_pathMydev%A_ThisMenuItemPos%, 0
     If f_path =
         return
-    StringTrimLeft, f_param, f_paramFooBar%A_ThisMenuItemPos%, 0
+    StringTrimLeft, f_param, f_paramMydev%A_ThisMenuItemPos%, 0
     GoLink(f_path,1,f_param)
 return
 
 
 ;------------------------------------------------------------------------------
+2ButtonaNote:
+    Gosub, hide_guis
 ^!n::
 &aNote:
 ;------------------------------------------------------------------------------
@@ -48,7 +53,7 @@ return
         return
     last_note=%temp_input%
     FormatTime, timestamp, %A_Now%, yyyy MM dd HH mm ss
-    FileAppend, `n%timestamp%: %last_note%`n,%sys_drive%\barbaz\notes.txt
+    FileAppend, `n%timestamp%: %last_note%`n,%sys_drive%\docs\notes.txt
 
     single_space := " "
 
@@ -59,7 +64,7 @@ return
         StringLeft, out_file, last_note, pos
         StringMid, out_text, last_note, pos + 2
 
-        out_file = %sys_drive%\barbaz\text\%out_file%.txt
+        out_file = %sys_drive%\docs\text\%out_file%.txt
 
         FileAppend, `n%timestamp%: %out_text%`n,%out_file%
     }
@@ -76,17 +81,20 @@ START_LIST;F&ile
 hosts&c                ; %sys_drive%\WINDOWS\system32\drivers\etc\hosts ; hosts
 &log                   ; %A_ScriptDir%\tscdebug.txt; debug
 START_LIST;Li&nk
+{% $my_item1 %}
 Ga&meFaqs              ; http://www.gamefaqs.com/search/index.html?game=; 0
 &Google                ; http://www.google.com/#q=; 0
+{% $my_item2 %}
 &IMDB                  ; http://www.imdb.com/find?q=; 0
 &RottenTomatoes        ; http://www.rottentomatoes.com/search/?search= ; 0
 &TheGoogle             ; http://www.google.com ; 1
-Ti&nypig               ; http://www.tinypig.com/ ; 1
+Ti&nypig               ; {% $tinypig_url %} ; 1
 Wi&kipedia             ; http://en.wikipedia.org/w/index.php?search= ; 0
 START_LIST;&WorkLink
-&Administration        ; https://www.joben.com/; 1
+&Administration        ; {% $my_item3 %}; 1
+{% $my_item4 %}
 
-&View                  ; https://jobenjoben.net ; 0
+&View                  ; {% $my_item5 %} ; 0
 END_ALL_LISTS
 */
 
@@ -168,7 +176,7 @@ END_ALL_LISTS
     menu, tray, add
     menu, tray, add, Capslock
 
-    menu, FooBar&dev, add
+    menu, My&dev, add
 
     f_AtStartingPos = n
     Loop, Read, %A_LineFile%
@@ -218,25 +226,25 @@ END_ALL_LISTS
                 Menu, %menu_choice%, Add, %f_line1%, Go%menu_choice%
             If menu_choice = &WorkLink
             {
-                IfInString, f_line2, joben
+                IfInString, f_line2, {% $prod %}
                 {
-                  StringReplace, f_line2, f_line2, joben.com, jobenjoben.net, 1
+                  StringReplace, f_line2, f_line2, {% $prod_url %}, {% $dev_url %}, 1
                 }
-                Transform, f_pathFooBar%f_MenuItemCount%, deref, %f_line2%
-                f_paramFooBar%f_MenuItemCount%=2
+                Transform, f_pathMydev%f_MenuItemCount%, deref, %f_line2%
+                f_paramMydev%f_MenuItemCount%=2
                 If f_line2 =
-                    Menu, FooBar&dev, Add, %f_line1%
+                    Menu, My&dev, Add, %f_line1%
                 else
-                    Menu, FooBar&dev, Add, %f_line1%, GoFooBar&dev
+                    Menu, My&dev, Add, %f_line1%, GoMy&dev
             }
         }
     }
 
-    menu, FooBar&dev, add
-    menu, FooBar&dev, add, &JustQuit
+    menu, My&dev, add
+    menu, My&dev, add, &JustQuit
 
     menu, &WorkLink, add
-    menu, &WorkLink, add, FooBar&dev, :FooBar&dev
+    menu, &WorkLink, add, My&dev, :My&dev
 
     menu, main, add
     menu, main, add, &JustQuit
@@ -266,6 +274,7 @@ f_Hotkey = ~!Up
 
 /*
 ITEMS IN FAVORITES MENU <-- Do not change this string.
+{% $old_data_dir %}
 C              ; %sys_drive%\
 dmb            ; %sys_drive%\dmb
 K Desktop      ; %UserProfile%\Desktop
