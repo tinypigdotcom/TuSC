@@ -862,8 +862,19 @@ return
 &Outlook:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\outlook.lnk
+
+    outlook_key_flag=0
+    IfWinExist, Outlook
+    {
+        outlook_key_flag++
+    }
+
     GoApp("outl","Outlook",target,1)
-    Gosub, outlook_keys
+
+    If outlook_key_flag
+    {
+        Gosub, outlook_keys
+    }
 return
 
 
