@@ -824,7 +824,7 @@ return
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
-    GoApp("cygw","ahk_class PuTTY", target, 1,"","","","","",1)
+    GoApp("cygw","ahk_class mintty", target, 1,"","","","","",1)
 return
 
 
@@ -1172,38 +1172,15 @@ return
 
 
 F12::
-Gosub, vol_setting1
-Gosub, vol_MasterMute
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
+
+    Gosub, vol_setting1
+    Gosub, vol_MasterMute
 return
-
-
-/*
-$LButton::
-   Send {LButton Down}
-   KeyWait LButton
-   Send {LButton Up}
-Return
-
-$RButton::
-   Send {RButton Down}
-   KeyWait RButton
-   Send {RButton Up}
-Return
-
-RButton & LButton::
-    Gosub, esc_key
-    menu, man, show
-Return
-
-&C:
-    Gosub, cappy
-return
-
-&M:
-&P:
-return
-*/
-
 
 
 ;------------------------------------------------------------------------------
@@ -1216,7 +1193,13 @@ FileAppend,
 #SingleInstance force
 
 #j::
-Run, %A_ScriptDir%\tusc.ahk
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
+
+    Run, %A_ScriptDir%\tusc.ahk
 return
 ), %A_ScriptDir%\starttusc.ahk
 Run, %A_ScriptDir%\starttusc.ahk
@@ -1318,9 +1301,16 @@ refresh_ini_value(var, section)
 #z::
 ^j::
 ;------------------------------------------------------------------------------
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
+
     j_show_tip=
     Gosub, esc_key
     j_menu=`n
+    j_menu=%j_menu%    Host: %A_ComputerName%    `n
     j_menu=%j_menu%    kill script (k)    `n
     j_menu=%j_menu%    mute (m)    `n
     j_menu=%j_menu%    paste (v)    `n
@@ -1443,6 +1433,11 @@ return
 
 ;------------------------------------------------------------------------------
 ^!6::
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
 control_6:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring6", "string")
@@ -1535,6 +1530,14 @@ Capslock:
     WinGet, lastwin, ID, A
     Debug("lastwin=" . lastwin)
 
+    WinGetClass, class, A
+    Debug("class=" . class)
+
+    If class = QWidget
+    {
+        return
+    }
+
     BlockInput, On
 
     Gosub, esc_key
@@ -1562,6 +1565,12 @@ return
 ;------------------------------------------------------------------------------
 ^o::
 ;------------------------------------------------------------------------------
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
+
     cb_prefix = CB
     WinGetClass, cb_winclass, A
     Gosub, oYank
