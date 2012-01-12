@@ -66,7 +66,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v0.2
+VERSION=v0.3
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
