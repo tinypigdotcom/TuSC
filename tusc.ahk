@@ -66,6 +66,8 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
+VERSION=v0.2
+
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
 ini_file = %A_ScriptDir%\%f_FileNoExt%.ini
@@ -1321,7 +1323,9 @@ refresh_ini_value(var, section)
     j_show_tip=
     Gosub, esc_key
     j_menu=`n
+    j_menu=%j_menu%    TuSC: %VERSION%    `n
     j_menu=%j_menu%    Host: %A_ComputerName%    `n
+    j_menu=%j_menu%                  `n
     j_menu=%j_menu%    kill script (k)    `n
     j_menu=%j_menu%    mute (m)    `n
     j_menu=%j_menu%    paste (v)    `n

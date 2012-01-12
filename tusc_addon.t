@@ -143,7 +143,10 @@ END_ALL_LISTS
     menu, functions, add
     menu, functions, add, &JustQuit
 
+    prog = TuSC %VERSION%
     compname = Host: %A_ComputerName%
+    menu, main, add, %prog%, computername
+    menu, main, disable, %prog%
     menu, main, add, %compname%, computername
     menu, main, disable, %compname%
     menu, main, add, Wor&kstation, :workst
