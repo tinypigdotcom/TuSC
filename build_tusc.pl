@@ -5,20 +5,20 @@ use Text::Template;
 
 my $template = Text::Template->new(
     TYPE       => 'FILE',
-    SOURCE     => 'tusc_addon.t',
+    SOURCE     => 'tusc.t',
     DELIMITERS => ['{%', '%}'],
 );
 
 our $HASH;
 
 use lib '.';
-require 'config.pl';
+require 'build_tusc.cfg';
 
 my $text = $template->fill_in(HASH => $HASH);
 
-print STDERR "Building tusc_addon.ahk ... ";
+print STDERR "Building tusc.ahk ... ";
 
-open OUT, ">tusc_addon.ahk" or die;
+open OUT, ">tusc.ahk" or die;
 print OUT $text;
 close OUT;
 
