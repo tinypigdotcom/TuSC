@@ -66,7 +66,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v0.3
+VERSION=v0.5
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -86,7 +86,7 @@ else
 }
 
 
-debug_on=0
+debug_on=1
 debug_text=
 
 clicktooltip=0
@@ -207,6 +207,26 @@ build_ini:
     IniWrite, eight,       %ini_file%, string, mystring8
     IniWrite, nine,        %ini_file%, string, mystring9
     IniWrite, ten,         %ini_file%, string, mystring0
+
+    IniWrite, "David Bradford" <davembradford@gmail.com>, %ini_file%, misc, my_emails
+    IniWrite, x, %ini_file%, misc, event_lines
+    IniWrite, http://www.tinypig.com, %ini_file%, misc, tinypig_url
+
+    IniWrite, %A_Space%, %ini_file%, misc, my_item1
+    IniWrite, %A_Space%, %ini_file%, misc, my_item2
+    IniWrite, %A_Space%, %ini_file%, misc, my_item3
+    IniWrite, http://www.google.com, %ini_file%, misc, my_item4
+    IniWrite, %A_Space%, %ini_file%, misc, my_item5
+    IniWrite, %A_Space%, %ini_file%, misc, my_item6
+    IniWrite, %A_Space%, %ini_file%, misc, my_item7
+    IniWrite, %A_Space%, %ini_file%, misc, my_item8
+    IniWrite, %A_Space%, %ini_file%, misc, my_item9
+    IniWrite, http://www.google.com, %ini_file%, misc, my_item10
+
+    IniWrite, yahoo, %ini_file%, misc, prod
+    IniWrite, yahoo.com, %ini_file%, misc, prod_url
+    IniWrite, google.com, %ini_file%, misc, dev_url
+    IniWrite, x, %ini_file%, misc, old_data_dir
 return
 
 
@@ -1291,12 +1311,12 @@ f_swidth()
 refresh_ini_value(var, section)
 {
     global
-    Debug("var=" . var)
-    Debug("section=" . section)
-    Debug("ini_file=" . ini_file)
-    Debug("mystring2=" . mystring2)
+;    Debug("var=" . var)
+;    Debug("section=" . section)
+;    Debug("ini_file=" . ini_file)
+;    Debug("my_emails=" . my_emails)
     IniRead, %var%, %ini_file%, %section%, %var%
-    Debug("mystring2=" . mystring2)
+;    Debug("my_emails=" . my_emails)
     return
 }
 
@@ -2293,7 +2313,7 @@ f_DisplayMenu:
         else if f_class not in ConsoleWindowClass,PuTTY,bosa_sdm_Mso96,gdkWindowToplevel
             return ; Since it's some other window type, don't display menu.
     }
-    Menu % Favorites, show, f_swidth(), f_sheight()
+    Menu, Favorites, show, f_swidth(), f_sheight()
 return
 
 
@@ -2951,8 +2971,10 @@ return
 ;------------------------------------------------------------------------------
 E&ventLog:
 ;------------------------------------------------------------------------------
+    refresh_ini_value("my_emails", "misc")
+    refresh_ini_value("event_lines", "misc")
     WinActivate ahk_id %lastwin%
-    SendInput, "David Bradford" {% $my_emails %},{tab}
+    SendInput, %my_emails%,{tab}
     SendInput, Event Log{space}
     Gosub, timestamp_x
     SendInput, {space}xeventlog x
@@ -2961,7 +2983,10 @@ E&ventLog:
     SendInput, Event Log{enter}
     SendInput, ---------------{enter}
     SendInput, * David:{space}this_is_blank{enter}
-{% $additional_people %}
+    Loop, Parse, event_lines, |
+    {
+        SendInput,%A_LoopField%{space}{enter}
+    }
     SendInput, * Extended family members:{space}{enter}
     SendInput, * Blurb:{space}{enter}{enter}
     SendInput, Things to track:{enter}
@@ -3027,26 +3052,42 @@ START_LIST;F&ile
 hosts&c                ; %sys_drive%\WINDOWS\system32\drivers\etc\hosts ; hosts
 &log                   ; %A_ScriptDir%\tscdebug.txt; debug
 START_LIST;Li&nk
-{% $my_item1 %}
+%my_item1%
 Ga&meFaqs              ; http://www.gamefaqs.com/search/index.html?game=; 0
 &Google                ; http://www.google.com/#q=; 0
-{% $my_item2 %}
+%my_item2%
+%my_item3%
 &IMDB                  ; http://www.imdb.com/find?q=; 0
 &RottenTomatoes        ; http://www.rottentomatoes.com/search/?search= ; 0
 &TheGoogle             ; http://www.google.com ; 1
-Ti&nypig               ; {% $tinypig_url %} ; 1
+Ti&nypig               ; %tinypig_url% ; 1
 Wi&kipedia             ; http://en.wikipedia.org/w/index.php?search= ; 0
 START_LIST;&WorkLink
-&Administration        ; {% $my_item3 %}; 1
-{% $my_item4 %}
+&Administration        ; %my_item4%; 1
+%my_item5%
+%my_item6%
+%my_item7%
+%my_item8%
+%my_item9%
 
-&View                  ; {% $my_item5 %} ; 0
+&View                  ; %my_item10% ; 0
 END_ALL_LISTS
 */
 
-;    menu, man, add, &C
-;    menu, man, add, &M
-;    menu, man, add, &P
+    refresh_ini_value("tinypig_url", "misc")
+    refresh_ini_value("my_item1", "misc")
+    refresh_ini_value("my_item2", "misc")
+    refresh_ini_value("my_item3", "misc")
+    refresh_ini_value("my_item4", "misc")
+    refresh_ini_value("my_item5", "misc")
+    refresh_ini_value("my_item6", "misc")
+    refresh_ini_value("my_item7", "misc")
+    refresh_ini_value("my_item8", "misc")
+    refresh_ini_value("my_item9", "misc")
+    refresh_ini_value("my_item10", "misc")
+    refresh_ini_value("prod", "misc")
+    refresh_ini_value("prod_url", "misc")
+    refresh_ini_value("dev_url", "misc")
 
     menu, applications, add, &Calculator
     menu, applications, add, C&MD
@@ -3162,7 +3203,8 @@ END_ALL_LISTS
             menu, %menu_choice%, add
         else
         {
-            StringSplit, f_line, A_LoopReadLine, `;
+            Transform, j_line, deref, %A_LoopReadLine%
+            StringSplit, f_line, j_line, `;
             f_line1 = %f_line1%
             f_line2 = %f_line2%
             f_line3 = %f_line3%
@@ -3175,9 +3217,11 @@ END_ALL_LISTS
                 Menu, %menu_choice%, Add, %f_line1%, Go%menu_choice%
             If menu_choice = &WorkLink
             {
-                IfInString, f_line2, {% $prod %}
+                IfInString, f_line2, %prod%
                 {
-                  StringReplace, f_line2, f_line2, {% $prod_url %}, {% $dev_url %}, 1
+                  Debug("prod_url: " . prod_url)
+                  Debug("dev_url: " . dev_url)
+                  StringReplace, f_line2, f_line2, %prod_url%, %dev_url%, 1
                 }
                 Transform, f_pathMydev%f_MenuItemCount%, deref, %f_line2%
                 f_paramMydev%f_MenuItemCount%=2
@@ -3223,7 +3267,7 @@ f_Hotkey = ~!Up
 
 /*
 ITEMS IN FAVORITES MENU <-- Do not change this string.
-{% $old_data_dir %}
+%old_data_dir%
 C              ; %sys_drive%\
 dmb            ; %sys_drive%\dmb
 K Desktop      ; %UserProfile%\Desktop
@@ -3235,6 +3279,7 @@ U Music        ; %sys_drive%\mp3
 W Downloads    ; %UserProfile%\My Documents\Downloads
 */
 
+refresh_ini_value("old_data_dir", "misc")
 Hotkey, %f_Hotkey%, f_DisplayMenu
 StringLeft, f_HotkeyFirstChar, f_Hotkey, 1
 if f_HotkeyFirstChar = ~  ; Show menu only for certain window types.
@@ -3268,7 +3313,8 @@ Loop, Read, %A_LineFile%
         Menu, Favorites, Add
     else
     {
-        StringSplit, f_line, A_LoopReadLine, `;
+        Transform, j_line, deref, %A_LoopReadLine%
+        StringSplit, f_line, j_line, `;
         f_line1 = %f_line1%  ; Trim leading and trailing spaces.
         f_line2 = %f_line2%  ; Trim leading and trailing spaces.
         ; Resolve any references to variables within either field, and
