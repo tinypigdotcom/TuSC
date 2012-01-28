@@ -33,12 +33,14 @@ Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/for
 TODO
 ----
 
+ * Eliminate mixed notation := vs = and if vs if()
+ * Improve debug system for levels of detail or temporary on/off controls
  * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
  * add snooze option to "annoy"
- * re-check section headings/comments now that script is split up
+ * re-check section headings/comments now that script is put back together
  * clean up code
-     * refactor duplicate lines
- * add front end menu options where it is feasible, like enabling "annoy"
+     * refactor duplicate or similar lines
+ * add front end menu options where it is feasible, alongside enabling "annoy"
  * Either eliminate external file dependencies or document them
  * Document needed external software
      * Launchy
@@ -50,7 +52,8 @@ TODO, Older
 
 DONE
 ----
- * get rid of sleeps where appropriate - use timers instead
+ * get rid of sleeps where appropriate - use timers instead.  This includes
+ waits in WinActivate and such
 
 */
 
@@ -66,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v0.5
+VERSION=v1.1
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -86,9 +89,10 @@ else
 }
 
 
-debug_on=1
+debug_level=0
 debug_text=
 
+no_focus=0
 clicktooltip=0
 disabled_flag=0
 game_mode=0
@@ -169,7 +173,6 @@ ocred_msecs=500
 SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
-;SetTimer,annoy,%annoy_msecs%
 
 locker_msecs=500
 SetTimer,locker,%locker_msecs%
@@ -513,10 +516,10 @@ Question(text,h_axis=0)
 
 
 ;------------------------------------------------------------------------------
-Debug(dtext)
+Debug(dtext,item_debug_level=2)
 ;------------------------------------------------------------------------------
 {
-    global debug_on
+    global debug_level
     global debug_text
     global lastwin
 
@@ -524,7 +527,7 @@ Debug(dtext)
     debug_y := A_ScreenHeight - 75
 
     FormatTime, TimeString,, yyyy-MM-dd HH:mm
-    if debug_on
+    if(debug_level >= item_debug_level)
     {
         diagnostic_info=%TimeString% %A_ScriptName%
         FileAppend, %diagnostic_info%: %dtext%`r`n, %A_ScriptDir%\tscdebug.txt
@@ -1234,10 +1237,20 @@ FileAppend,
 
     Run, %A_ScriptDir%\tusc.ahk
 return
+
+^!j::
+    WinGetClass, class, A
+    If class = QWidget
+    {
+        return
+    }
+
+    MsgBox, starttusc shutting down
+    ExitApp
+return
 ), %A_ScriptDir%\starttusc.ahk
 Run, %A_ScriptDir%\starttusc.ahk
 return
-
 
 
 ;------------------------------------------------------------------------------
@@ -1311,12 +1324,9 @@ f_swidth()
 refresh_ini_value(var, section)
 {
     global
-;    Debug("var=" . var)
-;    Debug("section=" . section)
-;    Debug("ini_file=" . ini_file)
-;    Debug("my_emails=" . my_emails)
+    Debug("var=" . var,3)
+    Debug("section=" . section,3)
     IniRead, %var%, %ini_file%, %section%, %var%
-;    Debug("my_emails=" . my_emails)
     return
 }
 
@@ -1564,6 +1574,8 @@ control_z:
 ;------------------------------------------------------------------------------
 GoCappy:
     Debug("GoCappy = No key press")
+Mainmenu:
+    no_focus++
 Capslock:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
@@ -1586,7 +1598,14 @@ Capslock:
     sheight := f_sheight()
     MouseMove, %swidth%, %sheight%, 0
 
-    Run, menufocus.ahk
+    if(no_focus)
+    {
+        no_focus=0
+    }
+    else
+    {
+        Run, menufocus.ahk
+    }
 
     BlockInput, Off
 
@@ -3164,7 +3183,7 @@ END_ALL_LISTS
     menu, main, add
 
     menu, tray, add
-    menu, tray, add, Capslock
+    menu, tray, add, Mainmenu
 
     menu, My&dev, add
 
@@ -3243,7 +3262,7 @@ END_ALL_LISTS
     menu, main, add, &JustQuit
 
     menu, tray, click, 1
-    menu, tray, default, Capslock
+    menu, tray, default, Mainmenu
 
 return
 
