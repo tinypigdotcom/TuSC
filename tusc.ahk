@@ -27,7 +27,7 @@ David M. Bradford, tinypig.com
 Additional code:
 Volume - Rajat
 Favorites - savage, ChrisM, Rajat
-Credits usernames are from the AutoHotKey forums - http://www.autohotkey.com/forum/
+Usernames in the credits are from the AutoHotKey forums - http://www.autohotkey.com/forum/
 
 
 TODO
@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.1
+VERSION=v1.3
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -169,7 +169,7 @@ debug_y_offset = 0
 
 Debug("started")
 
-ocred_msecs=500
+ocred_msecs=7000
 SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
@@ -368,6 +368,14 @@ IfWinExist, Connecting to my.web.att.com ahk_class #32770
     Send, !uitservices\db5170
     refresh_ini_value("mystring0", "string")
     Send, !p%mystring0%
+    Send, {enter}
+}
+IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
+{
+    Gosub, esc_key
+    WinActivate
+    refresh_ini_value("mystring6", "string")
+    Send, %mystring6%
     Send, {enter}
 }
 return
@@ -607,6 +615,7 @@ GoApp(unique_identifier
 {
     global
     max=
+    dont_maximize=1 ;forcing for now
     If !dont_maximize
         max=Max
     Transform, id, deref, `%%unique_identifier%_id`%
@@ -886,6 +895,7 @@ return
 ;------------------------------------------------------------------------------
 &Outlook:
 ;------------------------------------------------------------------------------
+    SetTitleMatchMode, 2
     target = %shortcuts_dir%\outlook.lnk
 
     outlook_key_flag=0
@@ -948,10 +958,9 @@ GoF&ile:
         WinActivate
         return
     }
-    Run, %shortcuts_dir%\gvim.lnk "%f_path%",,Max
+    Run, %shortcuts_dir%\gvim.lnk "%f_path%"
     WinWait, %f_param%,,%timeout%
     WinActivate
-    WinMaximize
 return
 
 
@@ -3042,21 +3051,20 @@ return
     If ErrorLevel
         return
     last_note=%temp_input%
-    FormatTime, timestamp, %A_Now%, yyyy MM dd HH mm ss
-    FileAppend, `n%timestamp%: %last_note%`n,%sys_drive%\docs\notes.txt
+    FormatTime, timestamp, %A_Now%, yyyy_MM_dd_HH_mm_ss
+; For now, just send to Dropbox
+;    FileAppend, `n%timestamp%: %last_note%`n,%sys_drive%\docs\notes.txt
 
-    single_space := " "
-
-    StringGetPos, pos, last_note, %single_space%
+    StringGetPos, pos, last_note, %A_Space%
 
     if pos >= 0
     {
         StringLeft, out_file, last_note, pos
         StringMid, out_text, last_note, pos + 2
 
-        out_file = %sys_drive%\docs\text\%out_file%.txt
+        out_file = %sys_drive%\dropbox\notes\%out_file%_%timestamp%.txt
 
-        FileAppend, `n%timestamp%: %out_text%`n,%out_file%
+        FileAppend, `n%out_text%`n,%out_file%
     }
 return
 
