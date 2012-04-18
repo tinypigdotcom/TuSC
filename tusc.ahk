@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.3
+VERSION=v1.5
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -175,7 +175,7 @@ SetTimer,ocred,%ocred_msecs%
 annoy_msecs=500
 
 locker_msecs=500
-SetTimer,locker,%locker_msecs%
+;SetTimer,locker,%locker_msecs%
 
 corner_menu_msecs=500
 ;SetTimer,corner_menu,%corner_menu_msecs%
@@ -3062,8 +3062,10 @@ return
         StringLeft, out_file, last_note, pos
         StringMid, out_text, last_note, pos + 2
 
-        out_file = %sys_drive%\dropbox\notes\%out_file%_%timestamp%.txt
-
+        if(out_file = "wt")
+            out_file = M:\todo\%out_text%.txt
+        else
+            out_file = %sys_drive%\dropbox\notes\%out_file%_%timestamp%.txt
         FileAppend, `n%out_text%`n,%out_file%
     }
 return
