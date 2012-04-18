@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.5
+VERSION=v1.7
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -1216,6 +1216,60 @@ mode_tip:
 return
 
 
+priority_1:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}1{enter}
+return
+
+priority_2:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}2{enter}
+return
+
+priority_3:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}3{enter}
+return
+
+priority_A:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}A{enter}
+return
+
+priority_B:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}B{enter}
+return
+
+priority_C:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}C{enter}
+return
+
+priority_D:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}D{enter}
+return
+
+priority_X:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}X_{enter}
+return
+
+priority_Z:
+    SendInput {F2}
+    Sleep, 100
+    SendInput {home}{right}{bs}Z{enter}
+return
+
 F12::
     WinGetClass, class, A
     If class = QWidget
@@ -1365,13 +1419,14 @@ refresh_ini_value(var, section)
     j_menu=%j_menu%    TuSC: %VERSION%    `n
     j_menu=%j_menu%    Host: %A_ComputerName%    `n
     j_menu=%j_menu%                  `n
+    j_menu=%j_menu%    set priority (1,2,3,a,b,c,d,x,z)    `n
     j_menu=%j_menu%    kill script (k)    `n
     j_menu=%j_menu%    mute (m)    `n
     j_menu=%j_menu%    paste (v)    `n
     j_menu=%j_menu%    paste, Secondary (e)    `n
     j_menu=%j_menu%    restart script (r)    `n
     j_menu=%j_menu%    save to permanent buffer (y)    `n
-    j_menu=%j_menu%    save to permanent buffer, Secondary (z)    `n
+;    j_menu=%j_menu%    save to permanent buffer, Secondary (z)    `n
     j_menu=%j_menu%    Timestamp (i)    `n
     j_menu=%j_menu%    volume (u)    `n
     j_menu=%j_menu%                  `n
@@ -1399,6 +1454,14 @@ refresh_ini_value(var, section)
       Gosub, control_8
     else if buffer_key = 9
       Gosub, control_9
+    else if buffer_key = a
+      Gosub, priority_A
+    else if buffer_key = b
+      Gosub, priority_B
+    else if buffer_key = c
+      Gosub, priority_C
+    else if buffer_key = d
+      Gosub, priority_D
     else if buffer_key = e
       Gosub, control_e
     else if buffer_key = i
@@ -1415,10 +1478,12 @@ refresh_ini_value(var, section)
       Gosub, &Volume
     else if buffer_key = v
       Gosub, control_v
+    else if buffer_key = x
+      Gosub, priority_X
     else if buffer_key = y
       Gosub, control_y
     else if buffer_key = z
-      Gosub, control_z
+      Gosub, priority_Z
     else if buffer_key =
       j_show_tip=Timeout
     else
@@ -1448,24 +1513,51 @@ return
 ;------------------------------------------------------------------------------
 control_1:
 ;------------------------------------------------------------------------------
-    refresh_ini_value("mystring1", "string")
-    SendInput, {Raw}%mystring1%
+    IfWinActive, todo
+    {
+        SendInput {F2}
+        Sleep, 100
+        SendInput {home}{right}{bs}1{enter}
+    }
+    else
+    {
+        refresh_ini_value("mystring1", "string")
+        SendInput, {Raw}%mystring1%
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 control_2:
 ;------------------------------------------------------------------------------
-    refresh_ini_value("mystring2", "string")
-    SendInput, {Raw}%mystring2%
+    IfWinActive, todo
+    {
+        SendInput {F2}
+        Sleep, 100
+        SendInput {home}{right}{bs}2{enter}
+    }
+    else
+    {
+        refresh_ini_value("mystring2", "string")
+        SendInput, {Raw}%mystring2%
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 control_3:
 ;------------------------------------------------------------------------------
-    refresh_ini_value("mystring3", "string")
-    SendInput, {Raw}%mystring3%
+    IfWinActive, todo
+    {
+        SendInput {F2}
+        Sleep, 100
+        SendInput {home}{right}{bs}3{enter}
+    }
+    else
+    {
+        refresh_ini_value("mystring3", "string")
+        SendInput, {Raw}%mystring3%
+    }
 return
 
 
