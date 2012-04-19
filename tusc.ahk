@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.7
+VERSION=v1.9
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -3155,10 +3155,20 @@ return
         StringMid, out_text, last_note, pos + 2
 
         if(out_file = "wt")
+        {
             out_file = M:\todo\%out_text%.txt
+            FileAppend, `nCreated:%timestamp%`n,%out_file%
+        }
+        else if(out_file = "wl")
+        {
+            out_file = M:\log\%out_file%_%timestamp%.txt
+            FileAppend, `n%out_text%`n,%out_file%
+        }
         else
+        {
             out_file = %sys_drive%\dropbox\notes\%out_file%_%timestamp%.txt
-        FileAppend, `n%out_text%`n,%out_file%
+            FileAppend, `n%out_text%`n,%out_file%
+        }
     }
 return
 
