@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.9
+VERSION=v2.1
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -174,6 +174,9 @@ SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
 
+poker_msecs=300000
+SetTimer,poker,%poker_msecs%
+
 locker_msecs=500
 ;SetTimer,locker,%locker_msecs%
 
@@ -232,6 +235,39 @@ build_ini:
     IniWrite, x, %ini_file%, misc, old_data_dir
 return
 
+
+
+;--------------------
+     poker:        ;
+;--------------------
+    nwidth := f_width() - 310
+    nheight := f_height() - 102
+    Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
+    WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
+    SetTimer, DisablePoker, 5000
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;
+;    DebugText("**                      Work log entry reminder                      **")
+;
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+return
+
+
+;--------------------
+     DisablePoker:  ;
+;--------------------
+    Progress, Off
+return
 
 
 ;--------------------
@@ -359,6 +395,20 @@ IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
     WinActivate
     refresh_ini_value("mystring0", "string")
     Send, !p%mystring0%
+    Send, {enter}
+}
+IfWinExist, AT&T - Log On Successful
+{
+    Gosub, esc_key
+    WinActivate
+    Send, {enter}
+}
+IfWinExist, AT&T Global Logon: Login
+{
+    Gosub, esc_key
+    WinActivate
+    refresh_ini_value("mystring6", "string")
+    Send, ^a%mystring6%
     Send, {enter}
 }
 IfWinExist, Connecting to my.web.att.com ahk_class #32770
@@ -539,19 +589,32 @@ Debug(dtext,item_debug_level=2)
     {
         diagnostic_info=%TimeString% %A_ScriptName%
         FileAppend, %diagnostic_info%: %dtext%`r`n, %A_ScriptDir%\tscdebug.txt
-        if debug_text
-        {
-            debug_text = %debug_text%`n.    %dtext%
-        }
-        else
-        {
-            debug_text = .    %dtext%
-        }
-        debug_y_offset += 12
-        tmp_debug_y := debug_y - debug_y_offset
-        ToolTip,%debug_text%    `n, %debug_x%, %tmp_debug_y%,3
-        SetTimer, DisableDebugToolTip, 9000
+        DebugText(dtext)
     }
+    return
+}
+
+;------------------------------------------------------------------------------
+DebugText(dtext)
+;------------------------------------------------------------------------------
+{
+    global debug_text
+
+    debug_x := A_ScreenWidth  - 400
+    debug_y := A_ScreenHeight - 75
+
+    if debug_text
+    {
+        debug_text = %debug_text%`n.    %dtext%
+    }
+    else
+    {
+        debug_text = .    %dtext%
+    }
+    debug_y_offset += 12
+    tmp_debug_y := debug_y - debug_y_offset
+    ToolTip,%debug_text%    `n, %debug_x%, %tmp_debug_y%,3
+    SetTimer, DisableDebugToolTip, 9000
     return
 }
 
