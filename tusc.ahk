@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.1
+VERSION=v2.3
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -173,9 +173,11 @@ ocred_msecs=7000
 SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
+process_annoy()
 
 poker_msecs=300000
-SetTimer,poker,%poker_msecs%
+poker_msecs=15000
+process_poker()
 
 locker_msecs=500
 ;SetTimer,locker,%locker_msecs%
@@ -200,6 +202,7 @@ build_ini:
     IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, 0,           %ini_file%, settings, run_startup_routine
     IniWrite, 0,           %ini_file%, settings, run_annoy_routine
+    IniWrite, 0,           %ini_file%, settings, run_poker_routine
 
     IniWrite, 1,           %ini_file%, state,  sound
 
@@ -240,6 +243,7 @@ return
 ;--------------------
      poker:        ;
 ;--------------------
+    Debug("process_poker")
     nwidth := f_width() - 310
     nheight := f_height() - 102
     Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
@@ -353,6 +357,7 @@ return
     Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
     Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
     Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
+    Gui, Add, Checkbox, x26 y167 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
     Gui, Tab, Other
     Gui, Add, Radio, x26 y47 w390 h20 , Radio
     Gui, Add, Radio, x26 y77 w390 h20 , Radio
@@ -367,8 +372,10 @@ GuiClose:
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
     IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
+    IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
     process_volume_icon()
     process_annoy()
+    process_poker()
 ButtonCancel:
 GuiEscape:
     Gui Destroy  ; Destroy the Gui.
@@ -381,6 +388,7 @@ return
     IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
     IniRead, SettingStartup, %ini_file%, settings, run_startup_routine,        0
     IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine,          0
+    IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine,          0
 return
 
 
@@ -2312,6 +2320,34 @@ process_annoy(annoy_status=-1)
     {
         Debug("    disabling annoy")
         SetTimer,annoy,Off
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
+process_poker(poker_status=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_poker")
+    Debug("    poker_status: " . poker_status)
+    if(poker_status=-1)
+    {
+        IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine, 0
+        poker_status := SettingPoker
+    }
+    Debug("    poker_status: " . poker_status)
+    Debug("    SettingPoker: " . SettingPoker)
+    if(poker_status)
+    {
+        Debug("    enabling poker")
+        SetTimer,poker,%poker_msecs%
+    }
+    else
+    {
+        Debug("    disabling poker")
+        SetTimer,poker,Off
     }
     return
 }
