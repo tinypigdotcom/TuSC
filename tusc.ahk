@@ -69,7 +69,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v1.9
+VERSION=v2.3
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -173,6 +173,11 @@ ocred_msecs=7000
 SetTimer,ocred,%ocred_msecs%
 
 annoy_msecs=500
+process_annoy()
+
+poker_msecs=300000
+poker_msecs=15000
+process_poker()
 
 locker_msecs=500
 ;SetTimer,locker,%locker_msecs%
@@ -197,6 +202,7 @@ build_ini:
     IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, 0,           %ini_file%, settings, run_startup_routine
     IniWrite, 0,           %ini_file%, settings, run_annoy_routine
+    IniWrite, 0,           %ini_file%, settings, run_poker_routine
 
     IniWrite, 1,           %ini_file%, state,  sound
 
@@ -232,6 +238,40 @@ build_ini:
     IniWrite, x, %ini_file%, misc, old_data_dir
 return
 
+
+
+;--------------------
+     poker:        ;
+;--------------------
+    Debug("process_poker")
+    nwidth := f_width() - 310
+    nheight := f_height() - 102
+    Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
+    WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
+    SetTimer, DisablePoker, 5000
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;
+;    DebugText("**                      Work log entry reminder                      **")
+;
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+;    DebugText("")
+return
+
+
+;--------------------
+     DisablePoker:  ;
+;--------------------
+    Progress, Off
+return
 
 
 ;--------------------
@@ -317,6 +357,7 @@ return
     Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
     Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
     Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
+    Gui, Add, Checkbox, x26 y167 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
     Gui, Tab, Other
     Gui, Add, Radio, x26 y47 w390 h20 , Radio
     Gui, Add, Radio, x26 y77 w390 h20 , Radio
@@ -331,8 +372,10 @@ GuiClose:
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
     IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
+    IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
     process_volume_icon()
     process_annoy()
+    process_poker()
 ButtonCancel:
 GuiEscape:
     Gui Destroy  ; Destroy the Gui.
@@ -345,6 +388,7 @@ return
     IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
     IniRead, SettingStartup, %ini_file%, settings, run_startup_routine,        0
     IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine,          0
+    IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine,          0
 return
 
 
@@ -359,6 +403,20 @@ IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
     WinActivate
     refresh_ini_value("mystring0", "string")
     Send, !p%mystring0%
+    Send, {enter}
+}
+IfWinExist, AT&T - Log On Successful
+{
+    Gosub, esc_key
+    WinActivate
+    Send, {enter}
+}
+IfWinExist, AT&T Global Logon: Login
+{
+    Gosub, esc_key
+    WinActivate
+    refresh_ini_value("mystring6", "string")
+    Send, ^a%mystring6%
     Send, {enter}
 }
 IfWinExist, Connecting to my.web.att.com ahk_class #32770
@@ -539,19 +597,32 @@ Debug(dtext,item_debug_level=2)
     {
         diagnostic_info=%TimeString% %A_ScriptName%
         FileAppend, %diagnostic_info%: %dtext%`r`n, %A_ScriptDir%\tscdebug.txt
-        if debug_text
-        {
-            debug_text = %debug_text%`n.    %dtext%
-        }
-        else
-        {
-            debug_text = .    %dtext%
-        }
-        debug_y_offset += 12
-        tmp_debug_y := debug_y - debug_y_offset
-        ToolTip,%debug_text%    `n, %debug_x%, %tmp_debug_y%,3
-        SetTimer, DisableDebugToolTip, 9000
+        DebugText(dtext)
     }
+    return
+}
+
+;------------------------------------------------------------------------------
+DebugText(dtext)
+;------------------------------------------------------------------------------
+{
+    global debug_text
+
+    debug_x := A_ScreenWidth  - 400
+    debug_y := A_ScreenHeight - 75
+
+    if debug_text
+    {
+        debug_text = %debug_text%`n.    %dtext%
+    }
+    else
+    {
+        debug_text = .    %dtext%
+    }
+    debug_y_offset += 12
+    tmp_debug_y := debug_y - debug_y_offset
+    ToolTip,%debug_text%    `n, %debug_x%, %tmp_debug_y%,3
+    SetTimer, DisableDebugToolTip, 9000
     return
 }
 
@@ -2249,6 +2320,34 @@ process_annoy(annoy_status=-1)
     {
         Debug("    disabling annoy")
         SetTimer,annoy,Off
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
+process_poker(poker_status=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_poker")
+    Debug("    poker_status: " . poker_status)
+    if(poker_status=-1)
+    {
+        IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine, 0
+        poker_status := SettingPoker
+    }
+    Debug("    poker_status: " . poker_status)
+    Debug("    SettingPoker: " . SettingPoker)
+    if(poker_status)
+    {
+        Debug("    enabling poker")
+        SetTimer,poker,%poker_msecs%
+    }
+    else
+    {
+        Debug("    disabling poker")
+        SetTimer,poker,Off
     }
     return
 }
