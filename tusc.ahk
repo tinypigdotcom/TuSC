@@ -36,11 +36,10 @@ TODO
  * Eliminate mixed notation := vs = and if vs if()
  * Improve debug system for levels of detail or temporary on/off controls
  * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
- * add snooze option to "annoy"
  * re-check section headings/comments now that script is put back together
  * clean up code
-     * refactor duplicate or similar lines
- * add front end menu options where it is feasible, alongside enabling "annoy"
+     * refactor duplicate or similar lines and routines
+ * add front end menu options where it is feasible
  * Either eliminate external file dependencies or document them
  * Document needed external software
      * Launchy
@@ -69,7 +68,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.3
+VERSION=v2.5
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -91,6 +90,12 @@ else
 
 debug_level=0
 debug_text=
+
+on_windows_7=0
+if(A_OSVersion = "WIN_7")
+{
+    on_windows_7++
+}
 
 no_focus=0
 clicktooltip=0
@@ -134,7 +139,7 @@ prog_icon = %A_ScriptDir%\%f_FileNoExt%.ico
 mute_icon = %A_ScriptDir%\%f_FileNoExt%_mute.ico
 
 cb_dir = %A_ScriptDir%\cb
-shortcuts_dir = %A_ScriptDir%\shortcuts
+shortcuts_dir = %sys_drive%\shortcuts
 
 Gosub, read_settings
 
@@ -170,12 +175,8 @@ debug_y_offset = 0
 Debug("started")
 
 ocred_msecs=7000
-SetTimer,ocred,%ocred_msecs%
+process_ocred()
 
-annoy_msecs=500
-process_annoy()
-
-poker_msecs=300000
 poker_msecs=15000
 process_poker()
 
@@ -200,9 +201,8 @@ return
 build_ini:
 ;------------------------------------------------------------------------------
     IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
-    IniWrite, 0,           %ini_file%, settings, run_startup_routine
-    IniWrite, 0,           %ini_file%, settings, run_annoy_routine
     IniWrite, 0,           %ini_file%, settings, run_poker_routine
+    IniWrite, 0,           %ini_file%, settings, run_ocred_routine
 
     IniWrite, 1,           %ini_file%, state,  sound
 
@@ -243,27 +243,12 @@ return
 ;--------------------
      poker:        ;
 ;--------------------
-    Debug("process_poker")
+    Debug("poker")
     nwidth := f_width() - 310
     nheight := f_height() - 102
     Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
     WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
     SetTimer, DisablePoker, 5000
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;
-;    DebugText("**                      Work log entry reminder                      **")
-;
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
-;    DebugText("")
 return
 
 
@@ -355,9 +340,8 @@ return
     Gui, Add, Button, x346 y307 w100 h30 , Cancel
     Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
     Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
-    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingStartup Checked%SettingStartup%, Run &Startup routine
-    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingAnnoy Checked%SettingAnnoy%, Run "&Annoy" routine
-    Gui, Add, Checkbox, x26 y167 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
+    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
+    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine
     Gui, Tab, Other
     Gui, Add, Radio, x26 y47 w390 h20 , Radio
     Gui, Add, Radio, x26 y77 w390 h20 , Radio
@@ -370,12 +354,11 @@ ButtonOK:
 GuiClose:
     Gui, Submit  ; Save each control's contents to its associated variable.
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
-    IniWrite, %SettingStartup%, %ini_file%, settings, run_startup_routine
-    IniWrite, %SettingAnnoy%,   %ini_file%, settings, run_annoy_routine
     IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
+    IniWrite, %SettingOcred%,   %ini_file%, settings, run_ocred_routine
     process_volume_icon()
-    process_annoy()
     process_poker()
+    process_ocred()
 ButtonCancel:
 GuiEscape:
     Gui Destroy  ; Destroy the Gui.
@@ -386,15 +369,15 @@ return
      read_settings:      ;
 ;-------------------------
     IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
-    IniRead, SettingStartup, %ini_file%, settings, run_startup_routine,        0
-    IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine,          0
     IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine,          0
+    IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine,          0
 return
 
 
 ;--------------------
      ocred:         ;
 ;--------------------
+Debug("ocred")
 SetKeyDelay, 25
 WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
 IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
@@ -438,24 +421,6 @@ IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
 }
 return
 
-;--------------------
-     annoy:         ;
-;--------------------
-SetTitleMatchMode, 2
-FormatTime, nowmins, , mmss
-if(nowmins = 0000 or nowmins = 1500 or nowmins = 3000 or nowmins = 4500)
-{
-    Loop
-    {
-        InputBox, temp_input, ToDo, Enter work comment.  Type 'ok' to continue., , , , , , , 120
-        If temp_input = ok
-        {
-            Gosub, &aNote
-            break
-        }
-    }
-}
-return
 
 ;------------------------------------------------------------------------------
 CenterMouse:
@@ -554,17 +519,6 @@ FindWindow(title,exclude_title,text="",exclude_text="",ask=0)
     ToolTip
     return 0
 }
-
-
-;------------------------------------------------------------------------------
-Startup:
-;------------------------------------------------------------------------------
-    app_delay=2000
-    Gosub, &Outlook
-    Sleep, %app_delay%
-    SendInput, {esc}
-    Gosub, &Firefox
-return
 
 
 ; Usage:
@@ -1200,8 +1154,6 @@ esc_key:
         Hotkey, j, Off
         Hotkey, k, Off
         Hotkey, l, Off
-        Hotkey, WheelDown, Off
-        Hotkey, WheelUp, Off
         Hotkey, esc, Off
         Hotkey, Enter, Off
         volume_esc =0
@@ -2081,7 +2033,7 @@ return
 initialize_volume:
 ;------------------------------------------------------------------------------
 vol_Step = 4
-vol_DisplayTime = 4000
+vol_DisplayTime = 2000
 vol_CBM = Red
 vol_CBW = Blue
 vol_CW = Silver
@@ -2109,8 +2061,10 @@ return
 ;------------------------------------------------------------------------------
 &Volume:
 ;------------------------------------------------------------------------------
+    Send {Volume_Up 1}
+    Send {Volume_Down 1}
     volume_keys:
-    Gosub, vol_ShowBars
+    Gosub, vol_display
     Hotkey, 0, vol_setting0
     Hotkey, 1, vol_setting1
     Hotkey, 2, vol_setting2
@@ -2125,8 +2079,6 @@ return
     Hotkey, j, vol_WaveDown
     Hotkey, k, vol_WaveUp
     Hotkey, l, vol_MasterUp
-    Hotkey, WheelDown, vol_WheelDown
-    Hotkey, WheelUp, vol_WheelUp
     Hotkey, esc, esc_key
     Hotkey, Enter, esc_key
     Hotkey, 0, On
@@ -2143,8 +2095,6 @@ return
     Hotkey, j, On
     Hotkey, k, On
     Hotkey, l, On
-    Hotkey, WheelDown, On
-    Hotkey, WheelUp, On
     Hotkey, esc, On
     Hotkey, Enter, On
     volume_esc=1
@@ -2154,16 +2104,26 @@ return
 ;------------------------------------------------------------------------------
 vol_setting0:
 ;------------------------------------------------------------------------------
-    vol_setting=0
-    Gosub, do_vol_setting
+    if (on_windows_7)
+    {
+        Send {Volume_Mute}
+    }
+    else
+    {
+        vol_setting=0
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting1:
 ;------------------------------------------------------------------------------
-    vol_setting=10
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=10
+        Gosub, do_vol_setting
+    }
 return
 
 
@@ -2173,7 +2133,7 @@ do_vol_setting:
     SoundSet, %vol_setting%, Wave
     SoundSet, %vol_setting%
     if volume_esc
-        Gosub, vol_ShowBars
+        Gosub, vol_display
     else
         Gosub, &Volume
 return
@@ -2182,71 +2142,89 @@ return
 ;------------------------------------------------------------------------------
 vol_WaveUp:
 ;------------------------------------------------------------------------------
-    SoundSet, +%vol_Step%, Wave
-    Gosub, vol_ShowBars
-return
-
-
-;------------------------------------------------------------------------------
-vol_WheelDown:
-;------------------------------------------------------------------------------
-    Gosub, vol_WaveDown
-    Gosub, vol_MasterDown
-return
-
-
-;------------------------------------------------------------------------------
-vol_WheelUp:
-;------------------------------------------------------------------------------
-    Gosub, vol_WaveUp
-    Gosub, vol_MasterUp
-return
-
-
-;------------------------------------------------------------------------------
-vol_Mousedown:
-;------------------------------------------------------------------------------
-    Loop, 4
+    if (on_windows_7)
     {
-        Gosub, vol_WaveDown
-        Gosub, vol_MasterDown
+        Send {Volume_Up %vol_Step%}
     }
-return
-
-
-;------------------------------------------------------------------------------
-vol_Mouseup:
-;------------------------------------------------------------------------------
-    Loop, 4
+    else
     {
-        Gosub, vol_WaveUp
-        Gosub, vol_MasterUp
+        SoundSet, +%vol_Step%, Wave
     }
+    Gosub, vol_display
 return
 
 
 ;------------------------------------------------------------------------------
 vol_WaveDown:
 ;------------------------------------------------------------------------------
-    SoundSet, -%vol_Step%, Wave
-    Gosub, vol_ShowBars
+    if (on_windows_7)
+    {
+        Send {Volume_Down %vol_Step%}
+    }
+    else
+    {
+        SoundSet, -%vol_Step%, Wave
+    }
+    Gosub, vol_display
 return
 
 
 ;------------------------------------------------------------------------------
 vol_MasterUp:
 ;------------------------------------------------------------------------------
-    SoundSet, +%vol_Step%
-    menu,tray,icon,%prog_icon%
-    Gosub, vol_ShowBars
+    if (on_windows_7)
+    {
+        Send {Volume_Up %vol_Step%}
+    }
+    else
+    {
+        SoundSet, +%vol_Step%
+        menu,tray,icon,%prog_icon%
+    }
+    Gosub, vol_display
 return
 
 
 ;------------------------------------------------------------------------------
 vol_MasterDown:
 ;------------------------------------------------------------------------------
-    SoundSet, -%vol_Step%
-    Gosub, vol_ShowBars
+    if (on_windows_7)
+    {
+        Send {Volume_Down %vol_Step%}
+    }
+    else
+    {
+        SoundSet, -%vol_Step%
+    }
+    Gosub, vol_display
+return
+;    Send {Volume_Up %vol_Step%}
+;    Send {Volume_Down %vol_Step%}
+
+
+;--------------------
+     vol_display:    ;
+;--------------------
+    if (on_windows_7)
+    {
+        Gosub, vol_notice
+    }
+    else
+    {
+        Gosub, vol_ShowBars
+    }
+return
+
+
+;--------------------
+     vol_notice:    ;
+;--------------------
+    nwidth := f_width() - 310
+    nheight := f_height() - 102
+    Progress, x550 y250 cwYellow m2 b fs18 zh0, Set Volume, , , Courier New
+    WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
+    SetTimer, esc_key, Off
+    SetTimer, esc_key, %vol_DisplayTime%
 return
 
 
@@ -2254,18 +2232,25 @@ return
 &Mute:
 vol_MasterMute:
 ;------------------------------------------------------------------------------
-    SoundGet, vol_j, Master
-    if(vol_j)
+    if (on_windows_7)
     {
-      vol_Master_save=%vol_j%
-      IniWrite, %vol_Master_save%, %ini_file%, state, sound
-      SoundSet, 0
+        Send {Volume_Mute}
     }
     else
     {
-      SoundSet, %vol_Master_save%
+        SoundGet, vol_j, Master
+        if(vol_j)
+        {
+          vol_Master_save=%vol_j%
+          IniWrite, %vol_Master_save%, %ini_file%, state, sound
+          SoundSet, 0
+        }
+        else
+        {
+          SoundSet, %vol_Master_save%
+        }
+        process_volume_icon(0)
     }
-    process_volume_icon(0)
     Gosub, volume_keys
 return
 
@@ -2298,28 +2283,28 @@ process_volume_icon(volume=-1)
 
 
 ;------------------------------------------------------------------------------
-process_annoy(annoy_status=-1)
+process_ocred(ocred_status=-1)
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("process_annoy")
-    Debug("    annoy_status: " . annoy_status)
-    if(annoy_status=-1)
+    Debug("process_ocred")
+    Debug("    ocred_status: " . ocred_status)
+    if(ocred_status=-1)
     {
-        IniRead, SettingAnnoy,   %ini_file%, settings, run_annoy_routine, 0
-        annoy_status := SettingAnnoy
+        IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine, 0
+        ocred_status := SettingOcred
     }
-    Debug("    annoy_status: " . annoy_status)
-    Debug("    SettingAnnoy: " . SettingAnnoy)
-    if(annoy_status)
+    Debug("    ocred_status: " . ocred_status)
+    Debug("    SettingOcred: " . SettingOcred)
+    if(ocred_status)
     {
-        Debug("    enabling annoy")
-        SetTimer,annoy,%annoy_msecs%
+        Debug("    enabling ocred")
+        SetTimer,ocred,%ocred_msecs%
     }
     else
     {
-        Debug("    disabling annoy")
-        SetTimer,annoy,Off
+        Debug("    disabling ocred")
+        SetTimer,ocred,Off
     }
     return
 }
@@ -2390,24 +2375,33 @@ return
 ;------------------------------------------------------------------------------
 vol_setting2:
 ;------------------------------------------------------------------------------
-    vol_setting=20
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=20
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting3:
 ;------------------------------------------------------------------------------
-    vol_setting=30
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=30
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting4:
 ;------------------------------------------------------------------------------
-    vol_setting=40
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=40
+        Gosub, do_vol_setting
+    }
 return
 
 
@@ -2422,32 +2416,44 @@ return
 ;------------------------------------------------------------------------------
 vol_setting6:
 ;------------------------------------------------------------------------------
-    vol_setting=60
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=60
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting7:
 ;------------------------------------------------------------------------------
-    vol_setting=70
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=70
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting8:
 ;------------------------------------------------------------------------------
-    vol_setting=80
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=80
+        Gosub, do_vol_setting
+    }
 return
 
 
 ;------------------------------------------------------------------------------
 vol_setting9:
 ;------------------------------------------------------------------------------
-    vol_setting=90
-    Gosub, do_vol_setting
+    if (!on_windows_7)
+    {
+        vol_setting=90
+        Gosub, do_vol_setting
+    }
 return
 
 
@@ -3554,15 +3560,4 @@ Loop, Read, %A_LineFile%
         Menu, Favorites, Add, %f_line1%, f_OpenFavorite
     }
 }
-
-IniRead, SettingStartup, %ini_file%, settings, run_startup_routine, 0
-if (SettingStartup)
-{
-    MsgBox , 3, Startup, Run Startup?, 120
-    IfMsgBox Yes
-        Gosub, Startup
-    else IfMsgBox Timeout
-        Gosub, Startup
-}
-return
 
