@@ -68,7 +68,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.5
+VERSION=v2.7
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -174,10 +174,13 @@ debug_y_offset = 0
 
 Debug("started")
 
+ohide_msecs=7000
+process_ohide()
+
 ocred_msecs=7000
 process_ocred()
 
-poker_msecs=15000
+poker_msecs=300000
 process_poker()
 
 locker_msecs=500
@@ -202,6 +205,7 @@ build_ini:
 ;------------------------------------------------------------------------------
     IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, 0,           %ini_file%, settings, run_poker_routine
+    IniWrite, 0,           %ini_file%, settings, run_ohide_routine
     IniWrite, 0,           %ini_file%, settings, run_ocred_routine
 
     IniWrite, 1,           %ini_file%, state,  sound
@@ -341,7 +345,8 @@ return
     Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
     Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
     Gui, Add, Checkbox, x26 y87 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
-    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine
+    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingOhide Checked%SettingOhide%, Run O&hide routine
+    Gui, Add, Checkbox, x26 y167 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine
     Gui, Tab, Other
     Gui, Add, Radio, x26 y47 w390 h20 , Radio
     Gui, Add, Radio, x26 y77 w390 h20 , Radio
@@ -355,9 +360,11 @@ GuiClose:
     Gui, Submit  ; Save each control's contents to its associated variable.
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
+    IniWrite, %SettingOhide%,   %ini_file%, settings, run_ohide_routine
     IniWrite, %SettingOcred%,   %ini_file%, settings, run_ocred_routine
     process_volume_icon()
     process_poker()
+    process_ohide()
     process_ocred()
 ButtonCancel:
 GuiEscape:
@@ -370,7 +377,16 @@ return
 ;-------------------------
     IniRead, SettingRotate,  %ini_file%, settings, rotate_tray_icon_when_mute, 0
     IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine,          0
+    IniRead, SettingOhide,   %ini_file%, settings, run_ohide_routine,          0
     IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine,          0
+return
+
+
+;--------------------
+     ohide:         ;
+;--------------------
+Debug("ohide")
+WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
 return
 
 
@@ -379,7 +395,6 @@ return
 ;--------------------
 Debug("ocred")
 SetKeyDelay, 25
-WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
 IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
 {
     Gosub, esc_key
@@ -2277,6 +2292,34 @@ process_volume_icon(volume=-1)
     {
         Debug("    setting mute icon:" . mute_icon)
         menu,tray,icon,%mute_icon%
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
+process_ohide(ohide_status=-1)
+;------------------------------------------------------------------------------
+{
+    global
+    Debug("process_ohide")
+    Debug("    ohide_status: " . ohide_status)
+    if(ohide_status=-1)
+    {
+        IniRead, SettingOhide,   %ini_file%, settings, run_ohide_routine, 0
+        ohide_status := SettingOhide
+    }
+    Debug("    ohide_status: " . ohide_status)
+    Debug("    SettingOhide: " . SettingOhide)
+    if(ohide_status)
+    {
+        Debug("    enabling ohide")
+        SetTimer,ohide,%ohide_msecs%
+    }
+    else
+    {
+        Debug("    disabling ohide")
+        SetTimer,ohide,Off
     }
     return
 }
