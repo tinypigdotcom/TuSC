@@ -103,6 +103,7 @@ disabled_flag=0
 game_mode=0
 timeout=20
 z_flag=0
+q_window_found=0
 
 mouse_step0=100
 mouse_step1=33
@@ -174,10 +175,10 @@ debug_y_offset = 0
 
 Debug("started")
 
-ohide_msecs=7000
+ohide_msecs=500
 process_ohide()
 
-ocred_msecs=7000
+ocred_msecs=500
 process_ocred()
 
 poker_msecs=300000
@@ -395,45 +396,45 @@ return
 ;--------------------
 Debug("ocred")
 SetKeyDelay, 25
-IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
+IfWinExist, Connect ahk_class #32770
 {
     Gosub, esc_key
     WinActivate
+    SendInput, !uitservices\db5170
     refresh_ini_value("mystring0", "string")
-    Send, !p%mystring0%
-    Send, {enter}
-}
-IfWinExist, AT&T - Log On Successful
-{
-    Gosub, esc_key
-    WinActivate
-    Send, {enter}
-}
-IfWinExist, AT&T Global Logon: Login
-{
-    Gosub, esc_key
-    WinActivate
-    refresh_ini_value("mystring6", "string")
-    Send, ^a%mystring6%
-    Send, {enter}
-}
-IfWinExist, Connecting to my.web.att.com ahk_class #32770
-{
-    Gosub, esc_key
-    WinActivate
-    Send, !uitservices\db5170
-    refresh_ini_value("mystring0", "string")
-    Send, !p%mystring0%
-    Send, {enter}
+    SendInput, !p{Raw}%mystring0%
+    SendInput, {enter}
 }
 IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
 {
-    Gosub, esc_key
-    WinActivate
-    refresh_ini_value("mystring6", "string")
-    Send, %mystring6%
-    Send, {enter}
+    if (!q_window_found)
+    {
+        Gosub, esc_key
+        WinActivate
+        refresh_ini_value("mystring6", "string")
+        SendInput, {Raw}%mystring6%
+        SendInput, {enter}
+        q_window_found++
+    }
 }
+else
+{
+    q_window_found=0
+}
+;IfWinExist, AT&T - Log On Successful
+;{
+;    Gosub, esc_key
+;    WinActivate
+;    Send, {enter}
+;}
+;IfWinExist, AT&T Global Logon: Login
+;{
+;    Gosub, esc_key
+;    WinActivate
+;    refresh_ini_value("mystring6", "string")
+;    Send, ^a%mystring6%
+;    Send, {enter}
+;}
 return
 
 
@@ -1165,6 +1166,8 @@ esc_key:
         Hotkey, 7, Off
         Hotkey, 8, Off
         Hotkey, 9, Off
+        Hotkey, WheelDown, Off
+        Hotkey, WheelUp, Off
         Hotkey, h, Off
         Hotkey, j, Off
         Hotkey, k, Off
@@ -2090,6 +2093,8 @@ return
     Hotkey, 7, vol_setting7
     Hotkey, 8, vol_setting8
     Hotkey, 9, vol_setting9
+    Hotkey, WheelDown, vol_WheelDown
+    Hotkey, WheelUp, vol_WheelUp
     Hotkey, h, vol_MasterDown
     Hotkey, j, vol_WaveDown
     Hotkey, k, vol_WaveUp
@@ -2106,6 +2111,8 @@ return
     Hotkey, 7, On
     Hotkey, 8, On
     Hotkey, 9, On
+    Hotkey, WheelDown, On
+    Hotkey, WheelUp, On
     Hotkey, h, On
     Hotkey, j, On
     Hotkey, k, On
@@ -2136,7 +2143,7 @@ vol_setting1:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=10
+        vol_setting=11
         Gosub, do_vol_setting
     }
 return
@@ -2151,6 +2158,22 @@ do_vol_setting:
         Gosub, vol_display
     else
         Gosub, &Volume
+return
+
+
+;------------------------------------------------------------------------------
+vol_WheelDown:
+;------------------------------------------------------------------------------
+    Gosub, vol_WaveDown
+    Gosub, vol_MasterDown
+return
+
+
+;------------------------------------------------------------------------------
+vol_WheelUp:
+;------------------------------------------------------------------------------
+    Gosub, vol_WaveUp
+    Gosub, vol_MasterUp
 return
 
 
@@ -2420,7 +2443,7 @@ vol_setting2:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=20
+        vol_setting=22
         Gosub, do_vol_setting
     }
 return
@@ -2431,7 +2454,7 @@ vol_setting3:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=30
+        vol_setting=33
         Gosub, do_vol_setting
     }
 return
@@ -2442,7 +2465,7 @@ vol_setting4:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=40
+        vol_setting=44
         Gosub, do_vol_setting
     }
 return
@@ -2451,7 +2474,7 @@ return
 ;------------------------------------------------------------------------------
 vol_setting5:
 ;------------------------------------------------------------------------------
-    vol_setting=50
+    vol_setting=55
     Gosub, do_vol_setting
 return
 
@@ -2461,7 +2484,7 @@ vol_setting6:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=60
+        vol_setting=66
         Gosub, do_vol_setting
     }
 return
@@ -2472,7 +2495,7 @@ vol_setting7:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=70
+        vol_setting=77
         Gosub, do_vol_setting
     }
 return
@@ -2483,7 +2506,7 @@ vol_setting8:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=80
+        vol_setting=88
         Gosub, do_vol_setting
     }
 return
@@ -2494,7 +2517,7 @@ vol_setting9:
 ;------------------------------------------------------------------------------
     if (!on_windows_7)
     {
-        vol_setting=90
+        vol_setting=100
         Gosub, do_vol_setting
     }
 return
