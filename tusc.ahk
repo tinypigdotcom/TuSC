@@ -68,7 +68,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.7
+VERSION=v2.6
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -400,21 +400,7 @@ IfWinExist, Connect to mail.sfdc.sbc.com ahk_class #32770
     Gosub, esc_key
     WinActivate
     refresh_ini_value("mystring0", "string")
-    Send, !p%mystring0%
-    Send, {enter}
-}
-IfWinExist, AT&T - Log On Successful
-{
-    Gosub, esc_key
-    WinActivate
-    Send, {enter}
-}
-IfWinExist, AT&T Global Logon: Login
-{
-    Gosub, esc_key
-    WinActivate
-    refresh_ini_value("mystring6", "string")
-    Send, ^a%mystring6%
+    Send, !p{Raw}%mystring0%
     Send, {enter}
 }
 IfWinExist, Connecting to my.web.att.com ahk_class #32770
@@ -423,7 +409,7 @@ IfWinExist, Connecting to my.web.att.com ahk_class #32770
     WinActivate
     Send, !uitservices\db5170
     refresh_ini_value("mystring0", "string")
-    Send, !p%mystring0%
+    Send, !p{Raw}%mystring0%
     Send, {enter}
 }
 IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
@@ -431,9 +417,23 @@ IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
     Gosub, esc_key
     WinActivate
     refresh_ini_value("mystring6", "string")
-    Send, %mystring6%
+    Send, {Raw}%mystring6%
     Send, {enter}
 }
+;IfWinExist, AT&T - Log On Successful
+;{
+;    Gosub, esc_key
+;    WinActivate
+;    Send, {enter}
+;}
+;IfWinExist, AT&T Global Logon: Login
+;{
+;    Gosub, esc_key
+;    WinActivate
+;    refresh_ini_value("mystring6", "string")
+;    Send, ^a%mystring6%
+;    Send, {enter}
+;}
 return
 
 
