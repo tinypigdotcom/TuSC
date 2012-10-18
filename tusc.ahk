@@ -68,7 +68,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.7
+VERSION=v2.9
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -1349,7 +1349,7 @@ return
         return
     }
 
-    MsgBox, starttusc shutting down
+    MsgBox, 0, , starttusc shutting down, 1
     ExitApp
 return
 ), %A_ScriptDir%\starttusc.ahk
