@@ -70,6 +70,8 @@ DONE
 
 VERSION=v2.9
 
+OnExit, ExitSub
+
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
 ini_file = %A_ScriptDir%\%f_FileNoExt%.ini
@@ -181,6 +183,7 @@ process_ohide()
 ocred_msecs=500
 process_ocred()
 
+poker_msecs=15000
 poker_msecs=300000
 process_poker()
 
@@ -250,8 +253,8 @@ return
 ;--------------------
     Debug("poker")
     nwidth := f_width() - 310
-    nheight := f_height() - 102
-    Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
+    nheight := f_height() - 150
+    Progress, x%nwidth% y%nheight% h100 cwFFFF00 m2 b fs28 zh0, Work Log, , , Courier New
     WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
     SetTimer, DisablePoker, 5000
 return
@@ -963,10 +966,9 @@ return
 
 
 ;------------------------------------------------------------------------------
-&RTM:
+&rTemp:
 ;------------------------------------------------------------------------------
-    app_run=http://www.rememberthemilk.com
-    GoApp("rtm","Remember The Milk",app_run)
+    Gosub, poker
 return
 
 
@@ -1673,6 +1675,14 @@ Goto, paste_routine
 control_k:
 ;------------------------------------------------------------------------------
     &Exit:
+    ExitApp
+return
+
+
+;------------------------------------------------------------------------------
+ExitSub:
+;------------------------------------------------------------------------------
+;    WinShow, Microsoft Visual C++ Runtime Library ahk_class #32770
     ExitApp
 return
 
@@ -2738,9 +2748,23 @@ return
 
 
 ;------------------------------------------------------------------------------
-o_d_key:
+o_d_key_old:
 ;------------------------------------------------------------------------------
     o_param=+^g{tab 3} {enter}{down}{up}~d
+return
+
+
+;------------------------------------------------------------------------------
+o_d_key:
+;------------------------------------------------------------------------------
+    Gosub, o_a_key
+    Suspend, On
+    SendInput,+^v
+    Sleep, 750
+    SendInput,y
+    Sleep, 750
+    SendInput,{enter}
+    Suspend, Off
 return
 
 
@@ -3350,8 +3374,10 @@ initialize_main_menu:
 
 /* Main Menu Data
 START_LIST;F&ile
+&anim_one.c            ; C:\Dropbox\cdev\projects\anim_one\anim_one.c
 &Home                  ; %A_ScriptFullPath% ; %A_ScriptName%
 hosts&c                ; %sys_drive%\WINDOWS\system32\drivers\etc\hosts ; hosts
+&kickstart             ; %sys_drive%\Dropbox\misc\kickstart2.html; kickstart
 &log                   ; %A_ScriptDir%\tscdebug.txt; debug
 START_LIST;Li&nk
 %my_item1%
@@ -3454,7 +3480,7 @@ END_ALL_LISTS
     menu, main, add, &Outlook
     menu, main, add, Options&b
     menu, main, add, &QuickStart
-    menu, main, add, &RTM
+    menu, main, add, &rTemp
     menu, main, add, Remin&ders
     menu, main, add, &Scratch
     menu, main, add, Internet&Explorer
