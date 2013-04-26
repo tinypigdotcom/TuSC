@@ -13,6 +13,7 @@ Clipboard_section
 Control_j_menu_section
 Favorites_section
 Function_section
+GUI_section
 ____Approximate_middle_of_table_of_contents
 Initialization_section
 Mouse_mode_section
@@ -34,7 +35,6 @@ TODO
 ----
 
  * Eliminate mixed notation := vs = and if vs if()
- * Improve debug system for levels of detail or temporary on/off controls
  * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
  * re-check section headings/comments now that script is put back together
  * clean up code
@@ -51,6 +51,7 @@ TODO, Older
 
 DONE
 ----
+ * Improve debug system for levels of detail or temporary on/off controls
  * get rid of sleeps where appropriate - use timers instead.  This includes
  waits in WinActivate and such
 
@@ -68,7 +69,9 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-VERSION=v2.9
+VERSION=v3.3
+
+OnExit, ExitSub
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
@@ -78,13 +81,15 @@ IfNotExist, %ini_file%
 
 if f_FileExt = Exe
 {
-    f_FavoritesFile = %A_ScriptDir%\Favorites.ini
-    f_MainMenuFile = %A_ScriptDir%\Main_menu.ini
+    f_FavoritesFile = %A_ScriptDir%\tusc.ahk
+    f_MainMenuFile = %A_ScriptDir%\tusc.ahk
+    f_ReadFile = %A_ScriptDir%\tusc.ahk
 }
 else
 {
     f_FavoritesFile = %A_ScriptFullPath%
     f_MainMenuFile = %A_ScriptFullPath%
+    f_ReadFile = %A_ScriptFullPath%
 }
 
 
@@ -115,6 +120,11 @@ mouse_move_speed=6
 outlook_esc=0
 volume_esc =0
 
+notes_list=
+save_notes_list=
+IniRead, notes_list,  %ini_file%, settings, notes_list, Gray|Green|Gold|Black|White
+save_notes_list=%notes_list%
+
 shimmy_step=0
 shimmy_timer=250
 shimmy_amt=1
@@ -124,12 +134,6 @@ shimmy_save_y=0
 
 left_status=U
 right_status=U
-
-corner_counter=0
-
-locker_count=0
-locker_display=0
-locker_touched=0
 
 vol_setting=0
 
@@ -155,7 +159,6 @@ Gosub, cb_init
 cb_prefix = ECB
 Gosub, cb_init
 
-Gosub, menufocus_init
 Gosub, starttusc_init
 
 CoordMode, Menu
@@ -181,14 +184,9 @@ process_ohide()
 ocred_msecs=500
 process_ocred()
 
+poker_msecs=15000
 poker_msecs=300000
 process_poker()
-
-locker_msecs=500
-;SetTimer,locker,%locker_msecs%
-
-corner_menu_msecs=500
-;SetTimer,corner_menu,%corner_menu_msecs%
 
 Gosub, initialize_main_menu
 
@@ -197,6 +195,7 @@ Gosub, initialize_volume
 SetBatchLines, 10ms
 
 Gosub, initialize_favorites
+Gosub, init_guis
 
 return
 
@@ -250,8 +249,8 @@ return
 ;--------------------
     Debug("poker")
     nwidth := f_width() - 310
-    nheight := f_height() - 102
-    Progress, x%nwidth% y%nheight% cwLime m2 b fs18 zh0, Work log entry reminder, , , Courier New
+    nheight := f_height() - 150
+    Progress, x%nwidth% y%nheight% h100 cwFFFF00 m2 b fs28 zh0, Work Log, , , Courier New
     WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
     SetTimer, DisablePoker, 5000
 return
@@ -264,101 +263,17 @@ return
 return
 
 
-;--------------------
-     locker:        ;
-;--------------------
-CoordMode, Mouse, Screen
-MouseGetPos, posx, posy
-;ID := WinExist("A")
-;Debug("Active window ID: " . ID)
-;Debug("posx: " . posx)
-;Debug("posy: " . posy)
-if(posx = f_width() and posy = f_height())
-{
-    if(!double_lock_prevention)
-    {
-        GetKeyState, state, LButton
-        if(state = "D")
-            return
-        GetKeyState, state, RButton
-        if(state = "D")
-            return
-        locker_touched++
-        if(!locker_display)
-        {
-            locker_display++
-            Progress, m2 b fs18 zh0, Hotspot Activated`nComputer will lock soon., , , Courier New
-            WinMove, Clipboard, , 0, 0  ; Move the splash window to the top left corner.
-        }
-        locker_count++
-        if(locker_count > 5)
-        {
-            locker_count=0
-            locker_display=0
-            locker_touched=0
-            Progress, Off
-            double_lock_prevention++
-            Gosub, &Lock
-        }
-    }
-}
-else
-{
-    double_lock_prevention=0
-    if(locker_touched)
-    {
-        locker_touched=0
-        locker_count=0
-        locker_display=0
-        Progress, Off
-    }
-}
-return
-
-
-;--------------------
-     corner_menu:   ;
-;--------------------
-CoordMode, Mouse, Screen
-MouseGetPos, posx, posy
-if(posx = 0 and posy = 0)
-{
-    corner_counter++
-    if(corner_counter > 1)
-    {
-        corner_counter=0
-        Gosub, GoCappy
-    }
-}
-else
-{
-    corner_counter=0
-}
-return
-
-
 ;---------------------
      options_gui:    ;
 ;---------------------
     Gosub, read_settings
-    Gui, Add, Button, default x236 y307 w100 h30 , OK
-    Gui, Add, Button, x346 y307 w100 h30 , Cancel
-    Gui, Add, Tab, x6 y7 w440 h290 , Settings|Other
-    Gui, Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
-    Gui, Add, Checkbox, x26 y87 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
-    Gui, Add, Checkbox, x26 y127 w370 h30 vSettingOhide Checked%SettingOhide%, Run O&hide routine
-    Gui, Add, Checkbox, x26 y167 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine
-    Gui, Tab, Other
-    Gui, Add, Radio, x26 y47 w390 h20 , Radio
-    Gui, Add, Radio, x26 y77 w390 h20 , Radio
-    Gui, Add, Radio, x26 y107 w390 h20 , Radio
-    ; Generated using SmartGUI Creator 4.0
-    Gui, Show, x131 y91 h341 w450, TuSC Options
+    Gui, 9:+AlwaysOnTop
+    Gui, 9:Show, h341 w450, TuSC Options
 return
 
-ButtonOK:
-GuiClose:
-    Gui, Submit  ; Save each control's contents to its associated variable.
+9ButtonOK:
+9GuiClose:
+    Gui, 9:Submit  ; Save each control's contents to its associated variable.
     IniWrite, %SettingRotate%,  %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
     IniWrite, %SettingOhide%,   %ini_file%, settings, run_ohide_routine
@@ -367,9 +282,9 @@ GuiClose:
     process_poker()
     process_ohide()
     process_ocred()
-ButtonCancel:
-GuiEscape:
-    Gui Destroy  ; Destroy the Gui.
+9ButtonCancel:
+9GuiEscape:
+    Gui 9:Hide  ; Destroy the Gui.
 return
 
 
@@ -462,6 +377,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonMinimizeAll:
+    Gosub, hide_guis
 M&inimizeAll:
 ;------------------------------------------------------------------------------
     SendInput, #m
@@ -469,6 +386,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonHibernate:
+    Gosub, hide_guis
 &Hibernate:
 ;------------------------------------------------------------------------------
     Sleep, 5000
@@ -477,6 +396,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonLock:
+    Gosub, hide_guis
 &Lock:
 ;------------------------------------------------------------------------------
     Sleep, 1000
@@ -485,6 +406,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonReminders:
+    Gosub, hide_guis
 Remin&ders:
 ;------------------------------------------------------------------------------
     SetTitleMatchMode, 2
@@ -493,6 +416,8 @@ Goto, ActApp
 
 
 ;------------------------------------------------------------------------------
+7ButtonCMD:
+    Gosub, hide_guis
 C&MD:
 ;------------------------------------------------------------------------------
     Run, cmd
@@ -778,6 +703,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonQuickStart:
+    Gosub, hide_guis
 &QuickStart:
 ;------------------------------------------------------------------------------
     SendInput, #{F10}
@@ -785,6 +712,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonGaimWin:
+    Gosub, hide_guis
 &GaimWin:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %gaim_id%
@@ -792,6 +721,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetvi:
+    Gosub, hide_guis
 Set&vi:
 ;------------------------------------------------------------------------------
     vi_id=%lastwin%
@@ -800,6 +731,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetCygwin:
+    Gosub, hide_guis
 Set&Cygwin:
 ;------------------------------------------------------------------------------
     cygw_id=%lastwin%
@@ -808,6 +741,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetExplore:
+    Gosub, hide_guis
 SetE&xplore:
 ;------------------------------------------------------------------------------
     fcx_id=%lastwin%
@@ -816,6 +751,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetFirefox:
+    Gosub, hide_guis
 Set&Firefox:
 ;------------------------------------------------------------------------------
     fox_id=%lastwin%
@@ -824,6 +761,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetRemote:
+    Gosub, hide_guis
 SetRe&mote:
 ;------------------------------------------------------------------------------
     wksh_id=%lastwin%
@@ -832,6 +771,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetOutlook:
+    Gosub, hide_guis
 Set&Outlook:
 ;------------------------------------------------------------------------------
     outl_id=%lastwin%
@@ -840,7 +781,9 @@ return
 
 
 ;------------------------------------------------------------------------------
-Set&RTM:
+6ButtonSetrTemp:
+    Gosub, hide_guis
+Set&rTemp:
 ;------------------------------------------------------------------------------
     rtm_id=%lastwin%
     WinActivate ahk_id %lastwin%
@@ -848,6 +791,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetRemind:
+    Gosub, hide_guis
 SetRemin&ders:
 ;------------------------------------------------------------------------------
     rmdr_id=%lastwin%
@@ -856,6 +801,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetScratch:
+    Gosub, hide_guis
 Set&Scratch:
 ;------------------------------------------------------------------------------
     scr_id=%lastwin%
@@ -864,6 +811,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+6ButtonSetGaimWin:
+    Gosub, hide_guis
 Set&GaimWin:
 ;------------------------------------------------------------------------------
     gaim_id=%lastwin%
@@ -872,6 +821,9 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonFirefox:
+2ButtonChrome:
+    Gosub, hide_guis
 &Firefox:
 C&hrome:
 ;------------------------------------------------------------------------------
@@ -889,6 +841,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonOptionsb:
+    Gosub, hide_guis
 Options&b:
 ;------------------------------------------------------------------------------
     Gosub, options_gui
@@ -896,6 +850,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonCygwin:
+    Gosub, hide_guis
 &Cygwin:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\cygwin.lnk
@@ -904,6 +860,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+7ButtonPaint:
+    Gosub, hide_guis
 P&aint:
 ;------------------------------------------------------------------------------
     target = %sys_drive%\Program Files\Paint.NET\PaintDotNet.exe
@@ -912,6 +870,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+7ButtonCalculator:
+    Gosub, hide_guis
 &Calculator:
 ;------------------------------------------------------------------------------
     GoApp("clc","Calculator","calc","","",1)
@@ -919,6 +879,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+7ButtonVPN:
+    Gosub, hide_guis
 V&PN:
 ;------------------------------------------------------------------------------
     Run, %shortcuts_dir%\glob.lnk
@@ -926,6 +888,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonRemote:
+    Gosub, hide_guis
 Re&mote:
 ;------------------------------------------------------------------------------
     remote=%shortcuts_dir%\putty.lnk
@@ -934,6 +898,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonOutlook:
+    Gosub, hide_guis
 &Outlook:
 ;------------------------------------------------------------------------------
     SetTitleMatchMode, 2
@@ -955,6 +921,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonIE:
+    Gosub, hide_guis
 Internet&Explorer:
 ;------------------------------------------------------------------------------
     app_run=%shortcuts_dir%\ie.lnk
@@ -963,14 +931,17 @@ return
 
 
 ;------------------------------------------------------------------------------
-&RTM:
+2ButtonrTemp:
+    Gosub, hide_guis
+&rTemp:
 ;------------------------------------------------------------------------------
-    app_run=http://www.rememberthemilk.com
-    GoApp("rtm","Remember The Milk",app_run)
+    Gosub, poker
 return
 
 
 ;------------------------------------------------------------------------------
+2ButtonVi:
+    Gui 2:Hide
 &vi:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\gvim.lnk
@@ -979,11 +950,80 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonScratch:
+    Gosub, hide_guis
 &Scratch:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\gvim.lnk
     scratch = %A_ScriptDir%\scratch.txt
     GoApp("scr","scratch",target,0,scratch)
+return
+
+
+;------------------------------------------------------------------------------
+8Buttonanim_one.c:
+    Gosub, hide_guis
+&anim_one.c:
+;------------------------------------------------------------------------------
+    f_path = C:\Dropbox\cdev\projects\anim_one\anim_one.c
+    f_param = anim_one
+    Gosub, GoFile
+return
+
+;------------------------------------------------------------------------------
+8Buttonhome:
+    Gosub, hide_guis
+&Home:
+;------------------------------------------------------------------------------
+    f_path = %A_ScriptFullPath%
+    f_param = %A_ScriptName%
+    Gosub, GoFile
+return
+
+;------------------------------------------------------------------------------
+8Buttonhostsc:
+    Gosub, hide_guis
+hosts&c:
+;------------------------------------------------------------------------------
+    f_path = %sys_drive%\WINDOWS\system32\drivers\etc\hosts
+    f_param = hosts
+    Gosub, GoFile
+return
+
+;------------------------------------------------------------------------------
+8Buttonkickstart:
+    Gosub, hide_guis
+&kickstart:
+;------------------------------------------------------------------------------
+    f_path = %sys_drive%\Dropbox\misc\kickstart2.html
+    f_param = kickstart
+    Gosub, GoFile
+return
+
+;------------------------------------------------------------------------------
+8Buttonlog:
+    Gosub, hide_guis
+&log:
+;------------------------------------------------------------------------------
+    f_path = %A_ScriptDir%\tscdebug.txt
+    f_param = debug
+    Gosub, GoFile
+return
+
+
+;------------------------------------------------------------------------------
+GoFile:
+;------------------------------------------------------------------------------
+    If f_path =
+        return
+    IfWinExist, %f_param%
+    {
+        WinActivate
+        return
+    }
+    Run, %shortcuts_dir%\gvim.lnk "%f_path%"
+    WinWait, %f_param%,,%timeout%
+    WinActivate
 return
 
 
@@ -1058,7 +1098,7 @@ GoLink(f_path,link_enter=1,tab_number=0,link_delay=0)
     SetKeyDelay, 0
     SendInput, ^l
     Sleep, 500
-    SendInput, %f_path%
+    SendInput, {Raw}%f_path%
     Sleep, 500
     if !link_enter
     {
@@ -1082,6 +1122,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+2ButtonExplore:
+    Gosub, hide_guis
 E&xplore:
 ;------------------------------------------------------------------------------
     target = %shortcuts_dir%\freecommander.lnk
@@ -1090,6 +1132,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+4ButtonReload:
+    Gosub, hide_guis
 &Reload:
 ;------------------------------------------------------------------------------
     Reload
@@ -1097,6 +1141,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonDumpstd:
+    Gosub, hide_guis
 &DumpSTDERR:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1105,6 +1151,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonEjectAll:
+    Gosub, hide_guis
 &EjectAll:
 ;------------------------------------------------------------------------------
     drive=65
@@ -1118,6 +1166,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonPrintstd:
+    Gosub, hide_guis
 &PrintSTDERR:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1126,6 +1176,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonMadeit:
+    Gosub, hide_guis
 &Madeit:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1134,6 +1186,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+5ButtonUsedump:
+    Gosub, hide_guis
 &UseDataDumper:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1142,6 +1196,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+4ButtonCompile:
+    Gosub, hide_guis
 &Compile:
 ;------------------------------------------------------------------------------
     WinActivate ahk_id %lastwin%
@@ -1275,43 +1331,57 @@ priority_3:
     SendInput {home}{right}{bs}3{enter}
 return
 
+10ButtonA:
+    Gosub, hide_guis
 priority_A:
     SendInput {F2}
     Sleep, 100
     SendInput {home}{right}{bs}A{enter}
 return
 
+10ButtonB:
+    Gosub, hide_guis
 priority_B:
     SendInput {F2}
     Sleep, 100
     SendInput {home}{right}{bs}B{enter}
 return
 
+10ButtonC:
+    Gosub, hide_guis
 priority_C:
     SendInput {F2}
     Sleep, 100
     SendInput {home}{right}{bs}C{enter}
 return
 
+10ButtonD:
+    Gosub, hide_guis
 priority_D:
     SendInput {F2}
     Sleep, 100
     SendInput {home}{right}{bs}D{enter}
 return
 
+10ButtonX:
+    Gosub, hide_guis
 priority_X:
     SendInput {F2}
     Sleep, 100
     SendInput {home}X_{enter}
 return
 
+10ButtonZ:
+    Gosub, hide_guis
 priority_Z:
     SendInput {F2}
     Sleep, 100
     SendInput {home}{right}{bs}Z{enter}
 return
 
-F12::
+;F12::
+11ButtonMute:
+    Send !{Esc} ; Activate previous window
     WinGetClass, class, A
     If class = QWidget
     {
@@ -1357,26 +1427,252 @@ Run, %A_ScriptDir%\starttusc.ahk
 return
 
 
-;------------------------------------------------------------------------------
-menufocus_init:
-;------------------------------------------------------------------------------
-FileDelete, %A_ScriptDir%\menufocus.ahk
-FileAppend,
-(
-#SingleInstance force
+;=============================================================================+
+;=============================================================================+
+;                                                                             |
+;    GUI_section                                                              |
+;                                                                             |
+;=============================================================================+
 
-BlockInput, On
-Loop, 9999
-{
-    BlockInput, On
-    if class = #32768
-        break
-    MouseGetPos, , , id, control
-    WinGetClass, class, ahk_id `%id`%
-}
-Click
-BlockInput, Off
-), %A_ScriptDir%\menufocus.ahk
+;------------------------------------------------------------------------------
+init_guis:
+;------------------------------------------------------------------------------
+    Gui, 2:Add, Button, x6 y7 w70 h20    , Wor&kstation
+    Gui, 2:Add, Button, x6 y37 w70 h20   , &aNote
+    Gui, 2:Add, Button, x6 y67 w70 h20   , C&hrome
+    Gui, 2:Add, Button, x6 y97 w70 h20   , &Cygwin
+    Gui, 2:Add, Button, x6 y127 w70 h20  , E&xplore
+    Gui, 2:Add, Button, x6 y157 w70 h20  , &Firefox
+    Gui, 2:Add, Button, x6 y187 w70 h20  , &GaimWin
+    Gui, 2:Add, Button, x6 y217 w70 h20  , Re&mote
+    Gui, 2:Add, Button, x6 y247 w70 h20  , F&iles
+    Gui, 2:Add, Button, x6 y277 w70 h20  , &Outlook
+    Gui, 2:Add, Button, x6 y307 w70 h20  , Options&b
+    Gui, 2:Add, Button, x6 y337 w70 h20  , &QuickStart
+    Gui, 2:Add, Button, x86 y7 w70 h20   , &rTemp
+    Gui, 2:Add, Button, x86 y37 w70 h20  , Remin&ders
+    Gui, 2:Add, Button, x86 y67 w70 h20  , &Scratch
+    Gui, 2:Add, Button, x86 y97 w70 h20  , I&E
+    Gui, 2:Add, Button, x86 y127 w70 h20 , &vi
+    Gui, 2:Add, Button, x86 y157 w70 h20 , Scri&pt
+    Gui, 2:Add, Button, x86 y187 w70 h20 , F&unctions
+    Gui, 2:Add, Button, x86 y217 w70 h20 , Applica&tions
+    Gui, 2:Add, Button, x86 y247 w70 h20 , Li&nks
+    Gui, 2:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    Gui, 3:Add, Button, x6 y7 w70 h20    , &Hibernate
+    Gui, 3:Add, Button, x6 y37 w70 h20   , &Lock
+    Gui, 3:Add, Button, x6 y67 w70 h20   , M&ouseKeys
+    Gui, 3:Add, Button, x6 y97 w70 h20   , M&inimizeAll
+    Gui, 3:Add, Button, x6 y127 w70 h20  , &Mute
+    Gui, 3:Add, Button, x6 y157 w70 h20  , &Volume
+    Gui, 3:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Scri&pt
+    Gui, 4:Add, Button, x6 y7 w70 h20    , &Exit
+    Gui, 4:Add, Button, x6 y37 w70 h20   , &Reload
+    Gui, 4:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; F&unctions
+    Gui, 5:Add, Button, x6 y7 w70 h20    , &Compile
+    Gui, 5:Add, Button, x6 y37 w70 h20   , &Dumpstd
+    Gui, 5:Add, Button, x6 y67 w70 h20   , &EjectAll
+    Gui, 5:Add, Button, x6 y97 w70 h20   , E&ventLog
+    Gui, 5:Add, Button, x6 y127 w70 h20  , &Madeit
+    Gui, 5:Add, Button, x6 y157 w70 h20  , &GamKeys
+    Gui, 5:Add, Button, x6 y187 w70 h20  , &Printstd
+    Gui, 5:Add, Button, x6 y217 w70 h20  , &Usedump
+    Gui, 5:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; &GamKeys
+    Gui, 6:Add, Button, x6 y7 w70 h20    , Set&GaimWin
+    Gui, 6:Add, Button, x6 y37 w70 h20   , Set&Cygwin
+    Gui, 6:Add, Button, x6 y67 w70 h20   , SetE&xplore
+    Gui, 6:Add, Button, x6 y97 w70 h20   , Set&Firefox
+    Gui, 6:Add, Button, x6 y127 w70 h20  , SetRe&mote
+    Gui, 6:Add, Button, x6 y157 w70 h20  , Set&Outlook
+    Gui, 6:Add, Button, x6 y187 w70 h20  , Set&rTemp
+    Gui, 6:Add, Button, x6 y217 w70 h20  , SetRemin&d
+    Gui, 6:Add, Button, x6 y247 w70 h20  , Set&Scratch
+    Gui, 6:Add, Button, x6 y277 w70 h20  , Set&vi
+    Gui, 6:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Applica&tions
+    Gui, 7:Add, Button, x6 y7 w70 h20    , &Calculator
+    Gui, 7:Add, Button, x6 y37 w70 h20   , C&MD
+    Gui, 7:Add, Button, x6 y67 w70 h20   , P&aint
+    Gui, 7:Add, Button, x6 y97 w70 h20   , V&PN
+    Gui, 7:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; F&iles
+    Gui, 8:Add, Button, x6 y7 w70 h20    , &anim_one.c
+    Gui, 8:Add, Button, x6 y37 w70 h20   , &Home
+    Gui, 8:Add, Button, x6 y67 w70 h20   , hosts&c
+    Gui, 8:Add, Button, x6 y97 w70 h20   , &kickstart
+    Gui, 8:Add, Button, x6 y127 w70 h20  , &log
+    Gui, 8:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    ; Li&nks
+    Gui, 14:Add, Button, x6 y7 w70 h20    , &Google
+    Gui, 14:Add, Button, x6 y37 w70 h20   , &IMDB
+    Gui, 14:Add, Button, x6 y67 w70 h20   , &RottenTom
+    Gui, 14:Add, Button, x6 y97 w70 h20   , &TheGoogle
+    Gui, 14:Add, Button, x6 y127 w70 h20  , Wi&kipedia
+    Gui, 14:Add, Button, x86 y337 w70 h20 , &JustQuit
+
+    Gui, 9:Add, Button, default x236 y307 w100 h30 , OK
+    Gui, 9:Add, Button, x346 y307 w100 h30 , Cancel
+    Gui, 9:Add, Tab, x6 y7 w440 h290 , Settings|Other
+    Gui, 9:Add, Checkbox, x26 y47 w370 h30 vSettingRotate Checked%SettingRotate%, &Rotate tray icon when mute
+    Gui, 9:Add, Checkbox, x26 y87 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine
+    Gui, 9:Add, Checkbox, x26 y127 w370 h30 vSettingOhide Checked%SettingOhide%, Run O&hide routine
+    Gui, 9:Add, Checkbox, x26 y167 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine
+    Gui, 9:Tab, Other
+    Gui, 9:Add, Radio, x26 y47 w390 h20 , Radio
+    Gui, 9:Add, Radio, x26 y77 w390 h20 , Radio
+    Gui, 9:Add, Radio, x26 y107 w390 h20 , Radio
+
+    ; Generated using SmartGUI Creator 4.0
+    Gui, 10:Add, Text, x6 y7 w160 h20 , Set Priority
+    Gui, 10:Add, Button, x216 y7 w30 h20 , &1
+    Gui, 10:Add, Button, x256 y7 w30 h20 , &2
+    Gui, 10:Add, Button, x296 y7 w30 h20 , &3
+    Gui, 10:Add, Button, x176 y37 w30 h20 , &a
+    Gui, 10:Add, Button, x216 y37 w30 h20 , &b
+    Gui, 10:Add, Button, x256 y37 w30 h20 , &c
+    Gui, 10:Add, Button, x296 y37 w30 h20 , &d
+    Gui, 10:Add, Button, x336 y37 w30 h20 , &x
+    Gui, 10:Add, Button, x376 y37 w30 h20 , &z
+    Gui, 10:Add, Button, x176 y7 w30 h20 , &0
+    Gui, 10:Add, Button, x336 y7 w30 h20 , &4
+    Gui, 10:Add, Button, x376 y7 w30 h20 , &5
+    Gui, 10:Add, Button, x416 y7 w30 h20 , &6
+    Gui, 10:Add, Button, x456 y7 w30 h20 , &7
+    Gui, 10:Add, Button, x496 y7 w30 h20 , &8
+    Gui, 10:Add, Button, x536 y7 w30 h20 , &9
+    Gui, 10:Add, Button, x6 y67 w100 h30 , &KILL script
+    Gui, 10:Add, Button, x336 y67 w100 h30 , &MUTE
+    Gui, 10:Add, Button, x116 y67 w100 h30 gPastev, paste (&V)
+    Gui, 10:Add, Button, x116 y107 w100 h30 gPaste2, paste 2 (&E)
+    Gui, 10:Add, Button, x6 y107 w100 h30 , &RESTART script
+    Gui, 10:Add, Button, x116 y147 w100 h30 , save to &Y
+    Gui, 10:Add, Button, x226 y67 w100 h30 , T&IMESTAMP
+    Gui, 10:Add, Button, x446 y147 w100 h30 , &JUST quit
+    Gui, 10:Add, Button, x336 y107 w100 h30 , VOL&UME
+    ; Generated using SmartGUI Creator 4.0
+    Gui, 11:Add, Button, x16 y1 w100 h20   , a
+    Gui, 11:Add, Button, x126 y1 w100 h20  , b
+    Gui, 11:Add, Button, x236 y1 w100 h20  , c
+    Gui, 11:Add, Button, x346 y1 w100 h20  , Jmenu
+    Gui, 11:Add, Button, x456 y1 w100 h20  , Main Menu
+    Gui, 11:Add, Button, x564 y1 w100 h20  , Mute
+    Gui, 11:Add, Button, x675 y1 w100 h20  , Copy to Buffer
+    Gui, 11:Add, Button, x785 y1 w100 h20  , Note
+    Gui, 11:Add, Button, x896 y1 w100 h20  , Lock
+    Gui, 11:Add, Button, x1006 y1 w100 h20 , e
+    Gui, 11:Add, Button, x1116 y1 w100 h20 , f
+    Gui, 11:Add, Button, x1226 y1 w100 h20 , g
+    Gui, 11:+ToolWindow
+    Gui, 11:+Owner
+    Gui, 11:Show, x0 y0 h20 w1361 NoActivate, Toolbar
+    ; Generated using SmartGUI Creator 4.0
+    Gui, 12:Add, Button, x155 y6 w40 h30 , &A
+    Gui, 12:Add, Text, x5 y16 w140 h20 , Wednesday`, April 13`, 2011
+    Gui, 12:Add, Button, x155 y46 w40 h30 , &F
+    Gui, 12:Add, Text, x5 y56 w140 h20 , 11:06 PM 4/13/2011
+    Gui, 12:Add, Button, x155 y86 w40 h30 , &K
+    Gui, 12:Add, Text, x5 y96 w140 h20 , 2011-04-13
+    Gui, 12:Add, Button, x155 y126 w40 h30 , &E
+    Gui, 12:Add, Text, x5 y136 w140 h20 , 2011-04-13 23:06
+    Gui, 12:Add, Text, x5 y176 w140 h20 , 2011-04-13 Wednesday
+    Gui, 12:Add, Button, x155 y166 w40 h30 , &X
+    Gui, 12:Add, Button, x96 y207 w100 h30 , &Just Quit
+    ; Generated using SmartGUI Creator 4.0
+
+    Gui, 13:Add, Button, x6 y7 w20 h20    vPasteButton0, &0
+    Gui, 13:Add, Button, x6 y27 w20 h20   vPasteButton1, &1
+    Gui, 13:Add, Button, x6 y47 w20 h20   vPasteButton2, &2
+    Gui, 13:Add, Button, x6 y67 w20 h20   vPasteButton3, &3
+    Gui, 13:Add, Button, x6 y87 w20 h20   vPasteButton4, &4
+    Gui, 13:Add, Button, x366 y7 w20 h20  vPasteButton5, &5
+    Gui, 13:Add, Button, x366 y27 w20 h20 vPasteButton6, &6
+    Gui, 13:Add, Button, x366 y47 w20 h20 vPasteButton7, &7
+    Gui, 13:Add, Button, x366 y67 w20 h20 vPasteButton8, &8
+    Gui, 13:Add, Button, x366 y87 w20 h20 vPasteButton9, &9
+
+    Gui, 13:Add, Text, x36 y7 w320 h20   vPasteText0, fake text0
+    Gui, 13:Add, Text, x36 y27 w320 h20  vPasteText1, fake text1
+    Gui, 13:Add, Text, x36 y47 w320 h20  vPasteText2, fake text2
+    Gui, 13:Add, Text, x36 y67 w320 h20  vPasteText3, fake text3
+    Gui, 13:Add, Text, x36 y87 w320 h20  vPasteText4, fake text4
+    Gui, 13:Add, Text, x396 y7 w320 h20  vPasteText5, fake text5
+    Gui, 13:Add, Text, x396 y27 w320 h20 vPasteText6, fake text6
+    Gui, 13:Add, Text, x396 y47 w320 h20 vPasteText7, fake text7
+    Gui, 13:Add, Text, x396 y67 w320 h20 vPasteText8, fake text8
+    Gui, 13:Add, Text, x396 y87 w320 h20 vPasteText9, fake text9
+
+
+    Gui, 13:Add, GroupBox, x6 y117 w750 h310 , Permanent buffers
+
+    Gui, 13:Add, Button, x16 y147 w20 h20  vPasteButtona, &A
+    Gui, 13:Add, Button, x16 y167 w20 h20  vPasteButtonb, &B
+    Gui, 13:Add, Button, x16 y187 w20 h20  vPasteButtonc, &C
+    Gui, 13:Add, Button, x16 y207 w20 h20  vPasteButtond, &D
+    Gui, 13:Add, Button, x16 y227 w20 h20  vPasteButtone, &E
+    Gui, 13:Add, Button, x16 y247 w20 h20  vPasteButtonf, &F
+    Gui, 13:Add, Button, x16 y267 w20 h20  vPasteButtong, &G
+    Gui, 13:Add, Button, x16 y287 w20 h20  vPasteButtonh, &H
+    Gui, 13:Add, Button, x16 y307 w20 h20  vPasteButtoni, &I
+    Gui, 13:Add, Button, x16 y327 w20 h20  vPasteButtonk, &K
+    Gui, 13:Add, Button, x16 y347 w20 h20  vPasteButtonl, &L
+    Gui, 13:Add, Button, x16 y367 w20 h20  vPasteButtonm, &M
+    Gui, 13:Add, Button, x376 y147 w20 h20 vPasteButtonn, &N
+    Gui, 13:Add, Button, x376 y167 w20 h20 vPasteButtono, &O
+    Gui, 13:Add, Button, x376 y187 w20 h20 vPasteButtonp, &P
+    Gui, 13:Add, Button, x376 y207 w20 h20 vPasteButtonq, &Q
+    Gui, 13:Add, Button, x376 y227 w20 h20 vPasteButtonr, &R
+    Gui, 13:Add, Button, x376 y247 w20 h20 vPasteButtons, &S
+    Gui, 13:Add, Button, x376 y267 w20 h20 vPasteButtont, &T
+    Gui, 13:Add, Button, x376 y287 w20 h20 vPasteButtonu, &U
+    Gui, 13:Add, Button, x376 y307 w20 h20 vPasteButtonw, &W
+    Gui, 13:Add, Button, x376 y327 w20 h20 vPasteButtonx, &X
+    Gui, 13:Add, Button, x376 y347 w20 h20 vPasteButtony, &Y
+    Gui, 13:Add, Button, x376 y367 w20 h20 vPasteButtonz, &Z
+
+    Gui, 13:Add, Text, x46 y147 w320 h20  vPasteTexta, fake texta
+    Gui, 13:Add, Text, x46 y167 w320 h20  vPasteTextb, fake textb
+    Gui, 13:Add, Text, x46 y187 w320 h20  vPasteTextc, fake textc
+    Gui, 13:Add, Text, x46 y207 w320 h20  vPasteTextd, fake textd
+    Gui, 13:Add, Text, x46 y227 w320 h20  vPasteTexte, fake texte
+    Gui, 13:Add, Text, x46 y247 w320 h20  vPasteTextf, fake textf
+    Gui, 13:Add, Text, x46 y267 w320 h20  vPasteTextg, fake textg
+    Gui, 13:Add, Text, x46 y287 w320 h20  vPasteTexth, fake texth
+    Gui, 13:Add, Text, x46 y307 w320 h20  vPasteTexti, fake texti
+    Gui, 13:Add, Text, x46 y327 w320 h20  vPasteTextk, fake textk
+    Gui, 13:Add, Text, x46 y347 w320 h20  vPasteTextl, fake textl
+    Gui, 13:Add, Text, x46 y367 w320 h20  vPasteTextm, fake textm
+    Gui, 13:Add, Text, x406 y147 w320 h20 vPasteTextn, fake textn
+    Gui, 13:Add, Text, x406 y167 w320 h20 vPasteTexto, fake texto
+    Gui, 13:Add, Text, x406 y187 w320 h20 vPasteTextp, fake textp
+    Gui, 13:Add, Text, x406 y207 w320 h20 vPasteTextq, fake textq
+    Gui, 13:Add, Text, x406 y227 w320 h20 vPasteTextr, fake textr
+    Gui, 13:Add, Text, x406 y247 w320 h20 vPasteTexts, fake texts
+    Gui, 13:Add, Text, x406 y267 w320 h20 vPasteTextt, fake textt
+    Gui, 13:Add, Text, x406 y287 w320 h20 vPasteTextu, fake textu
+    Gui, 13:Add, Text, x406 y307 w320 h20 vPasteTextw, fake textw
+    Gui, 13:Add, Text, x406 y327 w320 h20 vPasteTextx, fake textx
+    Gui, 13:Add, Text, x406 y347 w320 h20 vPasteTexty, fake texty
+    Gui, 13:Add, Text, x406 y367 w320 h20 vPasteTextz, fake textz
+
+    Gui, 13:Add, Button, x656 y437 w100 h30 , &Just Quit
+    Gui, 13:Add, Button, x546 y437 w100 h30 , Most Recent &V
+    ; Generated using SmartGUI Creator 4.0
+    Gui, 15:Add, ComboBox, x16 y67 w440 vNoteText                           , %notes_list%
+    Gui, 15:Add, Text, x15 y6 w440 h30                                      , Enter Note
+    Gui, 15:Add, Checkbox, x16 y27 w440 h30 vSettingSave gSettingSaveRoutine, &Save in dropdown
+    Gui, 15:Add, Button, x45 y306 w100 h30 Default                          , OK
+    Gui, 15:Add, Button,  x315 y306 w100 h30                                , Cancel
+    ; Generated using SmartGUI Creator 4.0
 return
 
 
@@ -1443,107 +1739,63 @@ refresh_ini_value(var, section)
 ;=============================================================================+
 
 
+clear_tooltip:
+    ToolTip
+return
+
+11ButtonJmenu:
+    Send !{Esc}^j ; Activate previous window
+return
+
+11ButtonLock:
+    Send !{Esc} ; Activate previous window
+    Gosub, &Lock
+return
+
 ;------------------------------------------------------------------------------
-&JMenu:
-#z::
 ^j::
+Jmenu:
 ;------------------------------------------------------------------------------
+    CoordMode, Mouse, Screen
+    WinGet, lastwin, ID, A
+    Debug("lastwin=" . lastwin)
+
     WinGetClass, class, A
+    Debug("class=" . class)
+
     If class = QWidget
     {
         return
     }
 
-    j_show_tip=
     Gosub, esc_key
-    j_menu=`n
-    j_menu=%j_menu%    TuSC: %VERSION%    `n
-    j_menu=%j_menu%    Host: %A_ComputerName%    `n
-    j_menu=%j_menu%                  `n
-    j_menu=%j_menu%    set priority (1,2,3,a,b,c,d,x,z)    `n
-    j_menu=%j_menu%    kill script (k)    `n
-    j_menu=%j_menu%    mute (m)    `n
-    j_menu=%j_menu%    paste (v)    `n
-    j_menu=%j_menu%    paste, Secondary (e)    `n
-    j_menu=%j_menu%    restart script (r)    `n
-    j_menu=%j_menu%    save to permanent buffer (y)    `n
-;    j_menu=%j_menu%    save to permanent buffer, Secondary (z)    `n
-    j_menu=%j_menu%    Timestamp (i)    `n
-    j_menu=%j_menu%    volume (u)    `n
-    j_menu=%j_menu%                  `n
-    j_menu=%j_menu%    (J)ust quit    `n
-    ToolTip,%j_menu%, 0, 0
-    Input, buffer_key, L1T60
-    ToolTip
-    if buffer_key = 0
-      Gosub, control_0
-    else if buffer_key = 1
-      Gosub, control_1
-    else if buffer_key = 2
-      Gosub, control_2
-    else if buffer_key = 3
-      Gosub, control_3
-    else if buffer_key = 4
-      Gosub, control_4
-    else if buffer_key = 5
-      Gosub, control_5
-    else if buffer_key = 6
-      Gosub, control_6
-    else if buffer_key = 7
-      Gosub, control_7
-    else if buffer_key = 8
-      Gosub, control_8
-    else if buffer_key = 9
-      Gosub, control_9
-    else if buffer_key = a
-      Gosub, priority_A
-    else if buffer_key = b
-      Gosub, priority_B
-    else if buffer_key = c
-      Gosub, priority_C
-    else if buffer_key = d
-      Gosub, priority_D
-    else if buffer_key = e
-      Gosub, control_e
-    else if buffer_key = i
-      Gosub, Timestamp
-    else if buffer_key = j
-      j_show_tip=Operation Cancelled
-    else if buffer_key = k
-      Gosub, control_k
-    else if buffer_key = m
-      Gosub, vol_MasterMute
-    else if buffer_key = r
-      Gosub, control_r
-    else if buffer_key = u
-      Gosub, &Volume
-    else if buffer_key = v
-      Gosub, control_v
-    else if buffer_key = x
-      Gosub, priority_X
-    else if buffer_key = y
-      Gosub, control_y
-    else if buffer_key = z
-      Gosub, priority_Z
-    else if buffer_key =
-      j_show_tip=Timeout
-    else
-      j_show_tip=No such option.
-
-    if(j_show_tip)
-    {
-        show_tip := j_show_tip
-        Gosub, big_tip
-        SetTimer,clear_tooltip,-1000
-    }
+    Gosub, j_gui
 return
 
-clear_tooltip:
-    ToolTip
+;-------------------
+     j_gui:    ;
+;-------------------
+    Debug("j_gui")
+    Gui, 10:+AlwaysOnTop
+    Gui, 10:Show, x0 y0 h191 w581, JTuSC
 return
+
+10ButtonOK:
+10GuiClose:
+    Gui, 10:Submit  ; Save each control's contents to its associated variable.
+10ButtonCancel:
+10GuiEscape:
+10ButtonJustQuit:
+    Gui 10:Hide
+    WinActivate ahk_id %lastwin%
+return
+
+
 
 
 ;------------------------------------------------------------------------------
+10Button0:
+    Gosub, hide_guis
 control_0:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring0", "string")
@@ -1552,6 +1804,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button1:
+    Gosub, hide_guis
 control_1:
 ;------------------------------------------------------------------------------
     IfWinActive, todo
@@ -1569,6 +1823,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button2:
+    Gosub, hide_guis
 control_2:
 ;------------------------------------------------------------------------------
     IfWinActive, todo
@@ -1586,6 +1842,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button3:
+    Gosub, hide_guis
 control_3:
 ;------------------------------------------------------------------------------
     IfWinActive, todo
@@ -1603,6 +1861,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button4:
+    Gosub, hide_guis
 control_4:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring4", "string")
@@ -1611,6 +1871,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button5:
+    Gosub, hide_guis
 control_5:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring5", "string")
@@ -1626,6 +1888,8 @@ return
         return
     }
 control_6:
+10Button6:
+    Gosub, hide_guis
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring6", "string")
     SendInput, {Raw}%mystring6%
@@ -1633,6 +1897,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button7:
+    Gosub, hide_guis
 control_7:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring7", "string")
@@ -1641,6 +1907,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+10Button8:
+    Gosub, hide_guis
 control_8:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring8", "string")
@@ -1655,6 +1923,8 @@ return
     {
         return
     }
+10Button9:
+    Gosub, hide_guis
 control_9:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring9", "string")
@@ -1663,6 +1933,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+Paste2:
+    Gosub, hide_guis
 control_e:
 ;------------------------------------------------------------------------------
     cb_prefix = ECB
@@ -1670,21 +1942,44 @@ Goto, paste_routine
 
 
 ;------------------------------------------------------------------------------
+10ButtonKILLscript:
+4ButtonExit:
+    Gosub, hide_guis
+&Exit:
 control_k:
 ;------------------------------------------------------------------------------
-    &Exit:
     ExitApp
 return
 
 
 ;------------------------------------------------------------------------------
+ExitSub:
+;------------------------------------------------------------------------------
+;    WinShow, Microsoft Visual C++ Runtime Library ahk_class #32770
+    ExitApp
+return
+
+
+;------------------------------------------------------------------------------
+10ButtonRESTARTscript:
+    Gosub, hide_guis
 control_r:
 ;------------------------------------------------------------------------------
     Reload
 return
 
 
+13ButtonOK:
+13GuiClose:
+    Gui, 13:Submit  ; Save each control's contents to its associated variable.
+13ButtonCancel:
+13GuiEscape:
+13ButtonJustQuit:
+    Gui 13:Hide
+return
+
 ;------------------------------------------------------------------------------
+Pastev:
 control_v:
 ;------------------------------------------------------------------------------
     cb_prefix = CB
@@ -1692,6 +1987,8 @@ control_v:
 
 
 ;------------------------------------------------------------------------------
+10ButtonsavetoY:
+    Gosub, hide_guis
 control_y:
 ;------------------------------------------------------------------------------
     cb_prefix = CB
@@ -1718,6 +2015,8 @@ GoCappy:
     Debug("GoCappy = No key press")
 Mainmenu:
     no_focus++
+11ButtonMainMenu:
+    Send !{Esc} ; Activate previous window
 Capslock:
 ;------------------------------------------------------------------------------
     CoordMode, Mouse, Screen
@@ -1732,26 +2031,210 @@ Capslock:
         return
     }
 
-    BlockInput, On
-
     Gosub, esc_key
 
     swidth := f_swidth()
     sheight := f_sheight()
     MouseMove, %swidth%, %sheight%, 0
 
-    if(no_focus)
-    {
-        no_focus=0
-    }
-    else
-    {
-        Run, menufocus.ahk
-    }
+    Gosub, cappy_gui
+return
 
-    BlockInput, Off
+;-------------------
+     cappy_gui:    ;
+;-------------------
+    Debug("cappy_gui")
+    Gui, 2:+AlwaysOnTop
+    Gui, 2:Show, h377 w170, TuSC
+return
 
-    menu, main, show, %swidth%, %sheight%
+2ButtonOK:
+2GuiClose:
+    Gui, 2:Submit  ; Save each control's contents to its associated variable.
+2ButtonCancel:
+2GuiEscape:
+2ButtonJustQuit:
+    Gui 2:Hide
+    WinActivate ahk_id %lastwin%
+return
+
+
+;----------------------------
+     2ButtonWorkstation:    ;
+;----------------------------
+    Debug("2ButtonWorkstation")
+    Gosub, hide_guis
+    Gui, 3:+AlwaysOnTop
+    Gui, 3:Show, h377 w170, Workstation
+return
+
+3ButtonOK:
+3GuiClose:
+    Gui, 3:Submit
+3ButtonCancel:
+3GuiEscape:
+3ButtonJustQuit:
+    Gui 3:Hide
+return
+
+
+;-----------------------
+     2ButtonScript:    ;
+;-----------------------
+    Debug("2ButtonScript")
+    Gosub, hide_guis
+    Gui, 4:+AlwaysOnTop
+    Gui, 4:Show, h377 w170, Script
+return
+
+4ButtonOK:
+4GuiClose:
+    Gui, 4:Submit
+4ButtonCancel:
+4GuiEscape:
+4ButtonJustQuit:
+    Gui 4:Hide
+return
+
+
+;---------------------------
+     2ButtonLinks:         ;
+;---------------------------
+    Debug("2ButtonFiles")
+    Gosub, hide_guis
+    Gui, 14:+AlwaysOnTop
+    Gui, 14:Show, h377 w170, Links
+return
+
+14ButtonOK:
+14GuiClose:
+    Gui, 14:Submit
+14ButtonCancel:
+14GuiEscape:
+14ButtonJustQuit:
+    Gui 14:Hide
+return
+
+
+14ButtonIMDB:
+    Gosub, hide_guis
+    GoLink("http://www.imdb.com/find?q=",0)
+return
+
+14ButtonRottenTom:
+    Gosub, hide_guis
+    GoLink("http://www.rottentomatoes.com/search/?search=",0)
+return
+
+14ButtonGoogle:
+    Gosub, hide_guis
+    GoLink("http://www.google.com/#q=",0)
+return
+
+14ButtonTheGoogle:
+    Gosub, hide_guis
+    GoLink("http://www.google.com",1)
+return
+
+14ButtonWikipedia:
+    Gosub, hide_guis
+    GoLink("http://en.wikipedia.org/w/index.php?search=",0)
+return
+
+
+;---------------------------
+     2ButtonFiles:         ;
+;---------------------------
+    Debug("2ButtonFiles")
+    Gosub, hide_guis
+    Gui, 8:+AlwaysOnTop
+    Gui, 8:Show, h377 w170, Files
+return
+
+8ButtonOK:
+8GuiClose:
+    Gui, 8:Submit
+8ButtonCancel:
+8GuiEscape:
+8ButtonJustQuit:
+    Gui 8:Hide
+return
+
+
+;---------------------------
+     2ButtonFunctions:    ;
+;---------------------------
+    Debug("2ButtonFunctions")
+    Gosub, hide_guis
+    Gui, 5:+AlwaysOnTop
+    Gui, 5:Show, h377 w170, Functions
+return
+
+5ButtonOK:
+5GuiClose:
+    Gui, 5:Submit
+5ButtonCancel:
+5GuiEscape:
+5ButtonJustQuit:
+    Gui 5:Hide
+return
+
+
+;---------------------------
+     2ButtonApplications:    ;
+;---------------------------
+    Debug("2ButtonApplications")
+    Gosub, hide_guis
+    Gui, 7:+AlwaysOnTop
+    Gui, 7:Show, h377 w170, Applications
+return
+
+7ButtonOK:
+7GuiClose:
+    Gui, 7:Submit
+7ButtonCancel:
+7GuiEscape:
+7ButtonJustQuit:
+    Gui 7:Hide
+return
+
+
+;------------------------
+     5ButtonGamKeys:    ;
+;------------------------
+    Debug("5ButtonGamKeys")
+    Gosub, hide_guis
+    Gui, 6:+AlwaysOnTop
+    Gui, 6:Show, h377 w170, GamKeys
+return
+
+6ButtonOK:
+6GuiClose:
+    Gui, 6:Submit
+6ButtonCancel:
+6GuiEscape:
+6ButtonJustQuit:
+    Gui 6:Hide
+return
+
+
+;--------------
+hide_guis:    ;
+;--------------
+    Gui 1:Hide
+    Gui 2:Hide
+    Gui 3:Hide
+    Gui 4:Hide
+    Gui 5:Hide
+    Gui 6:Hide
+    Gui 7:Hide
+    Gui 8:Hide
+    Gui 9:Hide
+    Gui 10:Hide
+    Gui 12:Hide
+    Gui 13:Hide
+    Gui 14:Hide
+    WinActivate ahk_id %lastwin%
 return
 
 
@@ -1762,6 +2245,10 @@ return
 ;                                                                             |
 ;=============================================================================+
 
+
+11ButtonCopytoBuffer:
+    Send !{Esc}^o ; Activate previous window
+return
 
 ;------------------------------------------------------------------------------
 ^o::
@@ -1812,7 +2299,14 @@ Goto, paste_routine
 paste_routine:
 ;------------------------------------------------------------------------------
     cb_routine=Paste
+    cb_callback=paste_routine_cont
     Gosub, GetKey
+return
+
+
+;------------------------------------------------------------------------------
+paste_routine_cont:
+;------------------------------------------------------------------------------
     ClipBoard := cb_buf_%cb_prefix%_%buffer_key%
     IfInString, cb_winclass, putty
     {
@@ -1839,6 +2333,7 @@ return
 perm_copy_routine:
 ;------------------------------------------------------------------------------
     cb_routine=PermaCopy
+    cb_callback=BYank_cont
     Gosub, BYank
 return
 
@@ -1846,10 +2341,14 @@ return
 ;------------------------------------------------------------------------------
 GetKey:
 ;------------------------------------------------------------------------------
+    Gosub, hide_guis
+
     cb_tip_text=
     cb_loop_index=%cb_index%
     If cb_prefix = CB
     {
+      jj=0
+      current_cb_list=
       Loop, %cb_rotate_max%
       {
         StringMid, cb_index_letter, cb_key_rotate, %cb_loop_index%, 1
@@ -1857,9 +2356,13 @@ GetKey:
         StringReplace, cb_add, cb_add, `r`n, , All
         StringReplace, cb_add, cb_add, %A_Space%, , All
         StringReplace, cb_add, cb_add, %A_Tab%, , All
+        GuiControl, 13:, PasteText%jj%, %cb_add%
         StringLeft, cb_add, cb_add, 80
         cb_tip_text = %cb_tip_text%%cb_index_letter%. %cb_add%`r`n
+        current_cb_list=%current_cb_list%%cb_index_letter%
+        GuiControl, 13:, PasteButton%jj%, &%cb_index_letter%
         cb_loop_index--
+        jj++
         if(cb_loop_index < 1)
           cb_loop_index=%cb_rotate_max%
       }
@@ -1871,32 +2374,138 @@ GetKey:
       StringMid, cb_index_letter, cb_key_static, %cb_loop_index%, 1
       cb_add := cb_label_%cb_prefix%_%cb_index_letter%
       cb_tip_text = %cb_tip_text%%cb_index_letter%. %cb_add%`r`n
+      GuiControl, 13:, PasteText%cb_index_letter%, %cb_add%
       cb_loop_index++
     }
     WinGetClass, cb_winclass, A
     show_tip=%cb_routine% - Select buffer`r`n%cb_tip_text%
-    Gosub, big_tip
-    buffer_key=
-    Input, buffer_key, L1T20
-    if buffer_key=v
-    {
-      StringMid, cb_index_letter, cb_key_rotate, %cb_index%, 1
-      buffer_key=%cb_index_letter%
-    }
-    cb_flag=0
-    if ErrorLevel = Timeout
-      cb_flag=1
-    IfNotInString, cb_key_legal, %buffer_key%
-      cb_flag=1
-    if(cb_flag = 1)
-    {
-      ToolTip
-      show_tip=Operation Cancelled
-      Gosub, big_tip
-      SetTimer,clear_tooltip,-1000
-      exit
-    }
-    ToolTip
+    gui_title=%cb_routine% - Select buffer
+    Gui, 13:Show, x0 y0 h481 w767, %gui_title%
+return
+
+
+;------------------------------------------------------------------------------
+13Button0:
+    pressed=1
+    MsgBox, %current_cb_list%
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button1:
+    pressed=2
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button2:
+    pressed=3
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button3:
+    pressed=4
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button4:
+    pressed=5
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button5:
+    pressed=6
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button6:
+    pressed=7
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button7:
+    pressed=8
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button8:
+    pressed=9
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13Button9:
+    pressed=10
+    StringMid, buffer_key, current_cb_list, %pressed%, 1
+    Goto pasteRest
+13ButtonA:
+    buffer_key=A
+    Goto pasteRest
+13ButtonB:
+    buffer_key=B
+    Goto pasteRest
+13ButtonC:
+    buffer_key=C
+    Goto pasteRest
+13ButtonD:
+    buffer_key=D
+    Goto pasteRest
+13ButtonE:
+    buffer_key=E
+    Goto pasteRest
+13ButtonF:
+    buffer_key=F
+    Goto pasteRest
+13ButtonG:
+    buffer_key=G
+    Goto pasteRest
+13ButtonH:
+    buffer_key=H
+    Goto pasteRest
+13ButtonI:
+    buffer_key=I
+    Goto pasteRest
+13ButtonK:
+    buffer_key=K
+    Goto pasteRest
+13ButtonL:
+    buffer_key=L
+    Goto pasteRest
+13ButtonM:
+    buffer_key=M
+    Goto pasteRest
+13ButtonN:
+    buffer_key=N
+    Goto pasteRest
+13ButtonO:
+    buffer_key=O
+    Goto pasteRest
+13ButtonP:
+    buffer_key=P
+    Goto pasteRest
+13ButtonQ:
+    buffer_key=Q
+    Goto pasteRest
+13ButtonR:
+    buffer_key=R
+    Goto pasteRest
+13ButtonS:
+    buffer_key=S
+    Goto pasteRest
+13ButtonT:
+    buffer_key=T
+    Goto pasteRest
+13ButtonU:
+    buffer_key=U
+    Goto pasteRest
+13ButtonW:
+    buffer_key=W
+    Goto pasteRest
+13ButtonX:
+    buffer_key=X
+    Goto pasteRest
+13ButtonY:
+    buffer_key=Y
+    Goto pasteRest
+13ButtonZ:
+    buffer_key=Z
+    Goto pasteRest
+13ButtonMostRecentV:
+    StringMid, cb_index_letter, cb_key_rotate, %cb_index%, 1
+    buffer_key=%cb_index_letter%
+    Goto pasteRest
+pasteRest:
+;------------------------------------------------------------------------------
+    Gosub, hide_guis
+    Gosub, %cb_callback%
 return
 
 
@@ -1939,6 +2548,12 @@ if(ClipBoard)
   cb_in=%ClipBoard%
   cb_default_label=%ClipBoard%
   Gosub, GetKey
+}
+return
+
+;------------------------------------------------------------------------------
+BYank_cont:
+;------------------------------------------------------------------------------
   cb_default_label := cb_label_%cb_prefix%_%buffer_key%
   InputBox, key_label, Key Label, Enter key label,,,,,,,,%cb_default_label%
   If ErrorLevel
@@ -1953,7 +2568,6 @@ if(ClipBoard)
   show_tip=Copied %cb_add%
   Gosub, big_tip
   SetTimer,clear_tooltip,-1000
-}
 return
 
 
@@ -1966,32 +2580,43 @@ return
 
 
 ;------------------------------------------------------------------------------
+10ButtonTIMESTAMP:
+    Gosub, hide_guis
 Timestamp:
 ;------------------------------------------------------------------------------
+    CoordMode, Mouse, Screen
+    WinGet, lastwin, ID, A
+    Debug("lastwin=" . lastwin)
+
+    WinGetClass, class, A
+    Debug("class=" . class)
+
+    If class = QWidget
+    {
+        return
+    }
+
     Gosub, esc_key
-    j_menu=`n
-    j_menu=%j_menu%    Wednesday, April 13, 2011 (a)    `n
-    j_menu=%j_menu%    11:06 PM 4/13/2011 (f)    `n
-    j_menu=%j_menu%    2011-04-13 (k)    `n
-    j_menu=%j_menu%    2011-04-13 23:06 (e)    `n
-    j_menu=%j_menu%    2011-04-13 Wednesday (x)    `n
-    ToolTip,%j_menu%, 0, 0
-    Input, buffer_key, L1T60
-    ToolTip
-    if buffer_key = a
-      Gosub, timestamp_a
-    else if buffer_key = f
-      Gosub, timestamp_f
-    else if buffer_key = e
-      Gosub, timestamp_e
-    else if buffer_key = k
-      Gosub, timestamp_k
-    else if buffer_key = x
-      Gosub, timestamp_x
+
+    Debug("timestamp_gui")
+    Gui, 12:+AlwaysOnTop
+    Gui, 12:Show, x0 y0 h247 w207, Timestamp
+return
+
+
+12ButtonOK:
+12GuiClose:
+    Gui, 12:Submit  ; Save each control's contents to its associated variable.
+12ButtonCancel:
+12GuiEscape:
+12ButtonJustQuit:
+    Gui 12:Hide
 return
 
 
 ;------------------------------------------------------------------------------
+12ButtonA:
+    Gosub, hide_guis
 timestamp_a:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, dddd, MMMM d, yyyy
@@ -2000,6 +2625,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+12ButtonF:
+    Gosub, hide_guis
 timestamp_f:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, h:mm tt M/d/yyyy
@@ -2008,6 +2635,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+12ButtonK:
+    Gosub, hide_guis
 timestamp_k:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, yyyy-MM-dd
@@ -2016,6 +2645,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+12ButtonE:
+    Gosub, hide_guis
 timestamp_e:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, yyyy-MM-dd HH:mm
@@ -2024,6 +2655,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+12ButtonX:
+    Gosub, hide_guis
 timestamp_x:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, yyyy-MM-dd dddd
@@ -2032,6 +2665,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+12ButtonL:
+    Gosub, hide_guis
 timestamp_l:
 ;------------------------------------------------------------------------------
     FormatTime, TimeString,, MMMyy
@@ -2077,6 +2712,9 @@ return
 
 
 ;------------------------------------------------------------------------------
+10ButtonVOLUME:
+3ButtonVolume:
+    Gosub, hide_guis
 &Volume:
 ;------------------------------------------------------------------------------
     Send {Volume_Up 1}
@@ -2267,6 +2905,9 @@ return
 
 
 ;------------------------------------------------------------------------------
+10ButtonMUTE:
+3ButtonMute:
+    Gosub, hide_guis
 &Mute:
 vol_MasterMute:
 ;------------------------------------------------------------------------------
@@ -2740,7 +3381,14 @@ return
 ;------------------------------------------------------------------------------
 o_d_key:
 ;------------------------------------------------------------------------------
-    o_param=+^g{tab 3} {enter}{down}{up}~d
+    Gosub, o_a_key
+    Suspend, On
+    SendInput,+^v
+    Sleep, 750
+    SendInput,y
+    Sleep, 750
+    SendInput,{enter}
+    Suspend, Off
 return
 
 
@@ -2980,6 +3628,8 @@ return
 
 
 ;------------------------------------------------------------------------------
+3ButtonMouseKeys:
+    Gosub, hide_guis
 M&ouseKeys:
 mouse_keys:
 ;------------------------------------------------------------------------------
@@ -3306,17 +3956,38 @@ GoMy&dev:
 return
 
 
+11ButtonNote:
+    Send !{Esc}^!n ; Activate previous window
+return
+
 ;------------------------------------------------------------------------------
+2ButtonaNote:
+    Gosub, hide_guis
 ^!n::
 &aNote:
 ;------------------------------------------------------------------------------
-    InputBox, temp_input, Note, Enter note,,,,,,,,%last_note%
-    If ErrorLevel
+    WinGetClass, class, A
+    If class = QWidget
+    {
         return
-    last_note=%temp_input%
-    FormatTime, timestamp, %A_Now%, yyyy_MM_dd_HH_mm_ss
-; For now, just send to Dropbox
+    }
+
+    WinGet, lastwin, ID, A
+    Debug("lastwin=" . lastwin)
+
+    Gui, 15:Show, h360 w468, Note
+    GuiControl, 15:, SettingSave, 0
+    GuiControl, 15:Focus, NoteText
+return
+
+SettingSaveRoutine:
+    GuiControl, 15:Focus, NoteText
+return
+
 ;    FileAppend, `n%timestamp%: %last_note%`n,%sys_drive%\docs\notes.txt
+note_cont:
+    last_note=%NoteText%
+    FormatTime, timestamp, %A_Now%, yyyy_MM_dd_HH_mm_ss
 
     StringGetPos, pos, last_note, %A_Space%
 
@@ -3341,6 +4012,27 @@ return
             FileAppend, `n%out_text%`n,%out_file%
         }
     }
+    notes_list=%notes_list%|%NoteText%
+    Sort, notes_list, CL U D|
+    GuiControl, 15:, NoteText, |%notes_list%
+    GuiControl, 15:Text, NoteText, %NoteText%
+    if(SettingSave)
+    {
+        save_notes_list=%save_notes_list%|%NoteText%
+        Sort, save_notes_list, CL U D|
+        IniWrite, %save_notes_list%,  %ini_file%, settings, notes_list
+    }
+return
+
+
+15ButtonOK:
+15GuiClose:
+    Gui, 15:Submit  ; Save each control's contents to its associated variable.
+    Gosub, note_cont
+15ButtonCancel:
+15GuiEscape:
+    Gui 15:Hide  ; Destroy the Gui.
+    WinActivate ahk_id %lastwin%
 return
 
 
@@ -3350,8 +4042,10 @@ initialize_main_menu:
 
 /* Main Menu Data
 START_LIST;F&ile
+&anim_one.c            ; C:\Dropbox\cdev\projects\anim_one\anim_one.c
 &Home                  ; %A_ScriptFullPath% ; %A_ScriptName%
 hosts&c                ; %sys_drive%\WINDOWS\system32\drivers\etc\hosts ; hosts
+&kickstart             ; %sys_drive%\Dropbox\misc\kickstart2.html; kickstart
 &log                   ; %A_ScriptDir%\tscdebug.txt; debug
 START_LIST;Li&nk
 %my_item1%
@@ -3418,7 +4112,7 @@ END_ALL_LISTS
     menu, gamey, add, Set&Firefox
     menu, gamey, add, SetRe&mote
     menu, gamey, add, Set&Outlook
-    menu, gamey, add, Set&RTM
+    menu, gamey, add, Set&rTemp
     menu, gamey, add, SetRemin&ders
     menu, gamey, add, Set&Scratch
     menu, gamey, add, Set&vi
@@ -3454,7 +4148,7 @@ END_ALL_LISTS
     menu, main, add, &Outlook
     menu, main, add, Options&b
     menu, main, add, &QuickStart
-    menu, main, add, &RTM
+    menu, main, add, &rTemp
     menu, main, add, Remin&ders
     menu, main, add, &Scratch
     menu, main, add, Internet&Explorer
@@ -3467,11 +4161,12 @@ END_ALL_LISTS
 
     menu, tray, add
     menu, tray, add, Mainmenu
+    menu, tray, add, Jmenu
 
     menu, My&dev, add
 
     f_AtStartingPos = n
-    Loop, Read, %A_LineFile%
+    Loop, Read, %f_ReadFile%
     {
         If A_LoopReadLine = END_ALL_LISTS
         {
@@ -3591,10 +4286,10 @@ else
 
 f_AtStartingPos = n
 f_MenuItemCount = 0
-Loop, Read, %A_LineFile%
+Loop, Read, %f_ReadFile%
 {
-    if f_FileExt <> Exe
-    {
+;    if f_FileExt <> Exe
+;    {
         ; Since the menu items are being read directly from this
         ; script, skip over all lines until the starting line is
         ; arrived at.
@@ -3607,7 +4302,7 @@ Loop, Read, %A_LineFile%
         ; Otherwise, the closing comment symbol marks the end of the list.
         if A_LoopReadLine = */
             break  ; terminate the loop
-    }
+;    }
     ; Menu separator lines must also be counted to be compatible
     ; with A_ThisMenuItemPos:
     f_MenuItemCount++
@@ -3626,4 +4321,63 @@ Loop, Read, %A_LineFile%
         Menu, Favorites, Add, %f_line1%, f_OpenFavorite
     }
 }
+return
 
+
+; *** Notes ***
+; I think this data structure is perfect.
+; * If next entry starts with four spaces, then current entry is a submenu
+; * Consider show/hide for sub menus versus destroy. Workstation can be gui 3,
+;  script can be gui 4, etc
+; *** End Notes ***
+
+; Wor&kstation
+;     &Hibernate
+;     &Lock
+;     M&ouseKeys
+;     M&inimizeAll
+;     &Mute
+;     &Volume
+; &aNote
+; C&hrome
+; &Cygwin
+; E&xplore
+; &Firefox
+; &GaimWin
+; Re&mote
+; NewCappy&l
+; &Outlook
+; Options&b
+; &QuickStart
+; &rTemp
+; Remin&ders
+; &Scratch
+; I&E
+; &vi
+; Scri&pt
+;     &Exit
+;     &Reload
+; F&unctions
+;     &Compile
+;     &DumpSTDERR
+;     &EjectAll
+;     E&ventLog
+;     &Madeit
+;     &GamKeys
+;         Set&GaimWin
+;         Set&Cygwin
+;         SetE&xplore
+;         Set&Firefox
+;         SetRe&mote
+;         Set&Outlook
+;         Set&rTemp
+;         SetRemin&ders
+;         Set&Scratch
+;         Set&vi
+;     &PrintSTDERR
+;     &UseDataDumper
+; Applica&tions
+;     &Calculator
+;     C&MD
+;     P&aint
+;     V&PN
