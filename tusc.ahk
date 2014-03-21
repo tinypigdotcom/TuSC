@@ -1115,8 +1115,9 @@ running_on_guest() ; running_on_guest:
 ;------------------------------------------------------------------------------
 QuickStart:
 ;------------------------------------------------------------------------------
-    gui_hide()
-    SendInput, {pause}
+   gui_hide()
+   Run, %A_ScriptDir%\320mph.ahk
+;    SendInput, {pause}
 ;    SendInput, #{F10}
 return
 
