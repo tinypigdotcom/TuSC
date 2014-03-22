@@ -18,10 +18,7 @@ SetKeyDelay, 0
 ;___________________________________________
 IniFile = %A_ScriptDir%\320MPH.ini
 IfNotExist, %IniFile%
-{
-    MsgBox,, 320MPH, 320MPH.ini not found. Program will now exit
-    ExitApp
-}
+    Gosub, build_ini
 
 ;Reading Settings
 IniRead, PathList, %IniFile%, Settings, PathList, %A_MyDocuments%|%A_ProgramFiles%
@@ -496,4 +493,22 @@ ExpandVars(Var)
     }
     Return, var_new
 }
+
+;------------------------------------------------------------------------------
+build_ini:
+;------------------------------------------------------------------------------
+    IniWrite, %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%, %IniFile%, Settings, PathList
+    IniWrite, exe|lnk|ahk|au3|url|mp3|doc|xls|bat|rdp|js, %IniFile%, Settings, TypeList
+    IniWrite, about|history|readme|remove|uninstall|license, %IniFile%, Settings, ExcludeList
+    IniWrite, %UserProfile%\Recent, %IniFile%, Settings, AlwaysScan
+    IniWrite, 100, %IniFile%, Settings, MaxLastUsed
+    IniWrite, 100, %IniFile%, Settings, WaitTime
+    IniWrite, 1, %IniFile%, Settings, ShowIcons
+    IniWrite, 2, %IniFile%, Settings, MinLen
+    IniWrite, RunList.txt, %IniFile%, Settings, ListFile
+    IniWrite, 0, %IniFile%, Settings, ShellIntegration
+    IniWrite, 600, %IniFile%, Settings, GuiWMinus
+    IniWrite, 600, %IniFile%, Settings, GuiHMinus
+    IniWrite, |, %IniFile%, Settings, UsedList
+return
 
