@@ -95,6 +95,11 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
+X_ProgramFiles = %A_ProgramFiles% (x86)
+TypeList = exe|lnk
+PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%A_ProgramFiles%|%X_ProgramFiles%
+fileArray := {A:"B"}
+
 VERSION=lime ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -259,7 +264,6 @@ prog_icon = %ImageDir%\%f_FileNoExt%.ico
 mute_icon = %ImageDir%\%f_FileNoExt%_mute.ico
 
 cb_dir = %A_ScriptDir%\cb
-shortcuts_dir = %sys_drive%\shortcuts
 
 Gosub, read_settings
 
@@ -1126,7 +1130,7 @@ return
 GaimWin:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\gaim.lnk
+    target := find_link("pidgin")
     GoApp("gaim", "ahk_class gdkWindowToplevel", target, 0)
 return
 
@@ -1218,7 +1222,7 @@ Firefox:
 Chrome:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\firefox.lnk
+    target := find_link("Mozilla Firefox")
     GoApp("fox", "Mozilla Firefox", target, 0)
 return
 
@@ -1227,7 +1231,7 @@ return
 Remote:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\cygwin.lnk
+    target := find_link("cygwin terminal")
     GoApp("wksh","ahk_class mintty", target, 0)
 return
 
@@ -1236,7 +1240,7 @@ return
 Cygwin:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\cygwin.lnk
+    target := find_link("cygwin terminal")
     GoApp("cygw","ahk_class mintty", target, 0)
 return
 
@@ -1245,7 +1249,7 @@ return
 RadialMenu:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\rm4.lnk
+    target := find_link("radial menu")
     GoApp("vrm","rm4", target, 0)
 return
 
@@ -1280,7 +1284,6 @@ return
 VPN:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Run, %shortcuts_dir%\glob.lnk
 return
 
 
@@ -1288,7 +1291,7 @@ return
 oldRemote:
 ;------------------------------------------------------------------------------
     gui_hide()
-    remote=%shortcuts_dir%\putty.lnk
+    target := find_link("putty")
     refresh_ini_value("mystring3", "string")
     GoApp("wksh","ahk_class PuTTY",remote,0,"-load redcloud -pw " . mystring3,"","","","xrm",1)
 return
@@ -1299,7 +1302,7 @@ Outlook:
 ;------------------------------------------------------------------------------
     gui_hide()
     SetTitleMatchMode, 2
-    target = %shortcuts_dir%\outlook.lnk
+    target := find_link("outlook")
 
     outlook_key_flag=0
     IfWinExist, Outlook
@@ -1320,7 +1323,7 @@ return
 IE:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\ie.lnk
+    target := find_link("internet explorer")
     GoApp("ie", "Internet Explorer", target, 0)
 return
 
@@ -1357,7 +1360,7 @@ return
 oldvi:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\gvim.lnk
+    target := find_link("gvim")
     GoApp("vi","GVIM",target,0,,,,,,,1)
 return
 
@@ -1367,7 +1370,7 @@ vi:
 Scratch:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\gvim.lnk
+    target := find_link("gvim")
     scratch = %A_ScriptDir%\file\scratch.txt
     GoApp("scr","GVIM",target,0,scratch)
 return
@@ -1464,7 +1467,8 @@ GoFile:
         WinActivate
         return
     }
-    Run, %shortcuts_dir%\gvim.lnk "%f_path%"
+    target := find_link("gvim")
+    Run, %target% "%f_path%"
 
     oldTMM := A_TitleMatchMode
     SetTitleMatchMode, 2
@@ -1489,7 +1493,8 @@ GoDirectory:
         return
     }
 ;    Run, "%f_path%" ; open in windows explorer. don't forget winactivate
-    Run, %shortcuts_dir%\freecommander.lnk /C /L="%f_path%"
+    target := find_link("freecommander xe")
+    Run, %target% /C /L="%f_path%"
 
     text=FreeCommander
     WinWait, %text%,,%timeout%
@@ -1511,7 +1516,8 @@ GoF&ile:
         WinActivate
         return
     }
-    Run, %shortcuts_dir%\gvim.lnk "%f_path%"
+    target := find_link("gvim")
+    Run, %target% "%f_path%"
     WinWait, %f_param%,,%timeout%
     WinActivate
 return
@@ -1585,7 +1591,7 @@ GoLink(f_path,link_enter=1,tab_number=0,link_delay=0) ; GoLink:
 Explore:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %shortcuts_dir%\freecommander.lnk
+    target := find_link("freecommander xe")
     GoApp("fcx","reeComm",target,0)
 return
 
@@ -5234,6 +5240,59 @@ NoteSubmit:
     Gosub, note_cont
 return
 
+
+find_link(filename)
+{
+    global
+
+    val := fileArray[filename]
+    IfExist, %val%
+    {
+        return %val%
+    }
+
+    IniRead, val, %ini_file%, linkcache, %filename%
+    IfExist, %val%
+    {
+        fileArray[filename] := val
+        return %val%
+    }
+
+    DriveList =
+    DriveGet, mylist, List
+    Loop, Parse, mylist
+    {
+        DriveGet, mystatus, Status, %A_LoopField%:
+        if mystatus = Ready
+        {
+            DriveList = %DriveList%%A_LoopField%
+        }
+    }
+
+    Extensions = lnk,exe
+    Loop, parse, Extensions, `,
+    {
+        Ext = %A_LoopField%.
+        Loop, Parse, PathList, |
+        {
+            path = %A_LoopField%
+            Loop, Parse, DriveList
+            {
+                StringMid, searchpath, path, 2
+                searchpath = %A_LoopField%%searchpath%
+                IfNotExist, %searchpath%
+                    Continue
+                Loop, %searchpath%\%filename%.%Ext%, 0, 1
+                {
+                    fileArray[filename] := A_LoopFileFullPath
+                    IniWrite, %A_LoopFileFullPath%, %ini_file%, linkcache, %filename%
+                    return %A_LoopFileFullPath%
+                }
+            }
+        }
+    }
+    MsgBox, Failed to find %filename%.
+}
 
 ;=============================================================================+
 ;=============================================================================+
