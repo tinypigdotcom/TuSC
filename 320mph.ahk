@@ -210,7 +210,7 @@ GetText:
             IfGreater, Count, %MaxLastUsed%, Break
             IfEqual, ShowIcons, 1
             {
-                hIcon := DllCall("Shell32\ExtractAssociatedIconA", UInt, 0, Str, A_LoopField, UShortP, iIndex)
+                hIcon := DllCall("Shell32\ExtractAssociatedIcon", UInt, 0, Str, A_LoopField, UShortP, iIndex)
                 DllCall("ImageList_ReplaceIcon", UInt, ImageListID1, Int, -1, UInt, hIcon)
                 DllCall("DestroyIcon", Uint, hIcon)
             }
@@ -301,7 +301,7 @@ GetText:
             SplitPath, A_LoopField, FName, FDir, FExt, FNameNoExt, FDrive
             IfEqual, ShowIcons, 1
             {
-                hIcon := DllCall("Shell32\ExtractAssociatedIconA", UInt, 0, Str, A_LoopField, UShortP, iIndex)
+                hIcon := DllCall("Shell32\ExtractAssociatedIcon", UInt, 0, Str, A_LoopField, UShortP, iIndex)
                 DllCall("ImageList_ReplaceIcon", UInt, ImageListID1, Int, -1, UInt, hIcon)
                 DllCall("DestroyIcon", Uint, hIcon)
             }
