@@ -100,7 +100,7 @@ TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%A_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
 
-VERSION=lime ; vv
+VERSION=mango ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
