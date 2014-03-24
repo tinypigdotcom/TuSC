@@ -560,10 +560,13 @@ return
     ; When the current thread finishes, the one most recently interrupted will be
     ; resumed, and so on, until all the threads finally finish.
 
+    SetTitleMatchMode, 2
     CoordMode, Mouse, Screen
     MouseGetPos, posx, posy
     if(posx=0 and posy=0)
     {
+;        WinShow, my_tips
+;        WinActivate, my_tips
         if(!note_shown)
         {
 ;            Progress, c00 m2 b zh0 x0 y0, %side_note%, , , Courier New
@@ -572,6 +575,7 @@ return
     }
     else
     {
+;        WinHide, my_tips
         Progress, Off
         note_shown=0
     }
@@ -2992,9 +2996,9 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ;                                                                             |
 ;=============================================================================+
 
+::ahh::autohotkey
 
 #z::Goto NEO_Jmenu
-
 
 ;------------------------------------------------------------------------------
 ^j::
