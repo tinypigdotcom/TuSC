@@ -100,7 +100,7 @@ TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%A_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
 
-VERSION=mango ; vv
+VERSION=nurse ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -115,6 +115,10 @@ ini_file_nopath = %f_FileNoExt%.ini
 ini_file = %customization_dir%\%ini_file_nopath%
 IfNotExist, %ini_file%
     Gosub, build_ini
+
+dir_file = %A_ScriptDir%\directories.ini
+IfNotExist, %dir_file%
+    Gosub, build_dir_file
 
 if f_FileExt = Exe
 {
@@ -421,6 +425,27 @@ WM_LBUTTONDOWN(wParam, lParam) ; WM_LBUTTONDOWN:
 ;    IfInString, OutputVar, Jmenu
 ;        ShowTip("You left-clicked in Gui window at client coordinates " . X . "x" . Y . "." . num)
 }
+
+
+;------------------------------------------------------------------------------
+build_dir_file:
+;------------------------------------------------------------------------------
+FileAppend,
+(
+&C | C:\
+C&ygwin home | C:\cygwin\home\dave
+Des&ktop | C:\Users\dave\Desktop
+&Docs | C:\docs
+Do&wnloads | C:\Users\dave\Downloads
+Dr&opbox | C:\Dropbox
+&MMNTS | C:\docs\MMNTS
+P&rogram Files | C:\Program Files
+Program Files (&x86) | C:\Program Files (x86)
+&Project, current | C:\Dropbox
+&Shared | C:\Shared
+&TuSC | C:\TuSC
+), %dir_file%
+return
 
 
 ;------------------------------------------------------------------------------
