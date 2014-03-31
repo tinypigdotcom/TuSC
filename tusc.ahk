@@ -95,12 +95,13 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-X_ProgramFiles = %A_ProgramFiles% (x86)
+StringReplace, B_ProgramFiles, A_ProgramFiles, %A_Space%(x86)
+X_ProgramFiles = %B_ProgramFiles% (x86)
 TypeList = exe|lnk
-PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%A_ProgramFiles%|%X_ProgramFiles%
+PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%B_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
 
-VERSION=nurse ; vv
+VERSION=orange ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -727,7 +728,6 @@ Debug("set directories to rebuild")
     ; This is flaky as HELL.
     ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\pwd.png
     EL := ErrorLevel
-Debug("EL: " . EL,2) ;xd
 
     if(!EL)
     {
@@ -1287,7 +1287,7 @@ return
 Paint:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %sys_drive%\Program Files\Paint.NET\PaintDotNet.exe
+    target := find_link("PaintDotNet")
     GoApp("pnt","Paint.NET",target,0,"",1)
 return
 
@@ -1304,7 +1304,7 @@ return
 SmartGUI:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target = %sys_drive%\Program Files (x86)\smartgui\SmartGUI.exe
+    target := find_link("SmartGUI")
     GoApp("smg","SmartGUI",target,0,"",1)
 return
 
@@ -5293,6 +5293,7 @@ find_link(filename)
         return %val%
     }
 
+    SplashTextOn, 300, 50, %filename%, Searching for link...
     DriveList =
     DriveGet, mylist, List
     Loop, Parse, mylist
@@ -5321,11 +5322,13 @@ find_link(filename)
                 {
                     fileArray[filename] := A_LoopFileFullPath
                     IniWrite, %A_LoopFileFullPath%, %ini_file%, linkcache, %filename%
+                    SplashTextOff
                     return %A_LoopFileFullPath%
                 }
             }
         }
     }
+    SplashTextOff
     MsgBox, Failed to find %filename%.
 }
 
