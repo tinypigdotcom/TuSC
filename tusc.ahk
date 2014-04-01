@@ -101,7 +101,7 @@ TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%B_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
 
-VERSION=pine ; vv
+VERSION=quilt ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -1274,7 +1274,7 @@ Cygwin:
 ;------------------------------------------------------------------------------
     gui_hide()
     target := find_link("cygwin terminal")
-    GoApp("cygw","ahk_class mintty", target, 0)
+    GoApp("cygw","ahk_class mintty", target, 0,,,,,,,1)
 return
 
 
@@ -1399,13 +1399,12 @@ return
 
 
 ;------------------------------------------------------------------------------
-vi:
 Scratch:
 ;------------------------------------------------------------------------------
     gui_hide()
     target := find_link("gvim")
     scratch = %A_ScriptDir%\file\scratch.txt
-    GoApp("scr","GVIM",target,0,scratch)
+    GoApp("scr","scratch",target,0,scratch)
 return
 
 
@@ -1621,6 +1620,7 @@ GoLink(f_path,link_enter=1,tab_number=0,link_delay=0) ; GoLink:
 
 
 ;------------------------------------------------------------------------------
+vi:
 Explore:
 ;------------------------------------------------------------------------------
     gui_hide()
