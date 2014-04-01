@@ -101,7 +101,7 @@ TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%B_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
 
-VERSION=orange ; vv
+VERSION=pine ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -478,6 +478,10 @@ return
     Debug("poker")
     nwidth := f_width() - 310
     nheight := f_height() - 150
+
+    nwidth := nwidth - (reminder_count * 5)
+    nheight := nheight - (reminder_count * 5)
+
     reminder_count++
     if(reminder_count > 5)
         GuiControl, 11:Show, Exclaim
@@ -2181,13 +2185,14 @@ init_guis:
           Functions,     &UseDataDumper,   ; UseDataDumper
         Main,            &GaimWin,         ; GaimWin
         Main,            I&E,              ; IE
-        Main,            Li&nks,           ; Links
+        Main,            &Links,           ; Links
           Links,         &Google,          ; Google
           Links,         &IMDB,            ; IMDB
           Links,         &RottenTom,       ; RottenTom
           Links,         &TheGoogle,       ; TheGoogle
           Links,         Wi&kipedia,       ; Wikipedia
         Main,            New_Tab_&Z        ; New_Tab_Z
+        Main,            &Note             ; Note
         Main,            Options &B,       ; OptionsB
         Main,            &Outlook,         ; Outlook
         Main,            &QuickStart,      ; QuickStart
@@ -2607,8 +2612,8 @@ Gui, 11:Add, Picture,   x634 y1 w19 h19 gTB_Lock                            , %I
 Gui, 11:Add, Picture,   x663 y1 w19 h19 gTB_BuffCopy                        , %ImageDir%\bcopyicon.png     ; TB_BuffCopy
 Gui, 11:Add, Picture,   x685 y1 w19 h19 gTB_NEO_Pastev                      , %ImageDir%\bpasteicon.png    ; TB_Pastev
 Gui, 11:Add, Picture,   x707 y1 w19 h19 gTB_NEO_Paste2                      , %ImageDir%\bpaste2icon.png   ; TB_Paste2
-Gui, 11:Add, Text,      x736 y1 w320 h20                                    , See Grindstone
-;Gui, 11:Add, ComboBox,  x736 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
+;Gui, 11:Add, Text,      x736 y1 w320 h20                                    , See Grindstone
+Gui, 11:Add, ComboBox,  x736 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
 Gui, 11:Add, CheckBox, x1066 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
 Gui, 11:Add, Button,   x1126 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
 Gui, 11:Add, Picture,  x1180 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
@@ -5197,7 +5202,7 @@ return
 
 
 ;------------------------------------------------------------------------------
-NoteA:
+Note:
 ;------------------------------------------------------------------------------
     if(check_for_virtualbox())
         return
@@ -5234,21 +5239,32 @@ note_cont:
         StringLeft, out_file, last_note, pos
         StringMid, out_text, last_note, pos + 2
 
-        if(out_file = "wt")
+        If (out_file <> "wt" and out_file <> "wl")
         {
-            out_file = M:\todo_priority_1\%out_text%.txt
-            FileAppend, `nCreated:%timestamp%`n,%out_file%
+            out_file := "wl"
+            out_text := last_note
         }
-        else if(out_file = "wl")
-        {
-            out_file = %A_ScriptDir%\file\%out_file%_%timestamp%.txt
-            FileAppend, `n%out_text%`n,%out_file%
-        }
-        else
-        {
-            out_file = %sys_drive%\dropbox\notes\%out_file%_%timestamp%.txt
-            FileAppend, `n%out_text%`n,%out_file%
-        }
+    }
+    else
+    {
+        out_file := "wl"
+        out_text := last_note
+    }
+
+    if(out_file = "wt")
+    {
+        out_file = M:\todo_priority_1\%out_text%.txt
+        FileAppend, `nCreated:%timestamp%`n,%out_file%
+    }
+    else if(out_file = "wl")
+    {
+        out_file = %A_ScriptDir%\file\%out_file%_%timestamp%.txt
+        FileAppend, `n%out_text%`n,%out_file%
+    }
+    else
+    {
+        out_file = %A_ScriptDir%\notes\%out_file%_%timestamp%.txt
+        FileAppend, `n%out_text%`n,%out_file%
     }
     notes_list=%notes_list%|%NoteText%
     Sort, notes_list, CL U D|
