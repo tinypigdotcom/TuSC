@@ -100,8 +100,9 @@ X_ProgramFiles = %B_ProgramFiles% (x86)
 TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%B_ProgramFiles%|%X_ProgramFiles%
 fileArray := {A:"B"}
+winList := {A:"B"}
 
-VERSION=quilt ; vv
+VERSION=radish ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -1059,6 +1060,9 @@ GoApp(unique_identifier
 ;------------------------------------------------------------------------------
 {
     global
+
+    save_windows()
+
     max=
     dont_maximize=1 ;forcing for now
     If !dont_maximize
@@ -1111,12 +1115,7 @@ GoApp(unique_identifier
             Run, %command% %parameters%,%working_directory%,%max%
             If dont_maximize
             {
-                WinWait, %search_text%,,%timeout%
-                if !ErrorLevel
-                {
-                    WinActivate
-                    SendInput, ^!1
-                }
+                SetTimer,oneify_new_window,100
             }
             else
             {
@@ -1390,7 +1389,7 @@ return
 
 
 ;------------------------------------------------------------------------------
-oldvi:
+vi:
 ;------------------------------------------------------------------------------
     gui_hide()
     target := find_link("gvim")
@@ -1620,7 +1619,6 @@ GoLink(f_path,link_enter=1,tab_number=0,link_delay=0) ; GoLink:
 
 
 ;------------------------------------------------------------------------------
-vi:
 Explore:
 ;------------------------------------------------------------------------------
     gui_hide()
@@ -5347,6 +5345,48 @@ find_link(filename)
     SplashTextOff
     MsgBox, Failed to find %filename%.
 }
+
+
+save_windows()
+{
+    global
+    winList := {A:"B"}
+
+    WinGet, id, list,,, Program Manager
+    Loop, %id%
+    {
+        this_id := id%A_Index%
+        save_id := "X" . this_id ; avoid conversion to decimal
+        winList[save_id] := 1
+    }
+}
+
+
+find_new_window()
+{
+    global
+
+    WinGet, id, list,,, Program Manager
+    Loop, %id%
+    {
+        this_id := id%A_Index%
+        save_id := "X" . this_id ; avoid conversion to decimal
+        id_lookup := winList[save_id]
+        if(!id_lookup)
+            return this_id
+    }
+}
+
+oneify_new_window:
+    id := find_new_window()
+    if(id)
+    {
+        WinActivate ahk_id %id%
+        SendInput, ^!1
+        SetTimer, oneify_new_window, Off
+    }
+return
+
 
 ;=============================================================================+
 ;=============================================================================+
