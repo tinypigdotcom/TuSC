@@ -317,6 +317,9 @@ poker_msecs=15000
 poker_msecs=300000
 process_poker()
 
+eye_rest_msecs=1200000
+SetTimer,eye_rest,%eye_rest_msecs%
+
 Gosub, initialize_volume
 
 Loading_Progress(60)
@@ -551,6 +554,27 @@ return
     Debug("ohide",3)
     WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
     WinClose, Fences Update Available
+return
+
+
+;--------------------
+    eye_rest:       ; Tell the user to rest his eyes
+;--------------------
+    Debug("eye_rest",3)
+    eye_title=Eye Rest
+
+    SetTimer,toolbar_update,Off
+    progress := 0
+    Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
+
+    Loop, 20
+    {
+        sleep, 1000
+        progress += 5
+        Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
+    }
+    Progress, Off
+    SetTimer,toolbar_update,%toolbar_update_msecs%
 return
 
 
@@ -1384,7 +1408,8 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 TempR:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Gosub, poker
+    Gosub, eye_rest
+;    Gosub, poker
 return
 
 
@@ -2063,22 +2088,22 @@ return
 
 
 ;------------------------------------------------------------------------------
-!F12::F12
+;!F12::F12
 ;------------------------------------------------------------------------------
 
 
 ;------------------------------------------------------------------------------
-$F12::
+;$F12::
 ;------------------------------------------------------------------------------
-    if(check_for_virtualbox())
-        return
-
-    Send {Volume_Up 1}
-    Send {Volume_Down 1}
-    Gosub, vol_display
-    volume_esc=1
-    Gosub, vol_setting0
-return
+;    if(check_for_virtualbox())
+;        return
+;
+;    Send {Volume_Up 1}
+;    Send {Volume_Down 1}
+;    Gosub, vol_display
+;    volume_esc=1
+;    Gosub, vol_setting0
+;return
 
 
 ;------------------------------------------------------------------------------
