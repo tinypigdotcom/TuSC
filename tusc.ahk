@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=radish ; vv
+VERSION=silk ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -117,6 +117,11 @@ ini_file_nopath = %f_FileNoExt%.ini
 ini_file = %customization_dir%\%ini_file_nopath%
 IfNotExist, %ini_file%
     Gosub, build_ini
+
+;new_file_code
+file_file = %A_ScriptDir%\files.ini
+IfNotExist, %file_file%
+    Gosub, build_file_file
 
 dir_file = %A_ScriptDir%\directories.ini
 IfNotExist, %dir_file%
@@ -358,8 +363,6 @@ ReceiveMessage(Message) {
         Gosub Mainmenu
     Else if (Message = 3)
         Gosub Firefox
-    Else if (Message = 4)
-        Gosub EditIni
     Else if (Message = 5)
         Gosub Home
     Else if (Message = 6)
@@ -430,6 +433,17 @@ WM_LBUTTONDOWN(wParam, lParam) ; WM_LBUTTONDOWN:
 ;    IfInString, OutputVar, Jmenu
 ;        ShowTip("You left-clicked in Gui window at client coordinates " . X . "x" . Y . "." . num)
 }
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+build_file_file:
+;------------------------------------------------------------------------------
+FileAppend,
+(
+hosts&c | %sys_drive%\WINDOWS\system32\drivers\etc\hosts
+), %file_file%
+return
 
 
 ;------------------------------------------------------------------------------
@@ -707,6 +721,8 @@ return
     FormatTime, TimeString, ,hh:mm tt    ddd MMM d, yyyy
     Gui, 11:Show, x%toolbar_offset% y0 h20 w%toolbar_width% NoActivate, %A_Space%   %TimeString%      %prog%      Host: %compname%
 
+    directory_refresh()
+    ;new_file_code
     file_refresh()
 
 return
@@ -721,7 +737,7 @@ return
 
 
 ;------------------------------------------------------------------------------
-file_refresh() ; file_refresh:
+directory_refresh() ; file_refresh:
 ;------------------------------------------------------------------------------
 {
     global
@@ -736,6 +752,28 @@ file_refresh() ; file_refresh:
         Gui 65:Destroy
         directory_array_built=0
 Debug("set directories to rebuild")
+    }
+    return
+}
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+file_refresh() ; file_refresh:
+;------------------------------------------------------------------------------
+{
+    global
+
+    f_target = %A_ScriptDir%\files.ini
+
+    FileGetAttrib,attribs,%f_target%
+    IfInString,attribs,A
+    {
+        FileSetAttrib,-A,%f_target%
+        Gui 17:Destroy
+        Gui 67:Destroy
+        file_array_built=0
+Debug("set files to rebuild")
     }
     return
 }
@@ -1432,6 +1470,18 @@ Scratch:
 return
 
 
+;new_file_code
+;------------------------------------------------------------------------------
+Do_file:
+;------------------------------------------------------------------------------
+    Gui, Hide
+    key=%A_GuiControl%
+    f_path := files[key,"file"]
+    f_param := key
+    Gosub, Gofile
+return
+
+
 ;------------------------------------------------------------------------------
 Do_Dir:
 ;------------------------------------------------------------------------------
@@ -1444,97 +1494,39 @@ return
 
 
 ;------------------------------------------------------------------------------
-anim_onec:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = C:\Dropbox\cdev\projects\anim_one\anim_one.c
-    f_param = anim_one
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
 Home:
 ;------------------------------------------------------------------------------
     gui_hide()
     f_path = %A_ScriptFullPath%
     f_param = %A_ScriptName%
-    Gosub, GoFile
+    ;new_file_code
+    Gosub, Gofile
 return
 
 
+;new_file_code
 ;------------------------------------------------------------------------------
-ini:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %ini_file%
-    f_param = %ini_file_nopath%
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-grid:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %sys_drive%\Program Files (x86)\GridMove\Grids\2 Part-Horizontal-b.grid
-    f_param = Horizontal
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-hostsc:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %sys_drive%\WINDOWS\system32\drivers\etc\hosts
-    f_param = hosts
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-kickstart:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %sys_drive%\docs\kickstart2.html
-    f_param = kickstart
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-log:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %A_ScriptDir%\tscdebug.txt
-    f_param = debug
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-GoFile:
+Gofile:
 ;------------------------------------------------------------------------------
     If f_path =
         return
-    IfWinExist, %f_param%
+
+    SplitPath, f_path, f_basename
+
+    DetectHiddenWindows, off
+
+    IfWinExist, %f_basename%
     {
         WinActivate
         return
     }
+;    Run, "%f_path%" ; open in windows explorer. don't forget winactivate
+    Transform, f_path, deref, %f_path%
     target := find_link("gvim")
     Run, %target% "%f_path%"
-
-    oldTMM := A_TitleMatchMode
-    SetTitleMatchMode, 2
-    WinWait, %f_param%,,%timeout%
-
+    WinWait, %f_basename%,,%timeout%
     WinActivate
     Send ^!1
-
-    SetTitleMatchMode, %oldTMM%
-    DetectHiddenWindows, %oldDHW%
 return
 
 
@@ -2179,15 +2171,8 @@ init_guis:
         Main,            C&hrome,          ; Chrome
         Main,            &Cygwin,          ; Cygwin
         Main,            &Directories,     ; Directories
+        Main,            F&ilies,          ; Filies
         Main,            E&xplore,         ; Explore
-        Main,            F&iles,           ; Files
-          Files,         &anim_one.c,      ; anim_one.c
-          Files,         &Home,            ; Home
-          Files,         hosts&c,          ; hostsc
-          Files,         &grid,            ; grid
-          Files,         &Ini,             ; Ini
-          Files,         &kickstart,       ; kickstart
-          Files,         &log,             ; log
         Main,            &Firefox,         ; Firefox
         Main,            F&unctions,       ; Functions
           Functions,     &Compile,         ; Compile
@@ -2367,7 +2352,6 @@ return
 All_Menus:
 ;------------------------------------------------------------------------------
 Applications:
-Files:
 Functions:
 GamKeys:
 Links:
@@ -2378,6 +2362,72 @@ Workstation:
     gui_hide()
     gui_name=%A_ThisLabel%
     Gosub, Show_GUI
+return
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+show_gui_files_17:
+;------------------------------------------------------------------------------
+    Gui 17:Default
+    Gui +LastFoundExist
+    IfWinNotExist
+    {
+        Gui +Owner
+        Gosub, build_file_array
+        opt=Left
+        yy=7
+        For key, value in files
+        {
+            label := files[key,"label"]
+            Gui, Add, Button, x6 y%yy% w130 h20 %opt% gDo_file v%key%, %label%  ; Do_file
+            yy+=20
+        }
+        yy+=10
+        Gui, Add, Button, x6 y%yy% w130 h20 %opt% default gAdd_file, &Add ( A )   ; Add_file
+        yy+=30
+        Gui, Add, Button, x6 y%yy% w130 h20 %opt% default gEdit_files, &Edit ( E )   ; Edit_files
+        yy+=30
+        Gui, Add, Button, x6 y%yy% w130 h20 %opt% default gDo_Just_Quit vJustQuit, &JustQuit ( J )   ; Do_Just_Quit
+    }
+    Gui, +ToolWindow
+    Gui, Show, h%mh% w146, Files
+    Gui, +AlwaysOnTop
+    GuiControl, Focus, JustQuit
+return
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+show_gui_files_67:
+;------------------------------------------------------------------------------
+    Gui 67:Default
+
+    Gui +LastFoundExist
+    IfWinNotExist
+    {
+        Gui +Owner
+        Gosub, build_file_array
+        opt=Left
+        xx=6
+        yy=7
+        For key, value in files
+        {
+            slabel := files[key,"slabel"]
+            Gui, Add, Button, x%xx% y%yy% w20 h20 %opt% gDo_file v%key%, %slabel%  ; Do_file
+            xx+=20
+            if(xx > 86)
+            {
+                xx=6
+                yy+=20
+            }
+        }
+        Gui, Add, Button, x86 y87 w20 h20 gDo_Just_Quit vJustQuit, &J ; Do_Just_Quit
+    }
+    Gui, +ToolWindow
+    Gui, Show, h119 w117, files
+    Gui, +AlwaysOnTop
+    GuiControl, Focus, JustQuit
 return
 
 
@@ -2442,6 +2492,41 @@ show_gui_directories_65:
     Gui, Show, h119 w117, Directories
     Gui, +AlwaysOnTop
     GuiControl, Focus, JustQuit
+return
+
+
+;new_file_code
+build_file_array:
+    files   := Array()
+    files_L := Array()
+    if(!file_array_built) {
+        Loop, read, %A_ScriptDir%\files.ini
+        {
+            thisline=%A_LoopReadLine%
+            IfInString, thisline, |
+            {
+                StringSplit, fileArray, thisline, |
+                label = %fileArray1%
+                orig = %label%
+                key := RegExReplace(label, "\W", "")
+                slabel=
+                FoundPos := RegExMatch(label, "&(.)", UnquotedOutputVar)
+                if(FoundPos)
+                {
+                    StringUpper, OutputVar, UnquotedOutputVar1
+                    label := label . " ( " . OutputVar . " )"
+                    slabel := "&" . OutputVar
+                }
+                file = %fileArray2%
+                files[key,"orig"] := orig
+                files[key,"label"] := label
+                files[key,"slabel"] := slabel
+                files[key,"file"] := file
+
+                files_L[label,"file"] := file
+            }
+        }
+    }
 return
 
 
@@ -3153,6 +3238,78 @@ NEO_Jmenu:
 return
 
 
+;new_file_code
+;------------------------------------------------------------------------------
+Add_file:
+;------------------------------------------------------------------------------
+    gui_hide()
+    FileSelectFile, file_path, 3
+    if file_path <>
+    {
+        default_label := RegExReplace(file_path, ".*\\", "")
+        InputBox, label, Enter Label, Enter a label for %file_path%.,,,,,,,,&%default_label%
+        if !ErrorLevel
+        {
+            add_file(label,file_path)
+        }
+    }
+return
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+add_file(label,org) ; add_file:
+;------------------------------------------------------------------------------
+{
+    global
+
+    key := RegExReplace(label, "\W", "")
+    files[key,"orig"] := label
+    files[key,"file"] := org
+    write_files_file()
+    return
+}
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+write_files_file() ; write_files_file
+;------------------------------------------------------------------------------
+{
+    global
+
+    this_file=tmporg.ini
+    f_path = %A_ScriptDir%\%this_file%
+
+    FileDelete, %f_path%
+
+    For key, value in files
+    {
+        label := files[key,"orig"]
+        org := files[key,"file"]
+        FileAppend, %label% | %org%`n,%f_path%
+    }
+
+    f_target = %A_ScriptDir%\files.ini
+
+    FileMove, %f_path%, %f_target%, 1
+
+    return
+}
+
+
+;new_file_code
+;------------------------------------------------------------------------------
+Edit_files:
+;------------------------------------------------------------------------------
+    gui_hide()
+    this_file=files.ini
+    f_path = %A_ScriptDir%\%this_file%
+    f_param = %this_file%
+    Gosub, Gofile
+return
+
+
 ;------------------------------------------------------------------------------
 Add_Directory:
 ;------------------------------------------------------------------------------
@@ -3167,6 +3324,28 @@ Add_Directory:
             add_directory(label,folder_path)
         }
     }
+return
+
+
+;------------------------------------------------------------------------------
+EditIni:
+;------------------------------------------------------------------------------
+    gui_hide()
+    f_path = %ini_file%
+    f_param = %ini_file_nopath%
+    ;new_file_code
+    Gosub, Gofile
+return
+
+
+;------------------------------------------------------------------------------
+EditScript:
+;------------------------------------------------------------------------------
+    gui_hide()
+    f_path = %A_ScriptFullPath%
+    f_param = %A_ScriptName%
+    ;new_file_code
+    Gosub, Gofile
 return
 
 
@@ -3220,27 +3399,8 @@ Edit_Directories:
     this_file=directories.ini
     f_path = %A_ScriptDir%\%this_file%
     f_param = %this_file%
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-EditIni:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %ini_file%
-    f_param = %ini_file_nopath%
-    Gosub, GoFile
-return
-
-
-;------------------------------------------------------------------------------
-EditScript:
-;------------------------------------------------------------------------------
-    gui_hide()
-    f_path = %A_ScriptFullPath%
-    f_param = %A_ScriptName%
-    Gosub, GoFile
+    ;new_file_code
+    Gosub, Gofile
 return
 
 
@@ -3523,6 +3683,26 @@ Wikipedia:
 ;------------------------------------------------------------------------------
     gui_hide()
     GoLink("http://en.wikipedia.org/w/index.php?search=",0)
+return
+
+
+;new_file_code
+;---------------------------
+Filies:               ;
+;---------------------------
+    Debug("2Buttonfiles")
+    gui_hide()
+    this_gui := 17 + private_on * private_gui_start
+    Gosub, show_gui_files_%this_gui%
+return
+
+17ButtonOK:
+17GuiClose:
+    Gui, 17:Submit
+17ButtonCancel:
+17GuiEscape:
+17ButtonJustQuit:
+    Gui, Hide
 return
 
 
