@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=torte ; vv
+VERSION=uvula ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -112,11 +112,17 @@ OnExit, ExitSub
 
 SplitPath, A_ScriptName,,, f_FileExt, f_FileNoExt
 
-customization_dir = M:
 ini_file_nopath = %f_FileNoExt%.ini
-ini_file = %customization_dir%\%ini_file_nopath%
+ini_file = %A_ScriptDir%\%ini_file_nopath%
 IfNotExist, %ini_file%
     Gosub, build_ini
+
+IniRead, CustomizationDir, %ini_file%, settings, customization_dir, %A_ScriptDir%
+
+my_ini_file_nopath = my_%f_FileNoExt%.ini
+my_ini_file = %CustomizationDir%\my_%ini_file_nopath%
+IfNotExist, %my_ini_file%
+    Gosub, build_my_ini
 
 ;new_file_code
 file_file = %customization_dir%\files.ini
@@ -470,23 +476,29 @@ return
 ;------------------------------------------------------------------------------
 build_ini:
 ;------------------------------------------------------------------------------
-    IniWrite, 1,           %ini_file%, settings, rotate_tray_icon_when_mute
-    IniWrite, 0,           %ini_file%, settings, run_poker_routine
-    IniWrite, 0,           %ini_file%, settings, run_ohide_routine
-    IniWrite, 0,           %ini_file%, settings, run_ocred_routine
+    IniWrite, 1,             %ini_file%, settings, rotate_tray_icon_when_mute
+    IniWrite, 0,             %ini_file%, settings, run_poker_routine
+    IniWrite, 0,             %ini_file%, settings, run_ohide_routine
+    IniWrite, 0,             %ini_file%, settings, run_ocred_routine
+    IniWrite, %A_ScriptDir%, %ini_file%, settings, customization_dir
 
-    IniWrite, 1,           %ini_file%, state,  sound
+    IniWrite, 1,             %ini_file%, state,  sound
+return
 
-    IniWrite, one,         %ini_file%, string, mystring1
-    IniWrite, two,         %ini_file%, string, mystring2
-    IniWrite, three,       %ini_file%, string, mystring3
-    IniWrite, four,        %ini_file%, string, mystring4
-    IniWrite, five,        %ini_file%, string, mystring5
-    IniWrite, six,         %ini_file%, string, mystring6
-    IniWrite, seven,       %ini_file%, string, mystring7
-    IniWrite, eight,       %ini_file%, string, mystring8
-    IniWrite, nine,        %ini_file%, string, mystring9
-    IniWrite, ten,         %ini_file%, string, mystring0
+
+;------------------------------------------------------------------------------
+build_my_ini:
+;------------------------------------------------------------------------------
+    IniWrite, one,         %my_ini_file%, string, mystring1
+    IniWrite, two,         %my_ini_file%, string, mystring2
+    IniWrite, three,       %my_ini_file%, string, mystring3
+    IniWrite, four,        %my_ini_file%, string, mystring4
+    IniWrite, five,        %my_ini_file%, string, mystring5
+    IniWrite, six,         %my_ini_file%, string, mystring6
+    IniWrite, seven,       %my_ini_file%, string, mystring7
+    IniWrite, eight,       %my_ini_file%, string, mystring8
+    IniWrite, nine,        %my_ini_file%, string, mystring9
+    IniWrite, ten,         %my_ini_file%, string, mystring0
 return
 
 
@@ -2153,11 +2165,12 @@ init_guis:
     ; formatting is for ease of reading and does not matter to the parser
     Gui 66:Show, w300 h40 hide, TuSC - message receiver
 
+;        Main,            Maximize_&2       ; Maximize_2
+;        Main,            Minimize_&3       ; Minimize_3
+;        Main,            &Outlook,         ; Outlook
     buttons =
     (
         Main,            &1-ify,           ; 1ify
-        Main,            Maximize_&2       ; Maximize_2
-        Main,            Minimize_&3       ; Minimize_3
         Main,            Close_&4          ; Close_4
         Main,            Close_Tab_&W      ; Close_Tab_W
         Main,            &AeroView,        ; AeroView
@@ -2202,7 +2215,6 @@ init_guis:
         Main,            New_Tab_&Z        ; New_Tab_Z
         Main,            &Note             ; Note
         Main,            Options &B,       ; OptionsB
-        Main,            &Outlook,         ; Outlook
         Main,            &QuickStart,      ; QuickStart
         Main,            Re&mote,          ; Remote
         Main,            &Scratch,         ; Scratch
@@ -3115,7 +3127,7 @@ refresh_ini_value(var, section) ; refresh_ini_value:
     global
     Debug("var=" . var,3)
     Debug("section=" . section,3)
-    IniRead, varvalue, %ini_file%, %section%, %var%
+    IniRead, varvalue, %my_ini_file%, %section%, %var%
     StringLeft, OutputVar, var, 8
     If OutputVar = mystring
     {
