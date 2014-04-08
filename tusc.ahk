@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=silk ; vv
+VERSION=torte ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -119,7 +119,7 @@ IfNotExist, %ini_file%
     Gosub, build_ini
 
 ;new_file_code
-file_file = %A_ScriptDir%\files.ini
+file_file = %customization_dir%\files.ini
 IfNotExist, %file_file%
     Gosub, build_file_file
 
@@ -497,8 +497,8 @@ return
     nwidth := f_width() - 310
     nheight := f_height() - 150
 
-    nwidth := nwidth - (reminder_count * 5)
-    nheight := nheight - (reminder_count * 5)
+    nwidth := nwidth - (reminder_count * 10)
+    nheight := nheight - (reminder_count * 10)
 
     reminder_count++
     if(reminder_count > 5)
