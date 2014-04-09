@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=uvula ; vv
+VERSION=viper ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -159,7 +159,7 @@ Loading_Progress(20)
 ;
 ; Template debug statement:
 ;
-; Debug("myvar: " . myvar,1) ;xd
+; lib_debug("myvar: " . myvar,1) ;xd
 ;
 debug_level=1
 debug_text=
@@ -172,7 +172,7 @@ if(A_OSVersion = "WIN_7")
 
 RM_suspend_state=0
 rm4_vbox_suspended=0
-Debug("0:rm4_vbox_suspend")
+lib_debug("0:rm4_vbox_suspend")
 rm4_is_alive=1
 rm4_is_alive1=1
 rm4_is_alive2=0
@@ -314,7 +314,7 @@ Loading_Progress(50)
 
 debug_y_offset = 0
 
-Debug("started")
+lib_debug("started")
 
 ohide_msecs=500
 process_ohide()
@@ -505,7 +505,7 @@ return
 ;--------------------
      poker:         ; Show Work Log reminder xtimer
 ;--------------------
-    Debug("poker")
+    lib_debug("poker")
     nwidth := f_width() - 310
     nheight := f_height() - 150
 
@@ -577,7 +577,7 @@ return
 ;--------------------
      ohide:         ; Hide annoying windows xtimer
 ;--------------------
-    Debug("ohide",3)
+    lib_debug("ohide",3)
     WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
     WinClose, Fences Update Available
 return
@@ -586,7 +586,7 @@ return
 ;--------------------
     eye_rest:       ; Tell the user to rest his eyes
 ;--------------------
-    Debug("eye_rest",3)
+    lib_debug("eye_rest",3)
     eye_title=Eye Rest
 
     SetTimer,toolbar_update,Off
@@ -608,7 +608,7 @@ return
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
 ;--------------------
 
-    Debug("toolbar_update",3)
+    lib_debug("toolbar_update",3)
 
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
@@ -763,7 +763,7 @@ directory_refresh() ; file_refresh:
         Gui 15:Destroy
         Gui 65:Destroy
         directory_array_built=0
-Debug("set directories to rebuild")
+lib_debug("set directories to rebuild")
     }
     return
 }
@@ -785,7 +785,7 @@ file_refresh() ; file_refresh:
         Gui 17:Destroy
         Gui 67:Destroy
         file_array_built=0
-Debug("set files to rebuild")
+lib_debug("set files to rebuild")
     }
     return
 }
@@ -794,7 +794,7 @@ Debug("set files to rebuild")
 ;--------------------
      ocred:         ; Auto-enter credentials xtimer
 ;--------------------
-    Debug("ocred",3)
+    lib_debug("ocred",3)
 
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
@@ -995,13 +995,13 @@ FindWindow(title,exclude_title,text="",exclude_text="",ask=0) ; FindWindow:
                 this_flag := Question("This one?")
                 if this_flag = 1
                 {
-                    Debug("FindWindow found id by asking: " . this_id)
+                    lib_debug("FindWindow found id by asking: " . this_id)
                     return %this_id%
                 }
             }
             else
             {
-                Debug("FindWindow found id: " . this_id)
+                lib_debug("FindWindow found id: " . this_id)
                 return %this_id%
             }
         }
@@ -1022,64 +1022,6 @@ Question(text,h_axis=0) ; Question:
     IfMsgBox Yes
         answer_flag++
     return %answer_flag%
-}
-
-
-;------------------------------------------------------------------------------
-Debug(dtext,item_debug_level=2) ; Debug:
-;------------------------------------------------------------------------------
-{
-    global debug_level
-    global debug_text
-    global lastwin
-
-    debug_x := A_ScreenWidth  - 400
-    debug_y := A_ScreenHeight - 75
-
-    FormatTime, TimeString,, yyyy-MM-dd HH:mm
-    if(debug_level >= item_debug_level)
-    {
-        diagnostic_info=%TimeString% %A_ScriptName%
-        FileAppend, %diagnostic_info%: %dtext%`r`n, %A_ScriptDir%\tscdebug.txt
-        DebugText(dtext)
-    }
-    return
-}
-
-
-;------------------------------------------------------------------------------
-DebugText(dtext) ; DebugText:
-;------------------------------------------------------------------------------
-{
-    global debug_text, SHOWTIP_DEBUG
-
-    debug_x := A_ScreenWidth  - 400
-    debug_y := A_ScreenHeight - 75
-
-    if debug_text
-    {
-        debug_text = %debug_text%`n.    %dtext%
-    }
-    else
-    {
-        debug_text = .    %dtext%
-    }
-    debug_y_offset += 12
-    tmp_debug_y := debug_y - debug_y_offset
-    ShowTip(debug_text . "    `n", debug_x, tmp_debug_y, SHOWTIP_DEBUG)
-    SetTimer, DisableDebugTip, 9000
-    return
-}
-
-
-DisableDebugTip:
-{
-    global SHOWTIP_DEBUG
-    debug_text=
-    debug_y_offset = 0
-    SetTimer, DisableDebugTip, Off
-    ClearTip(SHOWTIP_DEBUG)
-    return
 }
 
 
@@ -1144,7 +1086,7 @@ GoApp(unique_identifier
     Transform, id, deref, `%%unique_identifier%_id`%
     IfWinExist, ahk_id %id%
     {
-        Debug("I already have this window ID: " . id)
+        lib_debug("I already have this window ID: " . id)
         WinActivate
     }
     else
@@ -1160,13 +1102,13 @@ GoApp(unique_identifier
 
         Loop
         {
-            Debug("Trying to find window via search_text: " . search_text)
+            lib_debug("Trying to find window via search_text: " . search_text)
             if(!always_start_new)
             {
                 fw_id := FindWindow(search_text,exclude_text,"","",ask_user_which_one)
                 if fw_id
                 {
-                    Debug("Found window via search_text. Activating.")
+                    lib_debug("Found window via search_text. Activating.")
                     WinActivate ahk_id %fw_id%
                     id=%fw_id%
                     break
@@ -1174,10 +1116,10 @@ GoApp(unique_identifier
 
                 if(alternate_search_text)
                 {
-                    Debug("Trying to locate window via alternate_search_text: " . alternate_search_text)
+                    lib_debug("Trying to locate window via alternate_search_text: " . alternate_search_text)
                     IfWinExist, %alternate_search_text%,,%exclude_text%
                     {
-                        Debug("Found via alternate_search_text. Activating.")
+                        lib_debug("Found via alternate_search_text. Activating.")
                         WinActivate
                         WinGet, id, ID, A
                         break
@@ -1185,7 +1127,7 @@ GoApp(unique_identifier
                 }
             }
 
-            Debug("Could not find window.  Launching.")
+            lib_debug("Could not find window.  Launching.")
             Run, %command% %parameters%,%working_directory%,%max%
             If dont_maximize
             {
@@ -1457,8 +1399,9 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 ;------------------------------------------------------------------------------
 TempR:
 ;------------------------------------------------------------------------------
-    gui_hide()
-    Gosub, eye_rest
+    lib_debug(A_MyDocuments,1)
+;    gui_hide()
+;    Gosub, eye_rest
 ;    Gosub, poker
 return
 
@@ -1702,9 +1645,9 @@ gui_hide() ; gui_hide:
 ;------------------------------------------------------------------------------
 RM4SuspendToggle:
 ;------------------------------------------------------------------------------
-    Debug("RM4SuspendToggle")
+    lib_debug("RM4SuspendToggle")
     rm4_vbox_suspended=0
-Debug("1:rm4_vbox_suspended" . rm4_vbox_suspended)
+lib_debug("1:rm4_vbox_suspended" . rm4_vbox_suspended)
     if(!rm4_is_alive)
     {
         Gosub, RadialMenu
@@ -1719,47 +1662,47 @@ Debug("1:rm4_vbox_suspended" . rm4_vbox_suspended)
 return
 
 rm4_vbox_suspend:
-    Debug("rm4_vbox_suspend")
+    lib_debug("rm4_vbox_suspend")
     rm4_vbox_suspended=1
-Debug("2:rm4_vbox_suspended" . rm4_vbox_suspended)
+lib_debug("2:rm4_vbox_suspended" . rm4_vbox_suspended)
     line2=RM_suspend_state=%RM_suspend_state%      rm4_vbox_suspended=%rm4_vbox_suspended%      rm4_is_alive=%ra%      rm4_is_alive1=%ra1%      rm4_vbox_suspended=%rm4_vbox_suspended%
-Debug(line2)
+lib_debug(line2)
     Gosub, SuspendOnRM
 return
 
 rm4_vbox_unsuspend:
-    Debug("rm4_vbox_unsuspend")
+    lib_debug("rm4_vbox_unsuspend")
     if(rm4_vbox_suspended)
     {
         Gosub, SuspendOffRM
         rm4_vbox_suspended=0
-Debug("3:rm4_vbox_suspended" . rm4_vbox_suspended)
+lib_debug("3:rm4_vbox_suspended" . rm4_vbox_suspended)
     line2=RM_suspend_state=%RM_suspend_state%      rm4_vbox_suspended=%rm4_vbox_suspended%      rm4_is_alive=%ra%      rm4_is_alive1=%ra1%      rm4_vbox_suspended=%rm4_vbox_suspended%
-Debug(line2)
+lib_debug(line2)
     }
 return
 
 RM_is_suspended:
-    Debug("RM_is_suspended")
+    lib_debug("RM_is_suspended")
     rm4_is_alive=1
     RM_suspend_state=1
     Gosub show_rm4_suspend_indicator
 return
 
 RM_is_not_suspended:
-    Debug("RM_is_not_suspended")
+    lib_debug("RM_is_not_suspended")
     rm4_is_alive=1
     RM_suspend_state=0
     Gosub hide_rm4_suspend_indicator
 return
 
 hide_rm4_suspend_indicator:
-    Debug("hide_rm4_suspend_indicator")
+    lib_debug("hide_rm4_suspend_indicator")
     GuiControl, 11:Hide, RSus
 return
 
 show_rm4_suspend_indicator:
-    Debug("show_rm4_suspend_indicator")
+    lib_debug("show_rm4_suspend_indicator")
     GuiControl, 11:Show, RSus
 return
 
@@ -1795,7 +1738,7 @@ return
 ;------------------------------------------------------------------------------
 SuspendOffRM:
 ;------------------------------------------------------------------------------
-    Debug("SuspendOffRM")
+    lib_debug("SuspendOffRM")
     if(RM_suspend_state)
     {
         PostMessage("Radial menu - message receiver", 30)
@@ -1807,7 +1750,7 @@ return
 ;------------------------------------------------------------------------------
 SuspendOnRM:
 ;------------------------------------------------------------------------------
-    Debug("SuspendOnRM")
+    lib_debug("SuspendOnRM")
     if(!RM_suspend_state)
     {
 ; Disabling for now as it is annoying
@@ -1820,7 +1763,7 @@ return
 ;------------------------------------------------------------------------------
 ToggleSuspendRM:
 ;------------------------------------------------------------------------------
-    Debug("ToggleSuspendRM")
+    lib_debug("ToggleSuspendRM")
     gui_hide()
     PostMessage("Radial menu - message receiver", 32)
 return
@@ -3125,8 +3068,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("var=" . var,3)
-    Debug("section=" . section,3)
+    lib_debug("var=" . var,3)
+    lib_debug("section=" . section,3)
     IniRead, varvalue, %my_ini_file%, %section%, %var%
     StringLeft, OutputVar, var, 8
     If OutputVar = mystring
@@ -3166,7 +3109,7 @@ NEO_Jmenu:
 
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
-    Debug("lastwin=" . lastwin)
+    lib_debug("lastwin=" . lastwin)
 
     Gosub, esc_key
 
@@ -3640,7 +3583,7 @@ Mainmenu:
     CoordMode, Mouse, Screen
 
     WinGet, lastwin, ID, A
-    Debug("lastwin=" . lastwin)
+    lib_debug("lastwin=" . lastwin)
 
     Gosub, esc_key
 
@@ -3702,7 +3645,7 @@ return
 ;---------------------------
 Filies:               ;
 ;---------------------------
-    Debug("2Buttonfiles")
+    lib_debug("2Buttonfiles")
     gui_hide()
     this_gui := 17 + private_on * private_gui_start
     Gosub, show_gui_files_%this_gui%
@@ -3721,7 +3664,7 @@ return
 ;---------------------------
 Directories:               ;
 ;---------------------------
-    Debug("2ButtonDirectories")
+    lib_debug("2ButtonDirectories")
     gui_hide()
     this_gui := 15 + private_on * private_gui_start
     Gosub, show_gui_directories_%this_gui%
@@ -3985,11 +3928,11 @@ NEO_Timestamp:
     gui_hide()
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
-    Debug("lastwin=" . lastwin)
+    lib_debug("lastwin=" . lastwin)
 
     Gosub, esc_key
 
-    Debug("timestamp_gui")
+    lib_debug("timestamp_gui")
 
     this_gui := 12 + private_on * private_gui_start
     Gosub, show_gui_timestamp_%this_gui%
@@ -4336,22 +4279,22 @@ process_volume_icon(volume=-1) ; process_volume_icon:
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("process_volume_icon")
-    Debug("    volume: " . volume)
+    lib_debug("process_volume_icon")
+    lib_debug("    volume: " . volume)
     if(volume=-1)
     {
         SoundGet, volume, Master
     }
-    Debug("    volume: " . volume)
-    Debug("    SettingRotate: " . SettingRotate)
+    lib_debug("    volume: " . volume)
+    lib_debug("    SettingRotate: " . SettingRotate)
     if(volume or !SettingRotate)
     {
-        Debug("    setting prog icon:" . prog_icon)
+        lib_debug("    setting prog icon:" . prog_icon)
         menu,tray,icon,%prog_icon%
     }
     else
     {
-        Debug("    setting mute icon:" . mute_icon)
+        lib_debug("    setting mute icon:" . mute_icon)
         menu,tray,icon,%mute_icon%
     }
     return
@@ -4387,23 +4330,23 @@ process_ohide(ohide_status=-1) ; process_ohide:
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("process_ohide")
-    Debug("    ohide_status: " . ohide_status)
+    lib_debug("process_ohide")
+    lib_debug("    ohide_status: " . ohide_status)
     if(ohide_status=-1)
     {
         IniRead, SettingOhide,   %ini_file%, settings, run_ohide_routine, 0
         ohide_status := SettingOhide
     }
-    Debug("    ohide_status: " . ohide_status)
-    Debug("    SettingOhide: " . SettingOhide)
+    lib_debug("    ohide_status: " . ohide_status)
+    lib_debug("    SettingOhide: " . SettingOhide)
     if(ohide_status)
     {
-        Debug("    enabling ohide")
+        lib_debug("    enabling ohide")
         SetTimer,ohide,%ohide_msecs%
     }
     else
     {
-        Debug("    disabling ohide")
+        lib_debug("    disabling ohide")
         SetTimer,ohide,Off
     }
     return
@@ -4415,23 +4358,23 @@ process_ocred(ocred_status=-1) ; process_ocred:
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("process_ocred")
-    Debug("    ocred_status: " . ocred_status)
+    lib_debug("process_ocred")
+    lib_debug("    ocred_status: " . ocred_status)
     if(ocred_status=-1)
     {
         IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine, 0
         ocred_status := SettingOcred
     }
-    Debug("    ocred_status: " . ocred_status)
-    Debug("    SettingOcred: " . SettingOcred)
+    lib_debug("    ocred_status: " . ocred_status)
+    lib_debug("    SettingOcred: " . SettingOcred)
     if(ocred_status)
     {
-        Debug("    enabling ocred")
+        lib_debug("    enabling ocred")
         SetTimer,ocred,%ocred_msecs%
     }
     else
     {
-        Debug("    disabling ocred")
+        lib_debug("    disabling ocred")
         SetTimer,ocred,Off
     }
     return
@@ -4443,23 +4386,23 @@ process_poker(poker_status=-1) ; process_poker:
 ;------------------------------------------------------------------------------
 {
     global
-    Debug("process_poker")
-    Debug("    poker_status: " . poker_status)
+    lib_debug("process_poker")
+    lib_debug("    poker_status: " . poker_status)
     if(poker_status=-1)
     {
         IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine, 0
         poker_status := SettingPoker
     }
-    Debug("    poker_status: " . poker_status)
-    Debug("    SettingPoker: " . SettingPoker)
+    lib_debug("    poker_status: " . poker_status)
+    lib_debug("    SettingPoker: " . SettingPoker)
     if(poker_status)
     {
-        Debug("    enabling poker")
+        lib_debug("    enabling poker")
         SetTimer,poker,%poker_msecs%
     }
     else
     {
-        Debug("    disabling poker")
+        lib_debug("    disabling poker")
         SetTimer,poker,Off
     }
     return
@@ -5425,7 +5368,7 @@ Note:
     gui_hide()
 
     WinGet, lastwin, ID, A
-    Debug("lastwin=" . lastwin)
+    lib_debug("lastwin=" . lastwin)
 
     Gui, 11:Show
     GuiControl, 11:, SettingSave, 0
