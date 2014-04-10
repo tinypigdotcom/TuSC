@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=viper ; vv
+VERSION=water ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -159,6 +159,8 @@ Loading_Progress(20)
 ;
 ; Template debug statement:
 ;
+; CINT: Counter-intuitive - spaces between dot are significant, ex: ."text" is
+; an empty string
 ; lib_debug("myvar: " . myvar,1) ;xd
 ;
 debug_level=1
@@ -2689,6 +2691,19 @@ Gui, 11:+ToolWindow
         toolbar_margin=6
         toolbar_offset=70
         toolbar_width := A_ScreenWidth - toolbar_offset - toolbar_margin
+        IniRead, SelectedItem,  %my_ini_file%, settings, selected_item
+        ; SELECTED item to be followed by two pipes to indicate it is selected
+        StringReplace, notes_list, notes_list, %SelectedItem%, %SelectedItem%|
+        ; First pipe says replace list, second pipe in case last item is selected item
+        ; CINT: Counter-intuitive - to indicate replace, lead with a pipe.
+        ; Changing the variable value to control the path through the code
+        notes_list := "|" . notes_list . "|"
+        ; CINT: Counter-intuitive - I have to specify GUI# to get to variable name
+        ; even if there is only one variable named that.
+        ; FQUI: Fails quietly - although it would respond to try-catch, and sets ErrorLevel,
+        ; if it fails to update a control for whatever reason, it won't tell
+        ; you, and even with try-catch, it doesn't tell you why
+        GuiControl, 11:, NoteText, %notes_list%
         Gosub, toolbar_update
         gui_toolbar_built++
     }
@@ -5428,6 +5443,8 @@ note_cont:
     Sort, notes_list, CL U D|
     GuiControl, 11:, NoteText, |%notes_list%
     GuiControl, 11:Text, NoteText, %NoteText%
+    IniWrite, %NoteText%, %my_ini_file%, settings, selected_item
+    IniWrite, Value, Filename, Section [, Key]
     if(SettingSave)
     {
         save_notes_list=%save_notes_list%|%NoteText%
