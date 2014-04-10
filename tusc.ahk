@@ -504,6 +504,51 @@ build_my_ini:
 return
 
 
+; DTT - difficult to troubleshoot. For some reason, calls to refresh toolbar
+; routine wipe out calls to lib_warn, lib_say. It may have something to do
+; with a hide_gui or assigning a progress number or "channel"
+;--------------------
+    eye_rest_old:   ; Tell the user to rest his eyes
+;--------------------
+    SetTimer,toolbar_update,Off
+    lib_say("Eye rest!")
+    return
+    lib_debug("eye_rest",3)
+    eye_title=Eye Rest
+
+    SetTimer,toolbar_update,Off
+    progress := 0
+    Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
+
+    Loop, 20
+    {
+        sleep, 1000
+        progress += 5
+        Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
+    }
+    Progress, Off
+    SetTimer,toolbar_update,%toolbar_update_msecs%
+return
+
+
+;--------------------
+     eye_rest:      ; Tell the user to rest his eyes
+;--------------------
+    lib_debug("eye_rest")
+
+    if(!private_on)
+    {
+        MsgBox, 4096, , Eye Rest!, 20
+    }
+    else
+    {
+        GuiControl, 11:Hide, PrivateOn
+        Sleep, 250
+        GuiControl, 11:Show, PrivateOn
+    }
+return
+
+
 ;--------------------
      poker:         ; Show Work Log reminder xtimer
 ;--------------------
@@ -521,7 +566,7 @@ return
     if(!private_on)
     {
         Progress, %PROGRESS_POKER%:x%nwidth% y%nheight% h100 cwFFFF00 m2 b fs28 zh0, Work Log, , , Courier New
-        SetTimer, DisablePoker, 5000
+        SetTimer, DisablePoker, -5000
     }
     else
     {
@@ -582,27 +627,6 @@ return
     lib_debug("ohide",3)
     WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
     WinClose, Fences Update Available
-return
-
-
-;--------------------
-    eye_rest:       ; Tell the user to rest his eyes
-;--------------------
-    lib_debug("eye_rest",3)
-    eye_title=Eye Rest
-
-    SetTimer,toolbar_update,Off
-    progress := 0
-    Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
-
-    Loop, 20
-    {
-        sleep, 1000
-        progress += 5
-        Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
-    }
-    Progress, Off
-    SetTimer,toolbar_update,%toolbar_update_msecs%
 return
 
 
@@ -883,7 +907,7 @@ Hibernate:
 ;------------------------------------------------------------------------------
     gui_hide()
     SoundBeep,700,700
-    MsgBox, 3, ,Hibernating in 5 seconds unless you cancel..., 5
+    MsgBox, 4099, ,Hibernating in 5 seconds unless you cancel..., 5
     IfMsgBox No
         return
     IfMsgBox Cancel
@@ -1401,10 +1425,8 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 ;------------------------------------------------------------------------------
 TempR:
 ;------------------------------------------------------------------------------
-    lib_debug(A_MyDocuments,1)
-;    gui_hide()
-;    Gosub, eye_rest
-;    Gosub, poker
+    gui_hide()
+    Gosub, eye_rest
 return
 
 
@@ -5444,7 +5466,6 @@ note_cont:
     GuiControl, 11:, NoteText, |%notes_list%
     GuiControl, 11:Text, NoteText, %NoteText%
     IniWrite, %NoteText%, %my_ini_file%, settings, selected_item
-    IniWrite, Value, Filename, Section [, Key]
     if(SettingSave)
     {
         save_notes_list=%save_notes_list%|%NoteText%
