@@ -507,30 +507,8 @@ return
 ; DTT - difficult to troubleshoot. For some reason, calls to refresh toolbar
 ; routine wipe out calls to lib_warn, lib_say. It may have something to do
 ; with a hide_gui or assigning a progress number or "channel"
-;--------------------
-    eye_rest_old:   ; Tell the user to rest his eyes
-;--------------------
-    SetTimer,toolbar_update,Off
-    lib_say("Eye rest!")
-    return
-    lib_debug("eye_rest",3)
-    eye_title=Eye Rest
-
-    SetTimer,toolbar_update,Off
-    progress := 0
-    Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
-
-    Loop, 20
-    {
-        sleep, 1000
-        progress += 5
-        Progress, %progress%, %progress%`%, %eye_title%, %eye_title%
-    }
-    Progress, Off
-    SetTimer,toolbar_update,%toolbar_update_msecs%
-return
-
-
+; 8:05pm assigning a different progress number fixed it because there was
+;        indeed a Progress, Off in the toolbar_update routine
 ;--------------------
      eye_rest:      ; Tell the user to rest his eyes
 ;--------------------
@@ -683,7 +661,7 @@ return
     else
     {
 ;        WinHide, my_tips
-        Progress, Off
+;        Progress, Off
         note_shown=0
     }
 
