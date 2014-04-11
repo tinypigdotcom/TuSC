@@ -159,7 +159,7 @@ Loading_Progress(20)
 ;
 ; Template debug statement:
 ;
-; CINT: Counter-intuitive - spaces between dot are significant, ex: ."text" is
+; E-CINT: Counter-intuitive - spaces between dot are significant, ex: ."text" is
 ; an empty string
 ; lib_debug("myvar: " . myvar,1) ;xd
 ;
@@ -2695,14 +2695,15 @@ Gui, 11:+ToolWindow
         ; SELECTED item to be followed by two pipes to indicate it is selected
         StringReplace, notes_list, notes_list, %SelectedItem%, %SelectedItem%|
         ; First pipe says replace list, second pipe in case last item is selected item
-        ; CINT: Counter-intuitive - to indicate replace, lead with a pipe.
+        ; E-CINT: Counter-intuitive - to indicate replace, lead with a pipe.
         ; Changing the variable value to control the path through the code
-        notes_list := "|" . notes_list . "|"
-        ; CINT: Counter-intuitive - I have to specify GUI# to get to variable name
-        ; even if there is only one variable named that.
-        ; FQUI: Fails quietly - although it would respond to try-catch, and sets ErrorLevel,
-        ; if it fails to update a control for whatever reason, it won't tell
-        ; you, and even with try-catch, it doesn't tell you why
+        ; notes_list := "|" . notes_list . "|"
+        ; E-CINT: Counter-intuitive - I have to specify GUI# to get to
+        ; variable name even if there is only one variable named that.
+        ; E-FQUI: Fails quietly - although it would respond to try-catch, and
+        ; sets ErrorLevel, if it fails to update a control for whatever
+        ; reason, it won't tell you, and even with try-catch, it doesn't tell
+        ; you why
         GuiControl, 11:, NoteText, %notes_list%
         Gosub, toolbar_update
         gui_toolbar_built++
