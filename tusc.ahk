@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=water ; vv
+VERSION=x-ray ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -331,7 +331,8 @@ poker_msecs=300000
 process_poker()
 
 eye_rest_msecs=1200000
-SetTimer,eye_rest,%eye_rest_msecs%
+eye_rest_msecs=10000
+process_eye_rest()
 
 Gosub, initialize_volume
 
@@ -482,6 +483,7 @@ build_ini:
     IniWrite, 0,             %ini_file%, settings, run_poker_routine
     IniWrite, 0,             %ini_file%, settings, run_ohide_routine
     IniWrite, 0,             %ini_file%, settings, run_ocred_routine
+    IniWrite, 0,             %ini_file%, settings, run_eye_rest_routine
     IniWrite, %A_ScriptDir%, %ini_file%, settings, customization_dir
 
     IniWrite, 1,             %ini_file%, state,  sound
@@ -579,10 +581,12 @@ return
     IniWrite, %SettingPoker%,   %ini_file%, settings, run_poker_routine
     IniWrite, %SettingOhide%,   %ini_file%, settings, run_ohide_routine
     IniWrite, %SettingOcred%,   %ini_file%, settings, run_ocred_routine
+    IniWrite, %SettingEyeRest%, %ini_file%, settings, run_eye_rest_routine
     process_volume_icon()
     process_poker()
     process_ohide()
     process_ocred()
+    process_eye_rest()
 9ButtonCancel:
 9GuiEscape:
     Gui, Hide
@@ -596,6 +600,7 @@ return
     IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine,          0
     IniRead, SettingOhide,   %ini_file%, settings, run_ohide_routine,          0
     IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine,          0
+    IniRead, SettingEyeRest, %ini_file%, settings, run_eye_rest_routine,       0
 return
 
 
@@ -2532,6 +2537,7 @@ init_gui_options:
         Gui, 9:Add, Checkbox, x26 y87 w370 h30 vSettingPoker Checked%SettingPoker%, Run &Work Log Reminder routine ; SettingPoker
         Gui, 9:Add, Checkbox, x26 y127 w370 h30 vSettingOhide Checked%SettingOhide%, Run O&hide routine            ; SettingOhide
         Gui, 9:Add, Checkbox, x26 y167 w370 h30 vSettingOcred Checked%SettingOcred%, Run &Ocred routine            ; SettingOcred
+        Gui, 9:Add, Checkbox, x26 y207 w370 h30 vSettingEyeRest Checked%SettingEyeRest%, Run &Eye Rest routine     ; SettingEyeRest
         Gui, 9:Tab, Other
         Gui, 9:Add, Radio, x26 y47 w390 h20 , Radio
         Gui, 9:Add, Radio, x26 y77 w390 h20 , Radio
@@ -4392,6 +4398,34 @@ process_ocred(ocred_status=-1) ; process_ocred:
     {
         lib_debug("    disabling ocred")
         SetTimer,ocred,Off
+    }
+    return
+}
+
+
+;------------------------------------------------------------------------------
+process_eye_rest(eye_rest_status=-1) ; process_eye_rest:
+;------------------------------------------------------------------------------
+{
+    global
+    lib_debug("process_eye_rest")
+    lib_debug("    eye_rest_status: " . eye_rest_status)
+    if(eye_rest_status=-1)
+    {
+        IniRead, SettingEyeRest,   %ini_file%, settings, run_eye_rest_routine, 0
+        eye_rest_status := SettingEyeRest
+    }
+    lib_debug("    eye_rest_status: " . eye_rest_status)
+    lib_debug("    SettingEyeRest: " . SettingEyeRest)
+    if(eye_rest_status)
+    {
+        lib_debug("    enabling eye_rest")
+        SetTimer,eye_rest,%eye_rest_msecs%
+    }
+    else
+    {
+        lib_debug("    disabling eye_rest")
+        SetTimer,eye_rest,Off
     }
     return
 }
