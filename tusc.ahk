@@ -102,7 +102,7 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=x-ray ; vv
+VERSION=yeoman ; vv
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -5437,7 +5437,9 @@ return
 note_cont:
 ;------------------------------------------------------------------------------
     last_note=%NoteText%
-    FormatTime, timestamp, %A_Now%, yyyy_MM_dd_HH_mm_ss
+
+    now := A_Now
+    FormatTime, timestamp, %now%, yyyy_MM_dd_HH_mm_ss
 
     StringGetPos, pos, last_note, %A_Space%
 
@@ -5465,6 +5467,16 @@ note_cont:
     }
     else if(out_file = "wl")
     {
+        RegExMatch(out_text, "\s+\+(\d+)\s*$", m)
+
+        if(m1)
+        {
+            out_text := RegExReplace(out_text, "\s+\+\d+\s*$", "")
+            NoteText := RegExReplace(NoteText, "\s+\+\d+\s*$", "")
+            now += -%m1%, minutes
+            FormatTime, timestamp, %now%, yyyy_MM_dd_HH_mm_ss
+        }
+
         out_file = %A_ScriptDir%\file\%out_file%_%timestamp%.txt
         FileAppend, `n%out_text%`n,%out_file%
     }
