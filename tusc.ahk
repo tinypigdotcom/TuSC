@@ -331,7 +331,6 @@ poker_msecs=300000
 process_poker()
 
 eye_rest_msecs=1200000
-eye_rest_msecs=10000
 process_eye_rest()
 
 Gosub, initialize_volume
