@@ -2702,7 +2702,7 @@ Gui, 11:+ToolWindow
         ; First pipe says replace list, second pipe in case last item is selected item
         ; E-CINT: Counter-intuitive - to indicate replace, lead with a pipe.
         ; Changing the variable value to control the path through the code
-        ; notes_list := "|" . notes_list . "|"
+        notes_list := "|" . notes_list . "|"
         ; E-CINT: Counter-intuitive - I have to specify GUI# to get to
         ; variable name even if there is only one variable named that.
         ; E-FQUI: Fails quietly - although it would respond to try-catch, and
