@@ -1,6 +1,10 @@
 ;Scaffolding_section <-- A quick shortcut to whatever part I'm currently working on
 ;____Approximate_middle_of_table_of_contents
 /*
+IDEA: WHAT IF IT SCANNED FOR MACROS and translated on restart, would still make coding easier
+__SAY__("My message")
+becomes
+say({ message: "My message", function: "main", linenumber: A_LineNumber })
 
 ==============================
   TuSC: Total System Control
@@ -160,11 +164,11 @@ Loading_Progress(20)
 ; Template debug statement:
 ;
 ; E-CINT: Counter-intuitive - spaces between dot are significant, ex: ."text" is
-; an empty string
-; debug({message: "myvar: " . myvar, debug_level:1, linenumber: A_LineNumber}) ;xd
+; an empty string. Solve with concat()!
+; debug({message: concat([ "myvar: ", myvar ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 ;
 global_debug_level=1
-debug({message: "global_debug_level: " . global_debug_level, debug_level:1, linenumber: A_LineNumber}) ;xd
+debug({message: concat([ "global_debug_level: ", global_debug_level ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 
 on_windows_7=0
 if(A_OSVersion = "WIN_7")
@@ -517,7 +521,7 @@ return
 
     if(!private_on)
     {
-        MsgBox, 4096, , Eye Rest!, 20
+        say({message: "Eye Rest!", function: "eye_rest", linenumber: A_LineNumber})
     }
     else
     {
@@ -1619,18 +1623,6 @@ ClearTip(channel=1) ; ClearTip:
 ;------------------------------------------------------------------------------
 {
     ToolTip,,,,%channel%
-    return
-}
-
-
-;------------------------------------------------------------------------------
-Say(message) ; Say:
-;------------------------------------------------------------------------------
-{
-    global SHOWTIP_SAY, SHOWTIP_SAY_X, SHOWTIP_SAY_Y
-    ShowTip(" `n `n           " . message . "           `n `n `n `n", SHOWTIP_SAY_X, SHOWTIP_SAY_Y, SHOWTIP_SAY)
-    Sleep 1000
-    ClearTip(SHOWTIP_SAY)
     return
 }
 
