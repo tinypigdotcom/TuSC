@@ -99,6 +99,8 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
+;do_macros()
+
 StringReplace, B_ProgramFiles, A_ProgramFiles, %A_Space%(x86)
 X_ProgramFiles = %B_ProgramFiles% (x86)
 TypeList = exe|lnk
@@ -168,7 +170,7 @@ Loading_Progress(20)
 ; debug({message: concat([ "myvar: ", myvar ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 ;
 global_debug_level=1
-debug({message: concat([ "global_debug_level: ", global_debug_level ]), debug_level:1, linenumber: A_LineNumber}) ;xd
+debug({param1: concat([ "global_debug_level: ", global_debug_level ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 
 on_windows_7=0
 if(A_OSVersion = "WIN_7")
@@ -509,7 +511,7 @@ build_my_ini:
 return
 
 
-; DTT - difficult to troubleshoot. For some reason, calls to refresh toolbar
+; E-DTT - difficult to troubleshoot. For some reason, calls to refresh toolbar
 ; routine wipe out calls to lib_warn, lib_say. It may have something to do
 ; with a hide_gui or assigning a progress number or "channel"
 ; 8:05pm assigning a different progress number fixed it because there was
@@ -521,7 +523,8 @@ return
 
     if(!private_on)
     {
-        say({message: "Eye Rest!", function: "eye_rest", linenumber: A_LineNumber})
+        say({param1: "Eye Rest!", function: "eye_rest", linenumber: A_LineNumber})
+;        say_("Eye Rest!")
     }
     else
     {
