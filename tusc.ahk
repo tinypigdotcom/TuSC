@@ -1,10 +1,6 @@
 ;Scaffolding_section <-- A quick shortcut to whatever part I'm currently working on
 ;____Approximate_middle_of_table_of_contents
 /*
-IDEA: WHAT IF IT SCANNED FOR MACROS and translated on restart, would still make coding easier
-__SAY__("My message")
-becomes
-say({ message: "My message", function: "main", linenumber: A_LineNumber })
 
 ==============================
   TuSC: Total System Control
@@ -99,7 +95,7 @@ DONE
 #SingleInstance ignore
 #WinActivateForce
 
-;do_macros()
+do_macros()
 
 StringReplace, B_ProgramFiles, A_ProgramFiles, %A_Space%(x86)
 X_ProgramFiles = %B_ProgramFiles% (x86)
@@ -108,7 +104,12 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=zebra ; vv
+VERSION=agate ; vv
+;turquoise, hematite, chrysocolla, tiger's-eye
+;quartz, tourmaline, carnelian, pyrite, sugilite
+;malachite, rose quartz, snowflake obsidian, ruby
+;jasper, amethyst, lapis lazuli
+
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
 
@@ -169,8 +170,8 @@ Loading_Progress(20)
 ; an empty string. Solve with concat()!
 ; debug({message: concat([ "myvar: ", myvar ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 ;
+
 global_debug_level=1
-debug({param1: concat([ "global_debug_level: ", global_debug_level ]), debug_level:1, linenumber: A_LineNumber}) ;xd
 
 on_windows_7=0
 if(A_OSVersion = "WIN_7")
@@ -322,7 +323,8 @@ Loading_Progress(50)
 
 debug_y_offset = 0
 
-;debug("started")
+;debug_("started")
+debug({ param1: "started", linenumber: A_LineNumber })
 
 ohide_msecs=500
 process_ohide()
@@ -519,12 +521,13 @@ return
 ;--------------------
      eye_rest:      ; Tell the user to rest his eyes
 ;--------------------
-    ;debug("eye_rest")
+;    debug_("eye_rest")
+    debug({ param1: "eye_rest", linenumber: A_LineNumber })
 
     if(!private_on)
     {
-        say({param1: "Eye Rest!", function: "eye_rest", linenumber: A_LineNumber})
 ;        say_("Eye Rest!")
+        say({ param1: "Eye Rest!", linenumber: A_LineNumber })
     }
     else
     {
@@ -538,7 +541,8 @@ return
 ;--------------------
      poker:         ; Show Work Log reminder xtimer
 ;--------------------
-    ;debug("poker")
+;    debug_("poker")
+    debug({ param1: "poker", linenumber: A_LineNumber })
     nwidth := f_width() - 310
     nheight := f_height() - 150
 
@@ -613,7 +617,7 @@ return
 ;--------------------
      ohide:         ; Hide annoying windows xtimer
 ;--------------------
-    ;debug("ohide",3)
+    debug({ param1: "ohide", debug_level:3, linenumber: A_LineNumber })
     WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
     WinClose, Fences Update Available
 return
@@ -622,8 +626,7 @@ return
 ;--------------------
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
 ;--------------------
-
-    ;debug("toolbar_update",3)
+    debug({ param1: "toolbar_update", debug_level:3, linenumber: A_LineNumber })
 
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
@@ -778,7 +781,8 @@ directory_refresh() ; file_refresh:
         Gui 15:Destroy
         Gui 65:Destroy
         directory_array_built=0
-;debug("set directories to rebuild")
+;        debug_("set directories to rebuild")
+        debug({ param1: "set directories to rebuild", linenumber: A_LineNumber })
     }
     return
 }
@@ -800,7 +804,8 @@ file_refresh() ; file_refresh:
         Gui 17:Destroy
         Gui 67:Destroy
         file_array_built=0
-;debug("set files to rebuild")
+;        debug_("set files to rebuild")
+        debug({ param1: "set files to rebuild", linenumber: A_LineNumber })
     }
     return
 }
@@ -809,7 +814,7 @@ file_refresh() ; file_refresh:
 ;--------------------
      ocred:         ; Auto-enter credentials xtimer
 ;--------------------
-    ;debug("ocred",3)
+    debug({ param1: "ocred", debug_level:3, linenumber: A_LineNumber })
 
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
@@ -1010,13 +1015,15 @@ FindWindow(title,exclude_title,text="",exclude_text="",ask=0) ; FindWindow:
                 this_flag := Question("This one?")
                 if this_flag = 1
                 {
-                    ;debug("FindWindow found id by asking: " . this_id)
+;                    debug_(concat(["FindWindow found id by asking: ", this_id]))
+                    debug({ param1: concat(["FindWindow found id by asking: ", this_id]), linenumber: A_LineNumber })
                     return %this_id%
                 }
             }
             else
             {
-                ;debug("FindWindow found id: " . this_id)
+;                debug_(concat(["FindWindow found id: ", this_id]))
+                debug({ param1: concat(["FindWindow found id: ", this_id]), linenumber: A_LineNumber })
                 return %this_id%
             }
         }
@@ -1101,7 +1108,8 @@ GoApp(unique_identifier
     Transform, id, deref, `%%unique_identifier%_id`%
     IfWinExist, ahk_id %id%
     {
-        ;debug("I already have this window ID: " . id)
+;        debug_(concat(["I already have this window ID: ", id]))
+        debug({ param1: concat(["I already have this window ID: ", id]), linenumber: A_LineNumber })
         WinActivate
     }
     else
@@ -1117,13 +1125,15 @@ GoApp(unique_identifier
 
         Loop
         {
-            ;debug("Trying to find window via search_text: " . search_text)
+;            debug_(concat(["Trying to find window via search_text: ", search_text]))
+            debug({ param1: concat(["Trying to find window via search_text: ", search_text]), linenumber: A_LineNumber })
             if(!always_start_new)
             {
                 fw_id := FindWindow(search_text,exclude_text,"","",ask_user_which_one)
                 if fw_id
                 {
-                    ;debug("Found window via search_text. Activating.")
+;                    debug_("Found window via search_text. Activating.")
+                    debug({ param1: "Found window via search_text. Activating.", linenumber: A_LineNumber })
                     WinActivate ahk_id %fw_id%
                     id=%fw_id%
                     break
@@ -1131,10 +1141,12 @@ GoApp(unique_identifier
 
                 if(alternate_search_text)
                 {
-                    ;debug("Trying to locate window via alternate_search_text: " . alternate_search_text)
+;                    debug_(concat(["Trying to locate window via alternate_search_text: ", alternate_search_text]))
+                    debug({ param1: concat(["Trying to locate window via alternate_search_text: ", alternate_search_text]), linenumber: A_LineNumber })
                     IfWinExist, %alternate_search_text%,,%exclude_text%
                     {
-                        ;debug("Found via alternate_search_text. Activating.")
+;                        debug_("Found via alternate_search_text. Activating.")
+                        debug({ param1: "Found via alternate_search_text. Activating.", linenumber: A_LineNumber })
                         WinActivate
                         WinGet, id, ID, A
                         break
@@ -1142,7 +1154,8 @@ GoApp(unique_identifier
                 }
             }
 
-            ;debug("Could not find window.  Launching.")
+;            debug_("Could not find window.  Launching.")
+            debug({ param1: "Could not find window.  Launching.", linenumber: A_LineNumber })
             Run, %command% %parameters%,%working_directory%,%max%
             If dont_maximize
             {
@@ -1646,9 +1659,11 @@ gui_hide() ; gui_hide:
 ;------------------------------------------------------------------------------
 RM4SuspendToggle:
 ;------------------------------------------------------------------------------
-    ;debug("RM4SuspendToggle")
+;    debug_("RM4SuspendToggle")
+    debug({ param1: "RM4SuspendToggle", linenumber: A_LineNumber })
     rm4_vbox_suspended=0
-;debug("1:rm4_vbox_suspended" . rm4_vbox_suspended)
+;debug_(concat(["1:rm4_vbox_suspended", rm4_vbox_suspended]))
+debug({ param1: concat(["1:rm4_vbox_suspended", rm4_vbox_suspended]), linenumber: A_LineNumber })
     if(!rm4_is_alive)
     {
         Gosub, RadialMenu
@@ -1663,47 +1678,57 @@ RM4SuspendToggle:
 return
 
 rm4_vbox_suspend:
-    ;debug("rm4_vbox_suspend")
+;    debug_("rm4_vbox_suspend")
+    debug({ param1: "rm4_vbox_suspend", linenumber: A_LineNumber })
     rm4_vbox_suspended=1
-;debug("2:rm4_vbox_suspended" . rm4_vbox_suspended)
+;    debug_(concat(["2:rm4_vbox_suspended", rm4_vbox_suspended]))
+    debug({ param1: concat(["2:rm4_vbox_suspended", rm4_vbox_suspended]), linenumber: A_LineNumber })
     line2=RM_suspend_state=%RM_suspend_state%      rm4_vbox_suspended=%rm4_vbox_suspended%      rm4_is_alive=%ra%      rm4_is_alive1=%ra1%      rm4_vbox_suspended=%rm4_vbox_suspended%
-;debug(line2)
+;    debug_(line2)
+    debug({ param1: line2, linenumber: A_LineNumber })
     Gosub, SuspendOnRM
 return
 
 rm4_vbox_unsuspend:
-    ;debug("rm4_vbox_unsuspend")
+;    debug_("rm4_vbox_unsuspend")
+    debug({ param1: "rm4_vbox_unsuspend", linenumber: A_LineNumber })
     if(rm4_vbox_suspended)
     {
         Gosub, SuspendOffRM
         rm4_vbox_suspended=0
-;debug("3:rm4_vbox_suspended" . rm4_vbox_suspended)
+;        debug_(concat(["3:rm4_vbox_suspended", rm4_vbox_suspended]))
+        debug({ param1: concat(["3:rm4_vbox_suspended", rm4_vbox_suspended]), linenumber: A_LineNumber })
     line2=RM_suspend_state=%RM_suspend_state%      rm4_vbox_suspended=%rm4_vbox_suspended%      rm4_is_alive=%ra%      rm4_is_alive1=%ra1%      rm4_vbox_suspended=%rm4_vbox_suspended%
-;debug(line2)
+;        debug_(line2)
+        debug({ param1: line2, linenumber: A_LineNumber })
     }
 return
 
 RM_is_suspended:
-    ;debug("RM_is_suspended")
+;    debug_("RM_is_suspended")
+    debug({ param1: "RM_is_suspended", linenumber: A_LineNumber })
     rm4_is_alive=1
     RM_suspend_state=1
     Gosub show_rm4_suspend_indicator
 return
 
 RM_is_not_suspended:
-    ;debug("RM_is_not_suspended")
+;    debug_("RM_is_not_suspended")
+    debug({ param1: "RM_is_not_suspended", linenumber: A_LineNumber })
     rm4_is_alive=1
     RM_suspend_state=0
     Gosub hide_rm4_suspend_indicator
 return
 
 hide_rm4_suspend_indicator:
-    ;debug("hide_rm4_suspend_indicator")
+;    debug_("hide_rm4_suspend_indicator")
+    debug({ param1: "hide_rm4_suspend_indicator", linenumber: A_LineNumber })
     GuiControl, 11:Hide, RSus
 return
 
 show_rm4_suspend_indicator:
-    ;debug("show_rm4_suspend_indicator")
+;    debug_("show_rm4_suspend_indicator")
+    debug({ param1: "show_rm4_suspend_indicator", linenumber: A_LineNumber })
     GuiControl, 11:Show, RSus
 return
 
@@ -1739,7 +1764,8 @@ return
 ;------------------------------------------------------------------------------
 SuspendOffRM:
 ;------------------------------------------------------------------------------
-    ;debug("SuspendOffRM")
+;    debug_("SuspendOffRM")
+    debug({ param1: "SuspendOffRM", linenumber: A_LineNumber })
     if(RM_suspend_state)
     {
         PostMessage("Radial menu - message receiver", 30)
@@ -1751,7 +1777,8 @@ return
 ;------------------------------------------------------------------------------
 SuspendOnRM:
 ;------------------------------------------------------------------------------
-    ;debug("SuspendOnRM")
+;    debug_("SuspendOnRM")
+    debug({ param1: "SuspendOnRM", linenumber: A_LineNumber })
     if(!RM_suspend_state)
     {
 ; Disabling for now as it is annoying
@@ -1764,7 +1791,8 @@ return
 ;------------------------------------------------------------------------------
 ToggleSuspendRM:
 ;------------------------------------------------------------------------------
-    ;debug("ToggleSuspendRM")
+;    debug_("ToggleSuspendRM")
+    debug({ param1: "ToggleSuspendRM", linenumber: A_LineNumber })
     gui_hide()
     PostMessage("Radial menu - message receiver", 32)
 return
@@ -3084,8 +3112,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("var=" . var,3)
-    ;debug("section=" . section,3)
+    debug({ param1: concat(["var=" . var]), debug_level:3, linenumber: A_LineNumber })
+    debug({ param1: concat(["section=" . section]), debug_level:3, linenumber: A_LineNumber })
     IniRead, varvalue, %my_ini_file%, %section%, %var%
     StringLeft, OutputVar, var, 8
     If OutputVar = mystring
@@ -3125,7 +3153,8 @@ NEO_Jmenu:
 
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
-    ;debug("lastwin=" . lastwin)
+;    debug_(concat(["lastwin=", lastwin]))
+    debug({ param1: concat(["lastwin=", lastwin]), linenumber: A_LineNumber })
 
     Gosub, esc_key
 
@@ -3599,7 +3628,8 @@ Mainmenu:
     CoordMode, Mouse, Screen
 
     WinGet, lastwin, ID, A
-    ;debug("lastwin=" . lastwin)
+;    debug_(concat(["lastwin=", lastwin]))
+    debug({ param1: concat(["lastwin=", lastwin]), linenumber: A_LineNumber })
 
     Gosub, esc_key
 
@@ -3661,7 +3691,8 @@ return
 ;---------------------------
 Filies:               ;
 ;---------------------------
-    ;debug("2Buttonfiles")
+;    debug_("2Buttonfiles")
+    debug({ param1: "2Buttonfiles", linenumber: A_LineNumber })
     gui_hide()
     this_gui := 17 + private_on * private_gui_start
     Gosub, show_gui_files_%this_gui%
@@ -3680,7 +3711,8 @@ return
 ;---------------------------
 Directories:               ;
 ;---------------------------
-    ;debug("2ButtonDirectories")
+;    debug_("2ButtonDirectories")
+    debug({ param1: "2ButtonDirectories", linenumber: A_LineNumber })
     gui_hide()
     this_gui := 15 + private_on * private_gui_start
     Gosub, show_gui_directories_%this_gui%
@@ -3944,11 +3976,13 @@ NEO_Timestamp:
     gui_hide()
     CoordMode, Mouse, Screen
     WinGet, lastwin, ID, A
-    ;debug("lastwin=" . lastwin)
+;    debug_(concat(["lastwin=", lastwin]))
+    debug({ param1: concat(["lastwin=", lastwin]), linenumber: A_LineNumber })
 
     Gosub, esc_key
 
-    ;debug("timestamp_gui")
+;    debug_("timestamp_gui")
+    debug({ param1: "timestamp_gui", linenumber: A_LineNumber })
 
     this_gui := 12 + private_on * private_gui_start
     Gosub, show_gui_timestamp_%this_gui%
@@ -4295,22 +4329,28 @@ process_volume_icon(volume=-1) ; process_volume_icon:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("process_volume_icon")
-    ;debug("    volume: " . volume)
+;    debug_("process_volume_icon")
+    debug({ param1: "process_volume_icon", linenumber: A_LineNumber })
+;    debug_(concat(["    volume: ", volume]))
+    debug({ param1: concat(["    volume: ", volume]), linenumber: A_LineNumber })
     if(volume=-1)
     {
         SoundGet, volume, Master
     }
-    ;debug("    volume: " . volume)
-    ;debug("    SettingRotate: " . SettingRotate)
+;    debug_(concat(["    volume: ", volume]))
+    debug({ param1: concat(["    volume: ", volume]), linenumber: A_LineNumber })
+;    debug_(concat(["    SettingRotate: ", SettingRotate]))
+    debug({ param1: concat(["    SettingRotate: ", SettingRotate]), linenumber: A_LineNumber })
     if(volume or !SettingRotate)
     {
-        ;debug("    setting prog icon:" . prog_icon)
+;        debug_(concat(["    setting prog icon:", prog_icon]))
+        debug({ param1: concat(["    setting prog icon:", prog_icon]), linenumber: A_LineNumber })
         menu,tray,icon,%prog_icon%
     }
     else
     {
-        ;debug("    setting mute icon:" . mute_icon)
+;        debug_(concat(["    setting mute icon:", mute_icon]))
+        debug({ param1: concat(["    setting mute icon:", mute_icon]), linenumber: A_LineNumber })
         menu,tray,icon,%mute_icon%
     }
     return
@@ -4346,23 +4386,29 @@ process_ohide(ohide_status=-1) ; process_ohide:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("process_ohide")
-    ;debug("    ohide_status: " . ohide_status)
+;    debug_("process_ohide")
+    debug({ param1: "process_ohide", linenumber: A_LineNumber })
+;    debug_(concat(["    ohide_status: ", ohide_status]))
+    debug({ param1: concat(["    ohide_status: ", ohide_status]), linenumber: A_LineNumber })
     if(ohide_status=-1)
     {
         IniRead, SettingOhide,   %ini_file%, settings, run_ohide_routine, 0
         ohide_status := SettingOhide
     }
-    ;debug("    ohide_status: " . ohide_status)
-    ;debug("    SettingOhide: " . SettingOhide)
+;    debug_(concat(["    ohide_status: ", ohide_status]))
+    debug({ param1: concat(["    ohide_status: ", ohide_status]), linenumber: A_LineNumber })
+;    debug_(concat(["    SettingOhide: ", SettingOhide]))
+    debug({ param1: concat(["    SettingOhide: ", SettingOhide]), linenumber: A_LineNumber })
     if(ohide_status)
     {
-        ;debug("    enabling ohide")
+;        debug_("    enabling ohide")
+        debug({ param1: "    enabling ohide", linenumber: A_LineNumber })
         SetTimer,ohide,%ohide_msecs%
     }
     else
     {
-        ;debug("    disabling ohide")
+;        debug_("    disabling ohide")
+        debug({ param1: "    disabling ohide", linenumber: A_LineNumber })
         SetTimer,ohide,Off
     }
     return
@@ -4374,23 +4420,29 @@ process_ocred(ocred_status=-1) ; process_ocred:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("process_ocred")
-    ;debug("    ocred_status: " . ocred_status)
+;    debug_("process_ocred")
+    debug({ param1: "process_ocred", linenumber: A_LineNumber })
+;    debug_(concat(["    ocred_status: ", ocred_status]))
+    debug({ param1: concat(["    ocred_status: ", ocred_status]), linenumber: A_LineNumber })
     if(ocred_status=-1)
     {
         IniRead, SettingOcred,   %ini_file%, settings, run_ocred_routine, 0
         ocred_status := SettingOcred
     }
-    ;debug("    ocred_status: " . ocred_status)
-    ;debug("    SettingOcred: " . SettingOcred)
+;    debug_(concat(["    ocred_status: ", ocred_status]))
+    debug({ param1: concat(["    ocred_status: ", ocred_status]), linenumber: A_LineNumber })
+;    debug_(concat(["    SettingOcred: ", SettingOcred]))
+    debug({ param1: concat(["    SettingOcred: ", SettingOcred]), linenumber: A_LineNumber })
     if(ocred_status)
     {
-        ;debug("    enabling ocred")
+;        debug_("    enabling ocred")
+        debug({ param1: "    enabling ocred", linenumber: A_LineNumber })
         SetTimer,ocred,%ocred_msecs%
     }
     else
     {
-        ;debug("    disabling ocred")
+;        debug_("    disabling ocred")
+        debug({ param1: "    disabling ocred", linenumber: A_LineNumber })
         SetTimer,ocred,Off
     }
     return
@@ -4402,23 +4454,29 @@ process_eye_rest(eye_rest_status=-1) ; process_eye_rest:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("process_eye_rest")
-    ;debug("    eye_rest_status: " . eye_rest_status)
+;    debug_("process_eye_rest")
+    debug({ param1: "process_eye_rest", linenumber: A_LineNumber })
+;    debug_(concat(["    eye_rest_status: ", eye_rest_status]))
+    debug({ param1: concat(["    eye_rest_status: ", eye_rest_status]), linenumber: A_LineNumber })
     if(eye_rest_status=-1)
     {
         IniRead, SettingEyeRest,   %ini_file%, settings, run_eye_rest_routine, 0
         eye_rest_status := SettingEyeRest
     }
-    ;debug("    eye_rest_status: " . eye_rest_status)
-    ;debug("    SettingEyeRest: " . SettingEyeRest)
+;    debug_(concat(["    eye_rest_status: ", eye_rest_status]))
+    debug({ param1: concat(["    eye_rest_status: ", eye_rest_status]), linenumber: A_LineNumber })
+;    debug_(concat(["    SettingEyeRest: ", SettingEyeRest]))
+    debug({ param1: concat(["    SettingEyeRest: ", SettingEyeRest]), linenumber: A_LineNumber })
     if(eye_rest_status)
     {
-        ;debug("    enabling eye_rest")
+;        debug_("    enabling eye_rest")
+        debug({ param1: "    enabling eye_rest", linenumber: A_LineNumber })
         SetTimer,eye_rest,%eye_rest_msecs%
     }
     else
     {
-        ;debug("    disabling eye_rest")
+;        debug_("    disabling eye_rest")
+        debug({ param1: "    disabling eye_rest", linenumber: A_LineNumber })
         SetTimer,eye_rest,Off
     }
     return
@@ -4430,23 +4488,29 @@ process_poker(poker_status=-1) ; process_poker:
 ;------------------------------------------------------------------------------
 {
     global
-    ;debug("process_poker")
-    ;debug("    poker_status: " . poker_status)
+;    debug_("process_poker")
+    debug({ param1: "process_poker", linenumber: A_LineNumber })
+;    debug_(concat(["    poker_status: ", poker_status]))
+    debug({ param1: concat(["    poker_status: ", poker_status]), linenumber: A_LineNumber })
     if(poker_status=-1)
     {
         IniRead, SettingPoker,   %ini_file%, settings, run_poker_routine, 0
         poker_status := SettingPoker
     }
-    ;debug("    poker_status: " . poker_status)
-    ;debug("    SettingPoker: " . SettingPoker)
+;    debug_(concat(["    poker_status: ", poker_status]))
+    debug({ param1: concat(["    poker_status: ", poker_status]), linenumber: A_LineNumber })
+;    debug_(concat(["    SettingPoker: ", SettingPoker]))
+    debug({ param1: concat(["    SettingPoker: ", SettingPoker]), linenumber: A_LineNumber })
     if(poker_status)
     {
-        ;debug("    enabling poker")
+;        debug_("    enabling poker")
+        debug({ param1: "    enabling poker", linenumber: A_LineNumber })
         SetTimer,poker,%poker_msecs%
     }
     else
     {
-        ;debug("    disabling poker")
+;        debug_("    disabling poker")
+        debug({ param1: "    disabling poker", linenumber: A_LineNumber })
         SetTimer,poker,Off
     }
     return
@@ -5412,7 +5476,8 @@ Note:
     gui_hide()
 
     WinGet, lastwin, ID, A
-    ;debug("lastwin=" . lastwin)
+;    debug_(concat(["lastwin=", lastwin]))
+    debug({ param1: concat(["lastwin=", lastwin]), linenumber: A_LineNumber })
 
     Gui, 11:Show
     GuiControl, 11:, SettingSave, 0
