@@ -104,8 +104,8 @@ PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_Pr
 fileArray := {A:"B"}
 winList := {A:"B"}
 
-VERSION=turquoise ; vv
-;hematite, chrysocolla, tiger's-eye
+VERSION=hematite ; vv
+;chrysocolla, tiger's-eye
 ;quartz, tourmaline, carnelian, pyrite, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
@@ -5565,13 +5565,12 @@ find_link(filename)
         return %val%
     }
 
-    IniRead, val, %ini_file%, linkcache, %filename%
-; currently there's no allowance for not finding a value in the ini file but
-; it is necessary and proper here.
-;    vol_Master_save := f_IniRead({ filename:   ini_file
-;                                , category:   "state"
-;                                , variable:   "sound"
-;                                , linenumber: A_LineNumber })
+    val := f_IniRead({ filename:       ini_file
+                     , not_found_ok:   1
+                     , category:       "linkcache"
+                     , variable:       filename
+                     , linenumber:     A_LineNumber })
+
     IfExist, %val%
     {
         fileArray[filename] := val
@@ -5579,7 +5578,8 @@ find_link(filename)
     }
 
     SplashTextOn, 300, 50, %filename%, Searching for link...
-    DriveList = DriveGet, mylist, List
+    DriveList=
+    DriveGet, mylist, List
     Loop, Parse, mylist
     {
         DriveGet, mystatus, Status, %A_LoopField%:
