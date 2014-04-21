@@ -496,6 +496,15 @@ return
 build_ini:
 ;------------------------------------------------------------------------------
     default_notes=Gray|Green|Gold|Black|White
+;    f_iniwrite([ ini_file, settings"
+;    , %default_notes% notes_list
+;    , 1,               , rotate_tray_icon_when_mute
+;    , 0,               , run_poker_routine
+;    , 0,               , run_ohide_routine
+;    , 0,               , run_ocred_routine
+;    , 0,               , run_eye_rest_routine
+;    , %A_ScriptDir%,   , customization_dir
+
     IniWrite, %default_notes%, %ini_file%, settings, notes_list
     IniWrite, 1,               %ini_file%, settings, rotate_tray_icon_when_mute
     IniWrite, 0,               %ini_file%, settings, run_poker_routine
