@@ -64,16 +64,10 @@ TODO
      * refactor duplicate or similar lines and routines
  * add front end menu options where it is feasible
  * Either eliminate external file dependencies or document them
- * Document needed external software
-     * Launchy
-
-TODO, Older
------------
-
- * fix freecommander without using "ask"
 
 DONE
 ----
+ * fix freecommander without using "ask"
  * TuSC should beep on volume set
  * privacy mode
  * NOTHING runs only at startup because when values are gathered, they can ALWAYS change
@@ -496,14 +490,15 @@ return
 build_ini:
 ;------------------------------------------------------------------------------
     default_notes=Gray|Green|Gold|Black|White
-;    f_iniwrite([ ini_file, settings"
-;    , %default_notes% notes_list
-;    , 1,               , rotate_tray_icon_when_mute
-;    , 0,               , run_poker_routine
-;    , 0,               , run_ohide_routine
-;    , 0,               , run_ocred_routine
-;    , 0,               , run_eye_rest_routine
-;    , %A_ScriptDir%,   , customization_dir
+;    f_iniwrite({ filename:  ini_file
+;               , section:   "settings"
+;               , key_value: { notes_list: default_notes
+;                            , rotate_tray_icon_when_mute: 1
+;                            , run_poker_routine: 0
+;                            , run_ohide_routine: 0
+;                            , run_ocred_routine: 0
+;                            , run_eye_rest_routine: 0
+;                            , customization_dir: A_ScriptDir }})
 
     IniWrite, %default_notes%, %ini_file%, settings, notes_list
     IniWrite, 1,               %ini_file%, settings, rotate_tray_icon_when_mute
@@ -3655,6 +3650,18 @@ Mainmenu:
 return
 
 
+ApplicationsGuiEscape:
+ApplicationsGuiClose:
+FunctionsGuiEscape:
+FunctionsGuiClose:
+GamKeysGuiEscape:
+GamKeysGuiClose:
+LinksGuiEscape:
+LinksGuiClose:
+ScriptGuiEscape:
+ScriptGuiClose:
+WorkstationGuiEscape:
+WorkstationGuiClose:
 MainGuiEscape:
 MainGuiClose:
     gui_hide()
