@@ -492,13 +492,13 @@ build_ini:
     default_notes=Gray|Green|Gold|Black|White
 ;    f_iniwrite({ filename:  ini_file
 ;               , section:   "settings"
-;               , key_value: { notes_list: default_notes
+;               , key_value: {                 notes_list: default_notes
 ;                            , rotate_tray_icon_when_mute: 1
-;                            , run_poker_routine: 0
-;                            , run_ohide_routine: 0
-;                            , run_ocred_routine: 0
-;                            , run_eye_rest_routine: 0
-;                            , customization_dir: A_ScriptDir }})
+;                            ,          run_poker_routine: 0
+;                            ,          run_ohide_routine: 0
+;                            ,          run_ocred_routine: 0
+;                            ,       run_eye_rest_routine: 0
+;                            ,          customization_dir: A_ScriptDir }})
 
     IniWrite, %default_notes%, %ini_file%, settings, notes_list
     IniWrite, 1,               %ini_file%, settings, rotate_tray_icon_when_mute
