@@ -95,11 +95,12 @@ StringReplace, B_ProgramFiles, A_ProgramFiles, %A_Space%(x86)
 X_ProgramFiles = %B_ProgramFiles% (x86)
 TypeList = exe|lnk
 PathList = %A_StartMenuCommon%|%A_StartMenu%|%A_Desktop%|%A_DesktopCommon%|%A_ProgramsCommon%|%B_ProgramFiles%|%X_ProgramFiles%
-fileArray := {A:"B"}
-winList := {A:"B"}
+fileArray := { }
+winList := { }
+vimList := { }
 
-VERSION=hematite ; vv
-;chrysocolla, tiger's-eye
+VERSION=tigerseye; vv
+;chrysocolla
 ;quartz, tourmaline, carnelian, pyrite, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
@@ -330,6 +331,7 @@ ohide_msecs=500
 process_ohide()
 
 toolbar_update_msecs=1000
+vim_update_msecs=100
 
 ocred_msecs=2000
 process_ocred()
@@ -366,6 +368,7 @@ Clear_Loading_Progress()
 Gosub, init_guis
 
 SetTimer,toolbar_update,%toolbar_update_msecs%
+SetTimer,oneify_gvim_windows,%vim_update_msecs%
 
 OnMessage(0x1001,"ReceiveMessage")
 
@@ -5631,6 +5634,22 @@ find_link(filename)
     SplashTextOff
     MsgBox, Failed to find %filename%.
 }
+
+
+oneify_gvim_windows:
+    WinGet, id, list, ahk_exe gvim.exe
+    Loop, %id%
+    {
+        this_id := id%A_Index%
+        save_id := "X" . this_id ; avoid conversion to decimal
+        if ( !vimList[save_id] )
+        {
+            vimList[save_id] := 1
+            WinActivate ahk_id %this_id%
+            Send, ^!1
+        }
+    }
+return
 
 
 save_windows()
