@@ -99,7 +99,7 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=tigerseye; vv
+VERSION=tigerseye ;vv
 ;chrysocolla
 ;quartz, tourmaline, carnelian, pyrite, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
@@ -331,7 +331,7 @@ ohide_msecs=500
 process_ohide()
 
 toolbar_update_msecs=1000
-vim_update_msecs=100
+gvim_update_msecs=100
 
 ocred_msecs=2000
 process_ocred()
@@ -368,7 +368,7 @@ Clear_Loading_Progress()
 Gosub, init_guis
 
 SetTimer,toolbar_update,%toolbar_update_msecs%
-SetTimer,oneify_gvim_windows,%vim_update_msecs%
+SetTimer,oneify_gvim_windows,%gvim_update_msecs%
 
 OnMessage(0x1001,"ReceiveMessage")
 
@@ -5644,9 +5644,12 @@ oneify_gvim_windows:
         save_id := "X" . this_id ; avoid conversion to decimal
         if ( !vimList[save_id] )
         {
-            vimList[save_id] := 1
-            WinActivate ahk_id %this_id%
-            Send, ^!1
+            WinGetTitle, Title, ahk_id %this_id%
+            if(Title) {
+                vimList[save_id] := 1
+                WinActivate ahk_id %this_id%
+                Send, ^!1
+            }
         }
     }
 return
