@@ -99,9 +99,9 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=quartz ;vv
+VERSION=tigerseye ;vv
 ;chrysocolla
-;tourmaline, carnelian, pyrite, sugilite
+;quartz, tourmaline, carnelian, pyrite, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
 
@@ -3627,12 +3627,13 @@ return
 ;                                                                             |
 ;=============================================================================+
 
-LShift & F13::
-    Suspend, Permit
+NumpadAdd::
+    SendInput, ``
 return
 
+
 ;------------------------------------------------------------------------------
-LShift UP::
+$`::
 Mainmenu:
 ;------------------------------------------------------------------------------
     if(check_for_virtualbox())
