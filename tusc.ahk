@@ -99,11 +99,12 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=tigerseye ;vv
+VERSION=pyrite ;vv
 ;chrysocolla
-;quartz, tourmaline, carnelian, pyrite, sugilite
+;quartz, tourmaline, carnelian, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
+;previous version names: tigerseye
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -3934,6 +3935,12 @@ oYank:
         Gosub, big_tip
         SetTimer,clear_big_tip,-1000
     }
+    else
+    {
+        show_tip=Nothing in clipboard!
+        Gosub, big_tip
+        SetTimer,clear_big_tip,-1000
+    }
     switch_back()
 return
 
@@ -3982,6 +3989,12 @@ NEO_BYank:
             Gosub, big_tip
             SetTimer,clear_big_tip,-1000
         }
+    }
+    else
+    {
+        show_tip=Nothing in clipboard!
+        Gosub, big_tip
+        SetTimer,clear_big_tip,-1000
     }
 return
 
