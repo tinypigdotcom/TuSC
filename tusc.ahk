@@ -5651,6 +5651,8 @@ find_link(filename)
 
 
 oneify_gvim_windows:
+    WinGet, lastwin, ID, A
+    update_flag=0
     WinGet, id, list, ahk_exe gvim.exe
     Loop, %id%
     {
@@ -5663,9 +5665,12 @@ oneify_gvim_windows:
                 vimList[save_id] := 1
                 WinActivate ahk_id %this_id%
                 Send, ^!1
+                update_flag++
             }
         }
     }
+    If update_flag
+        WinActivate ahk_id %lastwin%
 return
 
 
