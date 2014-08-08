@@ -54,8 +54,7 @@ TODO
 
  * if flash video is in focus, many remapped keys such as volume controls don't work
  * some flakiness still with activewindow.  happens at least on directories selection
- * erase copy history option
- * ignore work todo entries or separate from work log completely
+ * add option to erase copy history
  * Snooze routine for Work Log Reminders
  * programmatically add things like links
  * Eliminate mixed notation := vs = and if vs if()
@@ -74,6 +73,34 @@ DONE
  * Improve debug system for levels of detail or temporary on/off controls
  * get rid of sleeps where appropriate - use timers instead.  This includes
  waits in WinActivate and such
+
+WON'T DO
+--------
+ * ignore work todo entries or separate from work log completely
+
+Example macros:
+
+        _({say: "HEY!"})
+
+            becomes
+
+        say({ param1: "HEY!", linenumber: A_LineNumber })
+
+
+        _({debug: "hi", debug_level: 1})
+
+            becomes
+
+        debug({ param1: "hi", debug_level: 1, linenumber: A_LineNumber })
+
+This will work with any function with a param1, including:
+    * attention()
+    * debug()
+    * say()
+    * warn()
+
+But NOT die() because die tries to keep everything "primative" since after
+all, script is dying.
 
 */
 
