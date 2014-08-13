@@ -80,14 +80,16 @@ WON'T DO
 
 Example macros:
 
-        _({say: "HEY!"})
+        ;_({say: "HEY!"})
+        say({ param1: "HEY!", linenumber: A_LineNumber })
 
             becomes
 
         say({ param1: "HEY!", linenumber: A_LineNumber })
 
 
-        _({debug: "hi", debug_level: 1})
+        ;_({debug: "hi", debug_level: 1})
+        debug({ param1: "hi", debug_level: 1, linenumber: A_LineNumber })
 
             becomes
 
