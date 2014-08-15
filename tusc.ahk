@@ -2835,6 +2835,7 @@ return
 ;-----------------------------
      ShowHideTodoToolbar:    ;
 ;-----------------------------
+return
     TodoTitle=todo_
     If WinActive(TodoTitle)
     {
