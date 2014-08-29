@@ -686,6 +686,7 @@ return
 ;--------------------
      ohide:         ; Hide annoying windows xtimer
 ;--------------------
+    WinHide, Firefox
     WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
     WinClose, Fences Update Available
 return
@@ -4466,6 +4467,7 @@ process_ohide(ohide_status=-1) ; process_ohide:
     {
         debug({ param1: "    disabling ohide", linenumber: A_LineNumber })
         SetTimer,ohide,Off
+        WinShow, Firefox
     }
     return
 }
