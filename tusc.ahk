@@ -908,6 +908,7 @@ file_refresh() ; file_refresh:
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, %mystring9%
         SendInput, {enter}
+        Sleep, 15000
     }
 
     IfWinExist, Connect ahk_class #32770, Password
