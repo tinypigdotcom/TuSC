@@ -893,7 +893,7 @@ file_refresh() ; file_refresh:
     CoordMode, Mouse, Screen
 
     PX1=61
-    PY1=809
+    PY1=825
     PX2=162
     PY2=852
 
