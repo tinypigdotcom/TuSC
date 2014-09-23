@@ -893,12 +893,14 @@ file_refresh() ; file_refresh:
     CoordMode, Mouse, Screen
 
     PX1=61
-    PY1=825
+    ;PY1=825
+    PY1=810
     PX2=162
-    PY2=852
+    ;PY2=852
+    PY2=836
 
     ; This is flaky as HELL.
-    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\pwd.png
+    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\newpwd.png
     EL := ErrorLevel
 
     if(!EL)
@@ -908,7 +910,6 @@ file_refresh() ; file_refresh:
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, %mystring9%
         SendInput, {enter}
-        Sleep, 15000
     }
 
     IfWinExist, Connect ahk_class #32770, Password
@@ -1364,8 +1365,10 @@ Firefox:
 Chrome:
 ;------------------------------------------------------------------------------
     gui_hide()
-    target := find_link("Mozilla Firefox")
-    GoApp("fox", "Mozilla Firefox", target, 0)
+;    target := find_link("Mozilla Firefox")
+;    GoApp("fox", "Mozilla Firefox", target, 0)
+    target := find_link("Chrome")
+    GoApp("chr", "Chrome", target, 0)
 return
 
 
