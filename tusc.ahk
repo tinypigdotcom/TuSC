@@ -1515,7 +1515,7 @@ Scratch:
 ;------------------------------------------------------------------------------
     gui_hide()
     target := find_link("gvim")
-    scratch = %A_ScriptDir%\file\scratch.txt
+    scratch = %custom_dir%\scratch.txt
     GoApp("scr","scratch",target,0,scratch)
 return
 
