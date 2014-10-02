@@ -3561,7 +3561,9 @@ return
 Do_Jmenu_0:
 ;------------------------------------------------------------------------------
     refresh_ini_value("mystring0", "string")
+    SendInput, taubman{tab}
     SendInput, {Raw}%mystring0%
+    SendInput, {enter}
 return
 
 
