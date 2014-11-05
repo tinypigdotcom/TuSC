@@ -3965,6 +3965,17 @@ oYank:
 ;------------------------------------------------------------------------------
     if(ClipBoard)
     {
+        ; Fix-ups
+        test=%ClipBoard%
+        ClipBoard=
+        Loop, parse, test
+        {
+            if ( Asc(A_LoopField) <> 8212 )
+            {
+                ClipBoard := ClipBoard . A_LoopField
+            }
+        }
+        ClipBoard := RegExReplace(ClipBoard, "^Task (\d+)  ", "$1 ")
         ClipBoard = %ClipBoard%
         cb_in=%ClipBoard%
         Gosub, GetIndex
