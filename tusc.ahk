@@ -2741,31 +2741,31 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
-Gui, 11:Add, Picture,   x296 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
-Gui, 11:Add, Picture,   x296 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
-Gui, 11:Add, Picture,   x296 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
-Gui, 11:Add, Picture,   x318 y1 w19 h19 gTB_PrivateToggle                   , %ImageDir%\privateoff.png    ; TB_PrivateToggle
-Gui, 11:Add, Picture,   x318 y1 w19 h19 Hidden gTB_PrivateToggle vPrivateOn , %ImageDir%\privateon.png     ; TB_PrivateToggle PrivateOn
-Gui, 11:Add, Picture,   x370 y1 w19 h19 gKillScript                         , %ImageDir%\bexiticon.png     ; KillScript
-Gui, 11:Add, Picture,   x392 y1 w19 h19 gRestartScript                      , %ImageDir%\breloadicon.png   ; RestartScript
-Gui, 11:Add, Picture,   x414 y1 w19 h19 gTB_OptionsB                        , %ImageDir%\bsettingsicon.png ; TB_OptionsB
-Gui, 11:Add, Picture,   x443 y1 w60 h20 gTB_NEO_Jmenu vJmenuButton          , %ImageDir%\jbutton.png       ; TB_NEO_Jmenu JmenuButton
-Gui, 11:Add, Picture,   x513 y1 w60 h20 gTB_MainMenu    vMainMenu           , %ImageDir%\bmain.png         ; TB_MainMenu MainMenu
-Gui, 11:Add, Picture,   x583 y1 w19 h19 gTB_Volume                          , %ImageDir%\bvolumeicon.png   ; TB_Volume
-Gui, 11:Add, Picture,   x605 y1 w19 h19 gTB_Mute                            , %ImageDir%\bmuteicon.png     ; TB_Mute
-Gui, 11:Add, Picture,   x634 y1 w19 h19 gTB_Lock                            , %ImageDir%\blockicon.png     ; TB_Lock
+Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
+Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
+Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
+Gui, 11:Add, Picture,   x218 y1 w19 h19 gTB_PrivateToggle                   , %ImageDir%\privateoff.png    ; TB_PrivateToggle
+Gui, 11:Add, Picture,   x218 y1 w19 h19 Hidden gTB_PrivateToggle vPrivateOn , %ImageDir%\privateon.png     ; TB_PrivateToggle PrivateOn
+Gui, 11:Add, Picture,   x270 y1 w19 h19 gKillScript                         , %ImageDir%\bexiticon.png     ; KillScript
+Gui, 11:Add, Picture,   x292 y1 w19 h19 gRestartScript                      , %ImageDir%\breloadicon.png   ; RestartScript
+Gui, 11:Add, Picture,   x314 y1 w19 h19 gTB_OptionsB                        , %ImageDir%\bsettingsicon.png ; TB_OptionsB
+Gui, 11:Add, Picture,   x343 y1 w60 h20 gTB_NEO_Jmenu vJmenuButton          , %ImageDir%\jbutton.png       ; TB_NEO_Jmenu JmenuButton
+Gui, 11:Add, Picture,   x413 y1 w60 h20 gTB_MainMenu    vMainMenu           , %ImageDir%\bmain.png         ; TB_MainMenu MainMenu
+Gui, 11:Add, Picture,   x483 y1 w19 h19 gTB_Volume                          , %ImageDir%\bvolumeicon.png   ; TB_Volume
+Gui, 11:Add, Picture,   x505 y1 w19 h19 gTB_Mute                            , %ImageDir%\bmuteicon.png     ; TB_Mute
+Gui, 11:Add, Picture,   x534 y1 w19 h19 gTB_Lock                            , %ImageDir%\blockicon.png     ; TB_Lock
 ;WARNING: Double clicking text with a gLabel on a gui puts the text on the clipboard
 ;On Vista+, WM_NCLBUTTONDBLCLK and WM_LBUTTONDBLCLK on static text controls will copy the static text to the clipboard.
-Gui, 11:Add, Picture,   x663 y1 w19 h19 gTB_BuffCopy                        , %ImageDir%\bcopyicon.png     ; TB_BuffCopy
-Gui, 11:Add, Picture,   x685 y1 w19 h19 gTB_NEO_Pastev                      , %ImageDir%\bpasteicon.png    ; TB_Pastev
-Gui, 11:Add, Picture,   x707 y1 w19 h19 gTB_NEO_Paste2                      , %ImageDir%\bpaste2icon.png   ; TB_Paste2
-;Gui, 11:Add, Text,      x736 y1 w320 h20                                    , See Grindstone
-Gui, 11:Add, ComboBox,  x736 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
-Gui, 11:Add, CheckBox, x1066 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
-Gui, 11:Add, Button,   x1126 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
-Gui, 11:Add, Picture,  x1180 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
-Gui, 11:Add, Picture,  x1180 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
-Gui, 11:Add, Picture,  x1206 y1 w19 h19 gTB_Snooze vSnoozer                 , %ImageDir%\bsnooze.png       ; TB_Snooze Snoozer
+Gui, 11:Add, Picture,   x563 y1 w19 h19 gTB_BuffCopy                        , %ImageDir%\bcopyicon.png     ; TB_BuffCopy
+Gui, 11:Add, Picture,   x585 y1 w19 h19 gTB_NEO_Pastev                      , %ImageDir%\bpasteicon.png    ; TB_Pastev
+Gui, 11:Add, Picture,   x607 y1 w19 h19 gTB_NEO_Paste2                      , %ImageDir%\bpaste2icon.png   ; TB_Paste2
+;Gui, 11:Add, Text,      x636 y1 w320 h20                                    , See Grindstone
+Gui, 11:Add, ComboBox,  x636 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
+Gui, 11:Add, Picture,   x966 y1 w19 h19 gTB_Snooze vSnoozer                 , %ImageDir%\bsnooze.png       ; TB_Snooze Snoozer
+Gui, 11:Add, CheckBox,  x995 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
+Gui, 11:Add, Button,   x1055 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
+Gui, 11:Add, Picture,  x1113 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
+Gui, 11:Add, Picture,  x1113 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 
 Gui, 11:+ToolWindow
         MainMenu_TT := "Display main menu"
