@@ -894,13 +894,16 @@ file_refresh() ; file_refresh:
 
     PX1=61
     ;PY1=825
-    PY1=810
+    PY1=820
     PX2=162
     ;PY2=852
     PY2=836
 
     ; This is flaky as HELL.
-    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\newpwd.png
+;    MouseMove,%PX1%,%PY1%
+;    Sleep, 1000
+;    MouseMove,%PX2%,%PY2%
+    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\newnewpwd.png
     EL := ErrorLevel
 
     if(!EL)
