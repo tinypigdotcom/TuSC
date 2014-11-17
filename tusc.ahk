@@ -604,7 +604,7 @@ return
     GuiControl, 11:, NoteCount, OK (%reminder_count%)
     if(!private_on)
     {
-        Progress, %PROGRESS_POKER%:x%nwidth% y%nheight% h100 cwFFFF00 m2 b fs28 zh0, Work Log, , , Courier New
+        Progress, %PROGRESS_POKER%:x%nwidth% y%nheight% h74 w243 cwFFFF00 m2 b fs16 zh0, `nWork Log,, , Courier New
         SetTimer, DisablePoker, -5000
     }
     else
@@ -1500,7 +1500,7 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 TempR:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Gosub, eye_rest
+    Gosub, poker
 return
 
 
