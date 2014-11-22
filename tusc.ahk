@@ -128,12 +128,11 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=pyrite ;vv
-;chrysocolla
+VERSION=chrysocolla ;vv
 ;quartz, tourmaline, carnelian, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
-;previous version names: tigerseye
+;previous version names: tigerseye, pyrite
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -2239,7 +2238,7 @@ init_guis:
           Links,         &Google,          ; Google
           Links,         &IMDB,            ; IMDB
           Links,         &RottenTom,       ; RottenTom
-          Links,         &TheGoogle,       ; TheGoogle
+          Links,         &Taskman,         ; Taskman
           Links,         Wi&kipedia,       ; Wikipedia
         Main,            New_Tab_&Z        ; New_Tab_Z
         Main,            &Note             ; Note
@@ -3751,6 +3750,14 @@ TheGoogle:
 ;------------------------------------------------------------------------------
     gui_hide()
     GoLink("http://www.google.com",1)
+return
+
+
+;------------------------------------------------------------------------------
+Taskman:
+;------------------------------------------------------------------------------
+    gui_hide()
+    GoLink("https://taskman.omniti.com/task/",0)
 return
 
 
