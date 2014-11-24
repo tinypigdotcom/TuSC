@@ -128,7 +128,7 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=chrysocolla ;vv
+VERSION=chrysocolla.1 ;vv
 ;quartz, tourmaline, carnelian, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
@@ -697,7 +697,6 @@ return
     WinShow, Mozilla Thunderbird
     WinShow, Microsoft Visual C++ Runtime Library ahk_class #32770
 return
-
 
 ;--------------------
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
@@ -3907,7 +3906,11 @@ NEO_GetKey:
         cb_tip_text = %cb_tip_text%%cb_index_letter%. %cb_add%`r`n
         current_cb_list=%current_cb_list%%cb_index_letter%
         GuiControl, 13:, PasteButton%jj%, &%cb_index_letter%         %cb_add%
-        If cb_prefix <> CB
+        if(cb_prefix="CB" and cb_routine="Paste")
+        {
+            GuiControl, 13:Enable, PasteButton%jj%
+        }
+        else
         {
             GuiControl, 13:Disable, PasteButton%jj%
         }
