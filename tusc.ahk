@@ -118,6 +118,12 @@ all, script is dying.
 #SingleInstance ignore
 #WinActivateForce
 
+Gui +LastFound
+hwnd := WinExist() ; getting a handle to the script gui
+
+DllCall("Wtsapi32.dll\WTSRegisterSessionNotification", "uint", hwnd, "uint", 0) ; registering the gui, but only for this session
+OnMessage(0x02B1, "sessionChange") ; start listening
+
 do_macros()
 
 StringReplace, B_ProgramFiles, A_ProgramFiles, %A_Space%(x86)
@@ -128,7 +134,7 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=chrysocolla.1 ;vv
+VERSION=chrysocolla.2 ;vv
 ;quartz, tourmaline, carnelian, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
 ;jasper, amethyst, lapis lazuli
@@ -999,6 +1005,19 @@ Lock:
     else
         DllCall("user32.dll\LockWorkStation")
 return
+
+
+;------------------------------------------------------------------------------
+sessionChange(wparam, lparam, msg, hwnd)
+;------------------------------------------------------------------------------
+{
+    if wparam = 7
+        add_work_item("lock: locked")
+    else if wparam = 8
+        add_work_item("lock: unlocked")
+    else
+        add_work_item("lock: code " . wparam)
+}
 
 
 ;------------------------------------------------------------------------------
@@ -3505,6 +3524,7 @@ Goto, NEO_paste_routine
 ExitSub:
 ;------------------------------------------------------------------------------
     Gosub, re_show
+    DllCall("Wtsapi32.dll\WTSUnRegisterSessionNotification", "uint", hwnd) ; unregister
     ExitApp
 return
 
@@ -5643,6 +5663,21 @@ note_cont:
         IniWrite, %save_notes_list%,  %ini_file%, settings, notes_list
     }
 return
+
+
+;------------------------------------------------------------------------------
+add_work_item(text)
+;------------------------------------------------------------------------------
+{
+    FormatTime, timestamp, %A_Now%, yyyy_MM_dd_HH_mm_ss
+
+    out_file := "wl"
+    out_text := text
+
+    out_file = %A_ScriptDir%\file\%out_file%_%timestamp%.txt
+    FileAppend, `n%out_text%`n,%out_file%
+    return
+}
 
 
 ;------------------------------------------------------------------------------
