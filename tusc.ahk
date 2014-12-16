@@ -134,11 +134,11 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=chrysocolla.2 ;vv
+VERSION=lapis_lazuli ;vv
 ;quartz, tourmaline, carnelian, sugilite
 ;malachite, rose quartz, snowflake obsidian, ruby
-;jasper, amethyst, lapis lazuli
-;previous version names: tigerseye, pyrite
+;jasper, amethyst
+;previous version names: tigerseye, pyrite, chrysocolla
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -163,6 +163,11 @@ my_ini_file_nopath = my_%f_FileNoExt%.ini
 my_ini_file = %custom_dir%\my_%ini_file_nopath%
 IfNotExist, %my_ini_file%
     Gosub, build_my_ini
+
+copy_dir := f_IniRead({ filename:   my_ini_file
+                      , category:   "settings"
+                      , variable:   "copy_dir"
+                      , linenumber: A_LineNumber })
 
 ;new_file_code
 file_file = %custom_dir%\files.ini
@@ -566,6 +571,7 @@ build_my_ini:
     IniWrite, ten,         %my_ini_file%, string, mystring0
 
     IniWrite, %A_Space%,   %my_ini_file%, settings, selected_item
+    IniWrite, C:\,         %my_ini_file%, settings, copy_dir
 return
 
 
@@ -4014,6 +4020,8 @@ oYank:
         Gosub, GetIndex
         FileDelete, %cb_dir%\%cb_prefix%_%cb_index_letter% ; Because it is a copy/cut, not append
         FileAppend, %cb_in%,%cb_dir%\%cb_prefix%_%cb_index_letter%
+        FileDelete, %copy_dir%\a.cp
+        FileAppend, %cb_in%,%copy_dir%\a.cp
         cb_buf_%cb_prefix%_%cb_index_letter%=%cb_in%
         cb_add := cb_buf_%cb_prefix%_%cb_index_letter%
         if(private_on)
