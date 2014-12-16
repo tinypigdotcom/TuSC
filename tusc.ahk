@@ -898,10 +898,10 @@ file_refresh() ; file_refresh:
 
     PX1=61
     ;PY1=825
-    PY1=820
+    PY1=817
     PX2=162
     ;PY2=852
-    PY2=836
+    PY2=839
 
     ; This is flaky as HELL.
 ;    MouseMove,%PX1%,%PY1%
