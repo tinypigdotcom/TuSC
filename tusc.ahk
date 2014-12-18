@@ -3222,6 +3222,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 
 ::pq::postgresql
 
+::tb::taubman
+
 #z::Goto NEO_Jmenu
 
 ;------------------------------------------------------------------------------
