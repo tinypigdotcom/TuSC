@@ -895,6 +895,41 @@ file_refresh() ; file_refresh:
 }
 
 
+;------------------------------------------------------------------------------
+debug_ocred() ; debug_ocred:
+;------------------------------------------------------------------------------
+{
+
+    PX1=74
+    ;PY1=825
+    PY1=990
+    PX2=207
+    ;PY2=852
+    PY2=1014
+
+CoordMode, Mouse, Screen
+MouseMove,%PX1%,%PY1%
+Sleep, 1000
+MouseMove,%PX2%,%PY2%
+
+Return
+    width  := PX2 - PX1
+    height := PY2 - PY1
+    width  := 173
+    height := 73
+
+;left: 74     top: 950     width: 173     height: 73
+    Gui, Color, EEAA99
+    Gui +LastFound +AlwaysOnTop +Resize
+    WinSet, TransColor, EEAA99
+;    Gui -Caption
+    Gui, Show, x%PX1% y%PY1% h%height% w%width%
+
+    Return
+}
+
+
+;NOTE see debug_ocred() above for help
 ;--------------------
      ocred:         ; Auto-enter credentials xtimer
 ;--------------------
@@ -902,12 +937,10 @@ file_refresh() ; file_refresh:
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
 
-    PX1=61
-    ;PY1=825
-    PY1=817
-    PX2=162
-    ;PY2=852
-    PY2=839
+    PX1=74
+    PY1=990
+    PX2=207
+    PY2=1014
 
     ; This is flaky as HELL.
 ;    MouseMove,%PX1%,%PY1%
