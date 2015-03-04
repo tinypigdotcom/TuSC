@@ -3257,6 +3257,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 
 ::tb::taubman
 
+::xn::natgeo
+
 #z::Goto NEO_Jmenu
 
 ;------------------------------------------------------------------------------
