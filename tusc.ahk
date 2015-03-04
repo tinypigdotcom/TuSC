@@ -900,11 +900,21 @@ debug_ocred() ; debug_ocred:
 ;------------------------------------------------------------------------------
 {
 
-    PX1=74
+
+    ;Small screen
+    PX1=61
+    PY1=817
+    PX2=162
+    PY2=839
+
+    ;Unknown
     ;PY1=825
+    ;PY2=852
+
+    ;Big screen
+    PX1=74
     PY1=990
     PX2=207
-    ;PY2=852
     PY2=1014
 
 CoordMode, Mouse, Screen
@@ -937,6 +947,17 @@ Return
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
 
+    ;Small screen
+    PX1=61
+    PY1=817
+    PX2=162
+    PY2=839
+
+    ;Unknown
+    ;PY1=825
+    ;PY2=852
+
+    ;Big screen
     PX1=74
     PY1=990
     PX2=207
