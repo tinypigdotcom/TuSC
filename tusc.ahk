@@ -947,12 +947,6 @@ Return
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
 
-    ;Small screen
-    PX1=61
-    PY1=817
-    PX2=162
-    PY2=839
-
     ;Unknown
     ;PY1=825
     ;PY2=852
@@ -963,11 +957,23 @@ Return
     PX2=207
     PY2=1014
 
+    ;Small screen
+    PX1=61
+    PY1=817
+    PX2=162
+    PY2=839
+
+    ;Universal
+    PX1=61
+    PY1=1
+    PX2=207
+    PY2=1014
+
     ; This is flaky as HELL.
 ;    MouseMove,%PX1%,%PY1%
 ;    Sleep, 1000
 ;    MouseMove,%PX2%,%PY2%
-    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\newnewpwd.png
+    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\pwd.png
     EL := ErrorLevel
 
     if(!EL)
