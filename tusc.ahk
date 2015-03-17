@@ -973,7 +973,7 @@ Return
 ;    MouseMove,%PX1%,%PY1%
 ;    Sleep, 1000
 ;    MouseMove,%PX2%,%PY2%
-    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *2 %ImageDir%\pwd.png
+    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *12 %ImageDir%\pwd.png
     EL := ErrorLevel
 
     if(!EL)
