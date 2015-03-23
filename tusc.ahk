@@ -951,21 +951,27 @@ Return
     ;PY1=825
     ;PY2=852
 
+    ;Small screen
+    PX1=61
+    PY1=800
+    PX2=162
+    PY2=839
+
     ;Big screen
     PX1=74
     PY1=990
     PX2=207
     PY2=1014
 
-    ;Small screen
-    PX1=61
-    PY1=817
-    PX2=162
-    PY2=839
-
     ;Universal
     PX1=61
     PY1=1
+    PX2=207
+    PY2=1014
+
+    ;Big or Small screen
+    PX1=61
+    PY1=800
     PX2=207
     PY2=1014
 
@@ -5705,12 +5711,12 @@ note_cont:
     }
     else if(out_file = "wl")
     {
-        RegExMatch(out_text, "\s+\+(\d+)\s*$", m)
+        RegExMatch(out_text, "\+(\d+)\s*$", m)
 
         if(m1)
         {
-            out_text := RegExReplace(out_text, "\s+\+\d+\s*$", "")
-            NoteText := RegExReplace(NoteText, "\s+\+\d+\s*$", "")
+            out_text := RegExReplace(out_text, "\+\d+\s*$", "")
+            NoteText := RegExReplace(NoteText, "\+\d+\s*$", "")
             now += -%m1%, minutes
             FormatTime, timestamp, %now%, yyyy_MM_dd_HH_mm_ss
         }
