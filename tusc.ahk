@@ -1589,7 +1589,7 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 TempR:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Gosub, poker
+    Gosub, eye_rest
 return
 
 
@@ -4077,15 +4077,24 @@ oYank:
         ; Fix-ups
         test=%ClipBoard%
         ClipBoard=
+        task_flag=0
         Loop, parse, test
         {
-            if ( Asc(A_LoopField) <> 8212 )
+            if ( Asc(A_LoopField) = 8212 )
+            {
+                task_flag++
+            }
+            else
             {
                 ClipBoard := ClipBoard . A_LoopField
             }
         }
-        ClipBoard := RegExReplace(ClipBoard, "^Task (\d+)  ", "$1 ")
-        ClipBoard = %ClipBoard%
+        if ( task_flag )
+        {
+            ClipBoard := RegExReplace(ClipBoard, "^Task (\d+)  ", "$1 ")
+            ClipBoard := RegExReplace(ClipBoard, "\s*\(.*\)", "")
+        }
+        ClipBoard = %ClipBoard% ; trim spaces
         cb_in=%ClipBoard%
         Gosub, GetIndex
         FileDelete, %cb_dir%\%cb_prefix%_%cb_index_letter% ; Because it is a copy/cut, not append
