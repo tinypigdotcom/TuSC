@@ -988,7 +988,7 @@ Return
         FoundX += 50
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, %mystring9%
-        SendInput, {enter}
+        SendInput, {enter 20}
     }
 
     IfWinExist, Connect ahk_class #32770, Password
