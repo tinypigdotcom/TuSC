@@ -134,11 +134,11 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=lapis_lazuli ;vv
+VERSION=obsidian ;vv
 ;quartz, tourmaline, carnelian, sugilite
-;malachite, rose quartz, snowflake obsidian, ruby
+;malachite, rose quartz, obsidian, ruby
 ;jasper, amethyst
-;previous version names: tigerseye, pyrite, chrysocolla
+;previous version names: tigerseye, pyrite, chrysocolla, lapis_lazuli
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -588,6 +588,7 @@ return
     if(!private_on)
     {
 ;        say_("Eye Rest!")
+        GuiControl, 11:Show, EyeOn
         say({ param1: "Eye Rest!", linenumber: A_LineNumber })
     }
     else
@@ -957,12 +958,6 @@ Return
     PX2=162
     PY2=839
 
-    ;Big screen
-    PX1=74
-    PY1=990
-    PX2=207
-    PY2=1014
-
     ;Universal
     PX1=61
     PY1=1
@@ -972,6 +967,12 @@ Return
     ;Big or Small screen
     PX1=61
     PY1=800
+    PX2=207
+    PY2=1014
+
+    ;Big screen
+    PX1=74
+    PY1=990
     PX2=207
     PY2=1014
 
@@ -988,7 +989,7 @@ Return
         FoundX += 50
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, %mystring9%
-        SendInput, {enter 20}
+        SendInput, {enter}
     }
 
     IfWinExist, Connect ahk_class #32770, Password
@@ -1879,6 +1880,13 @@ return
 show_rm4_suspend_indicator:
     debug({ param1: "show_rm4_suspend_indicator", linenumber: A_LineNumber })
     GuiControl, 11:Show, RSus
+return
+
+
+;------------------------------------------------------------------------------
+EyeUpdate:
+;------------------------------------------------------------------------------
+    GuiControl, 11:Hide, EyeOn
 return
 
 
@@ -2833,6 +2841,7 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+Gui, 11:Add, Picture,   x174 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOn         , %ImageDir%\eyeon.png         ; TB_EyeUpdate
 Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
 Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
 Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
@@ -2888,6 +2897,7 @@ Gui, 11:+ToolWindow
 return
 
 
+TB_EyeUpdate:
 TB_PrivateToggle:
 TB_RM4SuspendToggle:
 TB_OptionsB:
