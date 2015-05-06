@@ -222,6 +222,9 @@ rm4_is_alive=1
 rm4_is_alive1=1
 rm4_is_alive2=0
 
+last_eye=%A_Now%
+last_eye_minutes=0
+
 switch_back_flag=0
 reminder_count=0
 timeout=5
@@ -380,7 +383,7 @@ poker_msecs=15000
 poker_msecs=300000
 process_poker()
 
-eye_rest_msecs=1200000
+eye_rest_msecs=1000
 process_eye_rest()
 
 Gosub, initialize_volume
@@ -585,17 +588,20 @@ return
 ;--------------------
     debug({ param1: "eye_rest", linenumber: A_LineNumber })
 
-    if(!private_on)
+    if(last_eye_minutes > 10)
     {
-;        say_("Eye Rest!")
-        GuiControl, 11:Show, EyeOn
-        say({ param1: "Eye Rest!", linenumber: A_LineNumber })
-    }
-    else
-    {
-        GuiControl, 11:Hide, PrivateOn
-        Sleep, 250
-        GuiControl, 11:Show, PrivateOn
+        if(!private_on)
+        {
+;            say_("Eye Rest!")
+            GuiControl, 11:Show, EyeOn
+            say({ param1: "Eye Rest!", linenumber: A_LineNumber })
+        }
+        else
+        {
+            GuiControl, 11:Hide, PrivateOn
+            Sleep, 250
+            GuiControl, 11:Show, PrivateOn
+        }
     }
 return
 
@@ -715,6 +721,9 @@ return
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
 ;--------------------
 
+    tmp=%A_Now%
+    EnvSub, last_eye_minutes, %last_eye%, seconds
+    GuiControl, 11:, Gmorck, %last_eye_minutes%
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
         Gui, %CurrentGui%:Hide
@@ -1886,6 +1895,7 @@ return
 ;------------------------------------------------------------------------------
 EyeUpdate:
 ;------------------------------------------------------------------------------
+    last_eye=%A_Now%
     GuiControl, 11:Hide, EyeOn
 return
 
@@ -2842,10 +2852,7 @@ init_gui_toolbar:
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
 ;foo=%A_Now%
-;sleep, 5000
-;boo=%A_Now%
 ;MsgBox, %foo%, %A_Now%
-;Minutes
 ;var1 = 20050126
 ;var2 = 20040126
 ;EnvSub, boo, %foo%, seconds
