@@ -2841,6 +2841,7 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+Gui, 11:Add, Picture,   x174 y1 w19 h19                                     , %ImageDir%\eyeoff.png
 Gui, 11:Add, Picture,   x174 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOn         , %ImageDir%\eyeon.png         ; TB_EyeUpdate
 Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
 Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
