@@ -2841,6 +2841,19 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+;foo=%A_Now%
+;sleep, 5000
+;boo=%A_Now%
+;MsgBox, %foo%, %A_Now%
+;Minutes
+;var1 = 20050126
+;var2 = 20040126
+;EnvSub, boo, %foo%, seconds
+;MsgBox, %boo%  ; The answer will be 366 since 2004 is a leap year.
+;Gui, 11:font, s12, Courier
+Gui, 11:Add, Text,      x130 y1 w38 h19 vGmorck                             , 777                          ; this
+GuiControl, 11:, Gmorck, 999
+;Gmorck=999
 Gui, 11:Add, Picture,   x174 y1 w19 h19                                     , %ImageDir%\eyeoff.png
 Gui, 11:Add, Picture,   x174 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOn         , %ImageDir%\eyeon.png         ; TB_EyeUpdate
 Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
