@@ -224,6 +224,7 @@ rm4_is_alive2=0
 
 last_eye=%A_Now%
 last_eye_minutes=0
+last_eye_alert=0
 
 switch_back_flag=0
 reminder_count=0
@@ -590,11 +591,15 @@ return
 
     if(last_eye_minutes > 10)
     {
+        GuiControl, 11:Show, EyeOn
         if(!private_on)
         {
-;            say_("Eye Rest!")
-            GuiControl, 11:Show, EyeOn
-            say({ param1: "Eye Rest!", linenumber: A_LineNumber })
+            if(!last_eye_alert)
+            {
+;                say_("Eye Rest!")
+                say({ param1: "Eye Rest!", linenumber: A_LineNumber })
+                last_eye_alert=last_eye_minutes
+            }
         }
         else
         {
@@ -722,7 +727,8 @@ return
 ;--------------------
 
     tmp=%A_Now%
-    EnvSub, last_eye_minutes, %last_eye%, seconds
+    EnvSub, tmp, %last_eye%, minutes
+    last_eye_minutes := tmp
     GuiControl, 11:, Gmorck, %last_eye_minutes%
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
@@ -1895,7 +1901,9 @@ return
 ;------------------------------------------------------------------------------
 EyeUpdate:
 ;------------------------------------------------------------------------------
+    last_eye_minutes=0
     last_eye=%A_Now%
+    last_eye_alert=0
     GuiControl, 11:Hide, EyeOn
 return
 
