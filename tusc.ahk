@@ -223,8 +223,9 @@ rm4_is_alive1=1
 rm4_is_alive2=0
 
 last_eye=%A_Now%
-last_eye_minutes=0
-last_eye_alert=0
+last_eye_minutes=-1
+last_eye_frequency=20
+last_eye_alert := last_eye_frequency
 
 switch_back_flag=0
 reminder_count=0
@@ -384,7 +385,7 @@ poker_msecs=15000
 poker_msecs=300000
 process_poker()
 
-eye_rest_msecs=1000
+eye_rest_msecs=500
 process_eye_rest()
 
 Gosub, initialize_volume
@@ -589,17 +590,13 @@ return
 ;--------------------
     debug({ param1: "eye_rest", linenumber: A_LineNumber })
 
-    if(last_eye_minutes > 10)
+    if(last_eye_minutes >= last_eye_alert)
     {
-        GuiControl, 11:Show, EyeOn
         if(!private_on)
         {
-            if(!last_eye_alert)
-            {
-;                say_("Eye Rest!")
-                say({ param1: "Eye Rest!", linenumber: A_LineNumber })
-                last_eye_alert=last_eye_minutes
-            }
+;            say_("Eye Rest!")
+            say({ param1: "Eye Rest!", linenumber: A_LineNumber })
+            last_eye_alert += last_eye_frequency
         }
         else
         {
@@ -728,8 +725,10 @@ return
 
     tmp=%A_Now%
     EnvSub, tmp, %last_eye%, minutes
-    last_eye_minutes := tmp
-    GuiControl, 11:, Gmorck, %last_eye_minutes%
+    if ( last_eye_minutes <> tmp ) {
+        last_eye_minutes := tmp
+        GuiControl, 11:, EyeCount, %last_eye_minutes%
+    }
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
         Gui, %CurrentGui%:Hide
@@ -1901,10 +1900,10 @@ return
 ;------------------------------------------------------------------------------
 EyeUpdate:
 ;------------------------------------------------------------------------------
+    GuiControl, 11:, EyeCount, 0
     last_eye_minutes=0
     last_eye=%A_Now%
-    last_eye_alert=0
-    GuiControl, 11:Hide, EyeOn
+    last_eye_alert := last_eye_frequency
 return
 
 
@@ -2859,18 +2858,10 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
-;foo=%A_Now%
-;MsgBox, %foo%, %A_Now%
-;var1 = 20050126
-;var2 = 20040126
-;EnvSub, boo, %foo%, seconds
-;MsgBox, %boo%  ; The answer will be 366 since 2004 is a leap year.
-;Gui, 11:font, s12, Courier
-Gui, 11:Add, Text,      x130 y1 w38 h19 vGmorck                             , 777                          ; this
-GuiControl, 11:, Gmorck, 999
-;Gmorck=999
-Gui, 11:Add, Picture,   x174 y1 w19 h19                                     , %ImageDir%\eyeoff.png
-Gui, 11:Add, Picture,   x174 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOn         , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:font, s12, Courier bold
+Gui, 11:Add, Text,      x130 y1 w38 h19 vEyeCount Right                     , 000
+Gui, 11:font,
+Gui, 11:Add, Picture,   x174 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
 Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
 Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
 Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
