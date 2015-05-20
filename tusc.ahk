@@ -134,11 +134,9 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=obsidian ;vv
-;quartz, tourmaline, carnelian, sugilite
-;malachite, rose quartz, obsidian, ruby
-;jasper, amethyst
-;previous version names: tigerseye, pyrite, chrysocolla, lapis_lazuli
+VERSION=quartz ;vv
+;tourmaline, carnelian, sugilite, malachite, rose quartz, ruby, jasper, amethyst
+;PREVIOUS: tigerseye, pyrite, chrysocolla, lapis_lazuli, obsidian
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -1604,7 +1602,7 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 TempR:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Gosub, eye_rest
+    Gosub, do_alert
 return
 
 
@@ -1907,6 +1905,54 @@ EyeUpdate:
 return
 
 
+;----------------------
+     do_alert:        ;
+;----------------------
+    Sleep, 250
+    Gosub, do_mute
+    Gosub, do_ding
+    Sleep, 750
+    Gosub, do_mute
+    Gosub, do_ding
+    Gosub, turn_alert_off
+return
+
+
+;------------------------------------------------------------------------------
+turn_alert_off:
+;------------------------------------------------------------------------------
+    alert_on=0
+    GuiControl, 11:Hide, AlertOn
+    SetTimer,do_alert, Off
+return
+
+
+;------------------------------------------------------------------------------
+turn_alert_on:
+;------------------------------------------------------------------------------
+    alert_on=1
+    GuiControl, 11:Show, AlertOn
+    alert_msecs=-60000
+    SetTimer,do_alert,%alert_msecs%
+return
+
+
+;------------------------------------------------------------------------------
+AlertToggle:
+    gui_hide()
+alert_nohide:
+;------------------------------------------------------------------------------
+    if(alert_on)
+    {
+        Gosub, turn_alert_off
+    }
+    else
+    {
+        Gosub, turn_alert_on
+    }
+return
+
+
 ;------------------------------------------------------------------------------
 PrivateToggle:
     gui_hide()
@@ -1920,7 +1966,6 @@ private_nohide:
         GuiControl, 11:Show, NoteText
         GuiControl, 11:Show, SettingSave
         GuiControl, 11:Show, NoteCount
-        GuiControl, 11:Show, Snoozer
     }
     else
     {
@@ -1930,7 +1975,6 @@ private_nohide:
         GuiControl, 11:Hide, NoteText
         GuiControl, 11:Hide, SettingSave
         GuiControl, 11:Hide, NoteCount
-        GuiControl, 11:Hide, Snoozer
     }
 return
 
@@ -2362,6 +2406,7 @@ init_guis:
         Main,            Re&mote,          ; Remote
         Main,            &Scratch,         ; Scratch
         Main,            Scri&pt,          ; Script
+          Script,        &Alert Toggle,    ; AlertToggle
           Script,        Edit &Ini,        ; EditIni
           Script,        &Edit Script,     ; EditScript
           Script,        &Kill Script,     ; KillScript
@@ -2859,14 +2904,16 @@ init_gui_toolbar:
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
 Gui, 11:font, s12, Courier bold
-Gui, 11:Add, Text,      x130 y1 w38 h19 vEyeCount Right                     , 000
+Gui, 11:Add, Text,      x124 y1 w38 h19 vEyeCount Right                     , 000
 Gui, 11:font,
-Gui, 11:Add, Picture,   x174 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
-Gui, 11:Add, Picture,   x196 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
-Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
-Gui, 11:Add, Picture,   x196 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
-Gui, 11:Add, Picture,   x218 y1 w19 h19 gTB_PrivateToggle                   , %ImageDir%\privateoff.png    ; TB_PrivateToggle
-Gui, 11:Add, Picture,   x218 y1 w19 h19 Hidden gTB_PrivateToggle vPrivateOn , %ImageDir%\privateon.png     ; TB_PrivateToggle PrivateOn
+Gui, 11:Add, Picture,   x168 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:Add, Picture,   x197 y1 w19 h19 gTB_AlertToggle                     , %ImageDir%\clockoff.png      ; TB_AlertToggle
+Gui, 11:Add, Picture,   x197 y1 w19 h19 Hidden gTB_AlertToggle vAlertOn     , %ImageDir%\clockon.png       ; TB_AlertToggle AlertOn
+Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
+Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
+Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
+Gui, 11:Add, Picture,   x241 y1 w19 h19 gTB_PrivateToggle                   , %ImageDir%\privateoff.png    ; TB_PrivateToggle
+Gui, 11:Add, Picture,   x241 y1 w19 h19 Hidden gTB_PrivateToggle vPrivateOn , %ImageDir%\privateon.png     ; TB_PrivateToggle PrivateOn
 Gui, 11:Add, Picture,   x270 y1 w19 h19 gKillScript                         , %ImageDir%\bexiticon.png     ; KillScript
 Gui, 11:Add, Picture,   x292 y1 w19 h19 gRestartScript                      , %ImageDir%\breloadicon.png   ; RestartScript
 Gui, 11:Add, Picture,   x314 y1 w19 h19 gTB_OptionsB                        , %ImageDir%\bsettingsicon.png ; TB_OptionsB
@@ -2882,11 +2929,10 @@ Gui, 11:Add, Picture,   x585 y1 w19 h19 gTB_NEO_Pastev                      , %I
 Gui, 11:Add, Picture,   x607 y1 w19 h19 gTB_NEO_Paste2                      , %ImageDir%\bpaste2icon.png   ; TB_Paste2
 ;Gui, 11:Add, Text,      x636 y1 w320 h20                                    , See Grindstone
 Gui, 11:Add, ComboBox,  x636 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
-Gui, 11:Add, Picture,   x966 y1 w19 h19 gTB_Snooze vSnoozer                 , %ImageDir%\bsnooze.png       ; TB_Snooze Snoozer
-Gui, 11:Add, CheckBox,  x995 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
-Gui, 11:Add, Button,   x1055 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
-Gui, 11:Add, Picture,  x1113 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
-Gui, 11:Add, Picture,  x1113 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
+Gui, 11:Add, CheckBox,  x966 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
+Gui, 11:Add, Button,   x1026 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
+Gui, 11:Add, Picture,  x1084 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
+Gui, 11:Add, Picture,  x1084 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 
 Gui, 11:+ToolWindow
         MainMenu_TT := "Display main menu"
@@ -2918,6 +2964,7 @@ return
 
 
 TB_EyeUpdate:
+TB_AlertToggle:
 TB_PrivateToggle:
 TB_RM4SuspendToggle:
 TB_OptionsB:
@@ -2930,7 +2977,6 @@ TB_BuffCopy:
 TB_NEO_Pastev:
 TB_NEO_Paste2:
 TB_NoteA:
-TB_Snooze:
     switch_back(1)
     this_label := A_ThisLabel
     this_label := RegExReplace(this_label, "TB_", "")
@@ -3371,7 +3417,7 @@ NEO_Jmenu:
     else if buffer_key = 9
         Gosub, Do_Jmenu_9
     else if buffer_key = a
-        Gosub, Do_Jmenu_a
+        Gosub, AlertToggle
     else if buffer_key = b
         Gosub, Do_Jmenu_b
     else if buffer_key = c
@@ -4504,9 +4550,16 @@ return
 
 
 ;--------------------
-     vol_display:    ;
+     do_ding:       ;
 ;--------------------
     SoundPlay, %A_ScriptDir%\sound\ding.wav
+return
+
+
+;--------------------
+     vol_display:    ;
+;--------------------
+    Gosub, do_ding
     if (on_windows_7)
     {
         Gosub, vol_notice
@@ -4538,9 +4591,7 @@ return
 
 
 ;------------------------------------------------------------------------------
-Mute:
-    gui_hide()
-vol_MasterMute:
+do_mute:
 ;------------------------------------------------------------------------------
     if (on_windows_7)
     {
@@ -4561,6 +4612,15 @@ vol_MasterMute:
         }
         process_volume_icon(0)
     }
+return
+
+
+;------------------------------------------------------------------------------
+Mute:
+    gui_hide()
+vol_MasterMute:
+;------------------------------------------------------------------------------
+    Gosub, do_mute
     Gosub, volume_keys
 return
 
