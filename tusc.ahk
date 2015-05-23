@@ -370,6 +370,12 @@ Loading_Progress(50)
 
 debug({ param1: "started", linenumber: A_LineNumber })
 
+notify_attention=0
+notify_num_blinks=5
+eye_attention=0
+note_attention=0
+attention_msecs=500
+
 ohide_msecs=500
 process_ohide()
 
@@ -410,6 +416,7 @@ Clear_Loading_Progress()
 
 Gosub, init_guis
 
+SetTimer,attention,%attention_msecs%
 SetTimer,toolbar_update,%toolbar_update_msecs%
 SetTimer,oneify_gvim_windows,%gvim_update_msecs%
 
@@ -590,19 +597,36 @@ return
 
     if(last_eye_minutes >= last_eye_alert)
     {
+        eye_attention=1
         if(!private_on)
         {
 ;            say_("Eye Rest!")
             say({ param1: "Eye Rest!", linenumber: A_LineNumber })
             last_eye_alert += last_eye_frequency
         }
-        else
-        {
-            GuiControl, 11:Hide, PrivateOn
-            Sleep, 250
-            GuiControl, 11:Show, PrivateOn
+    }
+return
+
+
+;--------------------
+     attention:     ; Blink alert icon if in alert state
+;--------------------
+    if( eye_attention or note_attention or notify_attention > 0 )
+    {
+        GuiControl, 11:Show, Exclaim
+        Sleep, 250
+        GuiControl, 11:Hide, Exclaim
+        if ( notify_attention > 0 ) {
+            notify_attention--
         }
     }
+return
+
+
+;--------------------
+     notify:        ; Briefly blink attention flag
+;--------------------
+    notify_attention := notify_num_blinks
 return
 
 
@@ -618,7 +642,7 @@ return
 
     reminder_count++
     if(reminder_count > 5)
-        GuiControl, 11:Show, Exclaim
+        note_attention=1
     GuiControl, 11:, NoteCount, OK (%reminder_count%)
     if(!private_on)
     {
@@ -627,9 +651,7 @@ return
     }
     else
     {
-        GuiControl, 11:Hide, PrivateOn
-        Sleep, 250
-        GuiControl, 11:Show, PrivateOn
+        Gosub, notify
     }
 return
 
@@ -726,6 +748,7 @@ return
     if ( last_eye_minutes <> tmp ) {
         last_eye_minutes := tmp
         GuiControl, 11:, EyeCount, %last_eye_minutes%
+        Gosub, notify
     }
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
@@ -1902,6 +1925,7 @@ EyeUpdate:
     last_eye_minutes=0
     last_eye=%A_Now%
     last_eye_alert := last_eye_frequency
+    eye_attention=0
 return
 
 
@@ -2905,11 +2929,14 @@ init_gui_toolbar:
 ; $F;lDA gF;llxj
 ; Moved to column 1 for more space
 Gui, 11:+Owner
-Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+Gui, 11:Add, Picture,     x3 y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+Gui, 11:Add, Picture,    x90 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
+Gui, 11:Add, Picture,    x90 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 Gui, 11:font, s12, Courier bold
 Gui, 11:Add, Text,      x154 y1 w38 h19 vEyeCount Right                     , 000
 Gui, 11:font,
-Gui, 11:Add, Picture,   x198 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:Add, Picture,   x198 y1 w19 h19 gTB_EyeUpdate                       , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:Add, Picture,   x198 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOff        , %ImageDir%\eyeoff.png        ; TB_EyeUpdate EyeOff
 Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_AlertToggle                     , %ImageDir%\clockoff.png      ; TB_AlertToggle
 Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_AlertToggle vAlertOn     , %ImageDir%\clockon.png       ; TB_AlertToggle AlertOn
 ;Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png          ; TB_RM4SuspendToggle
@@ -2934,8 +2961,6 @@ Gui, 11:Add, Picture,   x607 y1 w19 h19 gTB_NEO_Paste2                      , %I
 Gui, 11:Add, ComboBox,  x636 y1 w320    vNoteText                           , %notes_list%                 ; NoteText
 Gui, 11:Add, CheckBox,  x966 y1 w50 h20 vSettingSave gSaveCheck             , &Save                        ; SaveCheck SettingSave
 Gui, 11:Add, Button,   x1026 y1 w48 h20 Default gNoteSubmit vNoteCount      , OK                           ; NoteSubmit NoteCount
-Gui, 11:Add, Picture,  x1084 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
-Gui, 11:Add, Picture,  x1084 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 
 Gui, 11:+ToolWindow
         MainMenu_TT := "Display main menu"
@@ -5867,7 +5892,7 @@ NoteSubmit:
     Gui, 11:Submit,NoHide  ; Save each control's contents to its associated variable.
     reminder_count=0
     GuiControl, 11:, NoteCount, OK
-    GuiControl, 11:Hide, Exclaim
+    note_attention=0
     GuiControl, 11:, SettingSave, 0
     Gosub, note_cont
 return
