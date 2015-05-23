@@ -748,7 +748,6 @@ return
     if ( last_eye_minutes <> tmp ) {
         last_eye_minutes := tmp
         GuiControl, 11:, EyeCount, %last_eye_minutes%
-        Gosub, notify
     }
     MouseGetPos, OutputVarX, OutputVarY, OutputVarWin, OutputVarControl
     if(CurrentGuiWin and OutputVarWin <> CurrentGuiWin)
