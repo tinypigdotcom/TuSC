@@ -1932,7 +1932,10 @@ turn_alert_on:
 ;------------------------------------------------------------------------------
     alert_on=1
     GuiControl, 11:Show, AlertOn
-    alert_msecs=-60000
+    alert_secs=60
+    timeout_secs=10
+    InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
+    alert_msecs := alert_secs * -1000
     SetTimer,do_alert,%alert_msecs%
 return
 
@@ -2904,14 +2907,14 @@ init_gui_toolbar:
 Gui, 11:+Owner
 Gui, 11:Add, Picture,   x3   y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
 Gui, 11:font, s12, Courier bold
-Gui, 11:Add, Text,      x124 y1 w38 h19 vEyeCount Right                     , 000
+Gui, 11:Add, Text,      x154 y1 w38 h19 vEyeCount Right                     , 000
 Gui, 11:font,
-Gui, 11:Add, Picture,   x168 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
-Gui, 11:Add, Picture,   x197 y1 w19 h19 gTB_AlertToggle                     , %ImageDir%\clockoff.png      ; TB_AlertToggle
-Gui, 11:Add, Picture,   x197 y1 w19 h19 Hidden gTB_AlertToggle vAlertOn     , %ImageDir%\clockon.png       ; TB_AlertToggle AlertOn
-Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png           ; TB_RM4SuspendToggle
-Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png          ; TB_RM4SuspendToggle RSus
-Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png        ; TB_RM4SuspendToggle ROff
+Gui, 11:Add, Picture,   x198 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_AlertToggle                     , %ImageDir%\clockoff.png      ; TB_AlertToggle
+Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_AlertToggle vAlertOn     , %ImageDir%\clockon.png       ; TB_AlertToggle AlertOn
+;Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_RM4SuspendToggle                , %ImageDir%\rm4.png          ; TB_RM4SuspendToggle
+;Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vRSus   , %ImageDir%\rm4s.png         ; TB_RM4SuspendToggle RSus
+;Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_RM4SuspendToggle vROff   , %ImageDir%\rm4off.png       ; TB_RM4SuspendToggle ROff
 Gui, 11:Add, Picture,   x241 y1 w19 h19 gTB_PrivateToggle                   , %ImageDir%\privateoff.png    ; TB_PrivateToggle
 Gui, 11:Add, Picture,   x241 y1 w19 h19 Hidden gTB_PrivateToggle vPrivateOn , %ImageDir%\privateon.png     ; TB_PrivateToggle PrivateOn
 Gui, 11:Add, Picture,   x270 y1 w19 h19 gKillScript                         , %ImageDir%\bexiticon.png     ; KillScript
