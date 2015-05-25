@@ -613,11 +613,17 @@ return
 ;--------------------
     if( eye_attention or note_attention or notify_attention > 0 )
     {
-        GuiControl, 11:Show, Exclaim
-        Sleep, 250
-        GuiControl, 11:Hide, Exclaim
-        if ( notify_attention > 0 ) {
-            notify_attention--
+        if ( private_on )
+        {
+        }
+        else
+        {
+            GuiControl, 11:Show, Exclaim
+            Sleep, 250
+            GuiControl, 11:Hide, Exclaim
+            if ( notify_attention > 0 ) {
+                notify_attention--
+            }
         }
     }
 return
@@ -1992,6 +1998,7 @@ private_nohide:
         GuiControl, 11:Show, NoteText
         GuiControl, 11:Show, SettingSave
         GuiControl, 11:Show, NoteCount
+        GuiControl, 11:Show, EyeCount
     }
     else
     {
@@ -2001,6 +2008,7 @@ private_nohide:
         GuiControl, 11:Hide, NoteText
         GuiControl, 11:Hide, SettingSave
         GuiControl, 11:Hide, NoteCount
+        GuiControl, 11:Hide, EyeCount
     }
 return
 
