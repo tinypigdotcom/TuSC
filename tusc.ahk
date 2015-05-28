@@ -1939,10 +1939,9 @@ return
 ;----------------------
     Sleep, 250
     Gosub, do_mute
-    Gosub, do_ding
-    Sleep, 750
+    Gosub, multi_ding
     Gosub, do_mute
-    Gosub, do_ding
+    Gosub, multi_ding
     Gosub, turn_alert_off
 return
 
@@ -4585,9 +4584,20 @@ return
 
 
 ;--------------------
+     multi_ding:    ;
+;--------------------
+    Loop, 4
+    {
+        Gosub, do_ding
+    }
+return
+
+
+;--------------------
      do_ding:       ;
 ;--------------------
     SoundPlay, %A_ScriptDir%\sound\ding.wav
+    Sleep, 500
 return
 
 
