@@ -1935,6 +1935,17 @@ return
 
 
 ;----------------------
+     mid_alert:       ;
+;----------------------
+    Sleep, 250
+    Gosub, do_mute
+    Gosub, do_ding
+    Gosub, do_mute
+    Gosub, do_ding
+return
+
+
+;----------------------
      do_alert:        ;
 ;----------------------
     Sleep, 250
@@ -1951,6 +1962,7 @@ turn_alert_off:
 ;------------------------------------------------------------------------------
     alert_on=0
     GuiControl, 11:Hide, AlertOn
+    SetTimer,mid_alert, Off
     SetTimer,do_alert, Off
 return
 
@@ -1964,6 +1976,8 @@ turn_alert_on:
     timeout_secs=10
     InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
     alert_msecs := alert_secs * -1000
+    mid_alert_msecs := Ceil(alert_msecs/2)
+    SetTimer,mid_alert,%mid_alert_msecs%
     SetTimer,do_alert,%alert_msecs%
 return
 
