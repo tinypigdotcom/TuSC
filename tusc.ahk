@@ -2007,21 +2007,25 @@ private_nohide:
     {
         private_on=0
         IniWrite, %private_on%, %ini_file%, state, private_on
-        GuiControl, 11:Hide, PrivateOn
-        GuiControl, 11:Show, NoteText
-        GuiControl, 11:Show, SettingSave
-        GuiControl, 11:Show, NoteCount
-        GuiControl, 11:Show, EyeCount
+        Gui 11:Default
+        GuiControl, Hide, PrivateOn
+        GuiControl, Show, NoteText
+        GuiControl, Show, SettingSave
+        GuiControl, Show, NoteCount
+        GuiControl, Show, EyeCount
+        Gui, Color, Default
     }
     else
     {
         private_on=1
         IniWrite, %private_on%, %ini_file%, state, private_on
-        GuiControl, 11:Show, PrivateOn
-        GuiControl, 11:Hide, NoteText
-        GuiControl, 11:Hide, SettingSave
-        GuiControl, 11:Hide, NoteCount
-        GuiControl, 11:Hide, EyeCount
+        Gui 11:Default
+        GuiControl, Show, PrivateOn
+        GuiControl, Hide, NoteText
+        GuiControl, Hide, SettingSave
+        GuiControl, Hide, NoteCount
+        GuiControl, Hide, EyeCount
+        Gui, Color, 868686
     }
 return
 
