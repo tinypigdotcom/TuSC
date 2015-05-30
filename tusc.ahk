@@ -11,11 +11,13 @@ Table_of_Contents
 Capslock_menu_section
 Clipboard_section
 Control_j_menu_section
+eye_rest_section
 Favorites_section
 Function_section
 GUI_section
 ____Approximate_middle_of_table_of_contents
 gui_toolbar_section
+gui_toolbar_update_section
 Initialization_section
 Mouse_mode_section
 Outlook_section
@@ -224,6 +226,8 @@ last_eye=%A_Now%
 last_eye_minutes=-1
 last_eye_frequency=20
 last_eye_alert := last_eye_frequency
+last_eye_flex=5
+last_eye_debug=0
 
 switch_back_flag=0
 reminder_count=0
@@ -389,9 +393,6 @@ poker_msecs=15000
 poker_msecs=300000
 process_poker()
 
-eye_rest_msecs=500
-process_eye_rest()
-
 Gosub, initialize_volume
 
 Loading_Progress(60)
@@ -410,6 +411,9 @@ private_on := f_IniRead({ filename:   ini_file
                         , linenumber: A_LineNumber })
 private_on := private_on ? 0 : 1 ; so subsequent toggle will switch back to desired state
 Gosub, private_nohide
+
+eye_rest_msecs=500
+process_eye_rest()
 
 Loading_Progress(90)
 Clear_Loading_Progress()
@@ -590,14 +594,18 @@ return
 ; with a hide_gui or assigning a progress number or "channel"
 ; 8:05pm assigning a different progress number fixed it because there was
 ;        indeed a Progress, Off in the toolbar_update routine
+;eye_rest_section
 ;--------------------
      eye_rest:      ; Tell the user to rest his eyes
 ;--------------------
     debug({ param1: "eye_rest", linenumber: A_LineNumber })
 
-    if(last_eye_minutes >= last_eye_alert)
+    if(last_eye_minutes >= last_eye_frequency + last_eye_flex)
     {
         eye_attention=1
+    }
+    if(last_eye_minutes >= last_eye_alert)
+    {
         if(!private_on)
         {
 ;            say_("Eye Rest!")
@@ -745,12 +753,17 @@ return
     WinShow, Microsoft Visual C++ Runtime Library ahk_class #32770
 return
 
+;gui_toolbar_update_section
 ;--------------------
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
 ;--------------------
 
     tmp=%A_Now%
     EnvSub, tmp, %last_eye%, minutes
+    if (last_eye_debug)
+    {
+        tmp := last_eye_minutes + 1
+    }
     if ( last_eye_minutes <> tmp ) {
         last_eye_minutes := tmp
         GuiControl, 11:, EyeCount, %last_eye_minutes%
@@ -2012,8 +2025,8 @@ private_nohide:
         GuiControl, Show, NoteText
         GuiControl, Show, SettingSave
         GuiControl, Show, NoteCount
-        GuiControl, Show, EyeCount
         Gui, Color, Default
+        process_eye_rest()
     }
     else
     {
@@ -2959,7 +2972,7 @@ Gui, 11:Add, Picture,    x90 y1 w20 h20 Hidden vExclaim                     , %I
 Gui, 11:font, s12, Courier bold
 Gui, 11:Add, Text,      x154 y1 w38 h19 vEyeCount Right                     , 000
 Gui, 11:font,
-Gui, 11:Add, Picture,   x198 y1 w19 h19 gTB_EyeUpdate                       , %ImageDir%\eyeon.png         ; TB_EyeUpdate
+Gui, 11:Add, Picture,   x198 y1 w19 h19 gTB_EyeUpdate vEyeOn                , %ImageDir%\eyeon.png         ; TB_EyeUpdate
 Gui, 11:Add, Picture,   x198 y1 w19 h19 Hidden gTB_EyeUpdate vEyeOff        , %ImageDir%\eyeoff.png        ; TB_EyeUpdate EyeOff
 Gui, 11:Add, Picture,   x219 y1 w19 h19 gTB_AlertToggle                     , %ImageDir%\clockoff.png      ; TB_AlertToggle
 Gui, 11:Add, Picture,   x219 y1 w19 h19 Hidden gTB_AlertToggle vAlertOn     , %ImageDir%\clockon.png       ; TB_AlertToggle AlertOn
@@ -4822,11 +4835,17 @@ process_eye_rest(eye_rest_status=-1) ; process_eye_rest:
     if(eye_rest_status)
     {
         debug({ param1: "    enabling eye_rest", linenumber: A_LineNumber })
+        GuiControl, 11:Show, EyeCount
+        GuiControl, 11:Show, EyeOn
+        GuiControl, 11:Hide, EyeOff
         SetTimer,eye_rest,%eye_rest_msecs%
     }
     else
     {
         debug({ param1: "    disabling eye_rest", linenumber: A_LineNumber })
+        GuiControl, 11:Hide, EyeCount
+        GuiControl, 11:Hide, EyeOn
+        GuiControl, 11:Show, EyeOff
         SetTimer,eye_rest,Off
     }
     return
