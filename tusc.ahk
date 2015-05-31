@@ -1988,10 +1988,17 @@ turn_alert_on:
     alert_secs=60
     timeout_secs=10
     InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
-    alert_msecs := alert_secs * -1000
-    mid_alert_msecs := Ceil(alert_msecs/2)
-    SetTimer,mid_alert,%mid_alert_msecs%
-    SetTimer,do_alert,%alert_msecs%
+    if !ErrorLevel
+    {
+        alert_msecs := alert_secs * -1000
+        mid_alert_msecs := Ceil(alert_msecs/2)
+        SetTimer,mid_alert,%mid_alert_msecs%
+        SetTimer,do_alert,%alert_msecs%
+    }
+    else
+    {
+        Gosub, turn_alert_off
+    }
 return
 
 
