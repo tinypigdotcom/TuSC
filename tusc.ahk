@@ -1987,10 +1987,17 @@ turn_alert_on:
     GuiControl, 11:Show, AlertOn
     alert_secs=60
     timeout_secs=10
-    InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
-    if !ErrorLevel
+    ;InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
+    Gosub, show_gui_alert
+return
+
+
+;------------------------------------------------------------------------------
+process_alert:
+;------------------------------------------------------------------------------
+    if ( gui_alert_submitted )
     {
-        alert_msecs := alert_secs * -1000
+        alert_msecs := AlertSeconds * -1000
         mid_alert_msecs := Ceil(alert_msecs/2)
         SetTimer,mid_alert,%mid_alert_msecs%
         SetTimer,do_alert,%alert_msecs%
@@ -2015,6 +2022,38 @@ alert_nohide:
     {
         Gosub, turn_alert_on
     }
+return
+
+
+14ButtonOK:
+hide_gui_alert:
+    gui_alert_submitted=1
+    SetTimer,hide_gui_alert, Off
+    Gui, 14:Submit  ; Save each control's contents to its associated variable.
+14GuiClose:
+14ButtonCancel:
+14GuiEscape:
+    Gui, 14:Hide
+    Gosub, process_alert
+return
+
+
+;------------------------------------------------------------------------------
+show_gui_alert:
+;------------------------------------------------------------------------------
+    if(!gui_alert_built) {
+        Gui, 14:Add, Button, x66 y137 w50 h20 Default, OK
+        Gui, 14:Add, Button, x66 y7 w0 h0 , Button
+        Gui, 14:Add, Button, x236 y137 w60 h20 , Cancel
+        Gui, 14:Add, Edit, x6 y107 w350 h20 vAlertSeconds, %alert_secs%
+        Gui, 14:Add, Text, x6 y7 w350 h20 , Alert after how many seconds?
+        gui_alert_built=1
+    }
+    gui_alert_submitted=0
+    Gui, 14:Show, x75 y62 h167 w369, Alert
+    GuiControl, 14:Focus, AlertSeconds
+    Send, ^a
+    SetTimer,hide_gui_alert,-5000
 return
 
 
