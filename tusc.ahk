@@ -1987,7 +1987,7 @@ turn_alert_on:
 ;------------------------------------------------------------------------------
     alert_on=1
     GuiControl, 11:Show, AlertOn
-    alert_secs=60
+    alert_secs=120
     timeout_secs=10
     ;InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
     Gosub, show_gui_alert
@@ -3480,6 +3480,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ::tb::taubman
 
 ::xn::natgeo
+
+::xe::expeditions
 
 #z::Goto NEO_Jmenu
 
