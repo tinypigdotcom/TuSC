@@ -1974,9 +1974,11 @@ return
 turn_alert_off:
 ;------------------------------------------------------------------------------
     alert_on=0
+    Gui, 14:Hide
     GuiControl, 11:Hide, AlertOn
     SetTimer,mid_alert, Off
     SetTimer,do_alert, Off
+    SetTimer,hide_gui_alert, Off
 return
 
 
@@ -1989,6 +1991,18 @@ turn_alert_on:
     timeout_secs=10
     ;InputBox, alert_secs, Alert, Alert after how many seconds?, , , , , , , %timeout_secs%, %alert_secs%
     Gosub, show_gui_alert
+return
+
+
+14ButtonOK:
+hide_gui_alert:
+    gui_alert_submitted=1
+    Gui, 14:Submit  ; Save each control's contents to its associated variable.
+14GuiClose:
+14ButtonCancel:
+14GuiEscape:
+    Gui, 14:Hide
+    Gosub, process_alert
 return
 
 
@@ -2025,19 +2039,6 @@ alert_nohide:
 return
 
 
-14ButtonOK:
-hide_gui_alert:
-    gui_alert_submitted=1
-    SetTimer,hide_gui_alert, Off
-    Gui, 14:Submit  ; Save each control's contents to its associated variable.
-14GuiClose:
-14ButtonCancel:
-14GuiEscape:
-    Gui, 14:Hide
-    Gosub, process_alert
-return
-
-
 ;------------------------------------------------------------------------------
 show_gui_alert:
 ;------------------------------------------------------------------------------
@@ -2050,7 +2051,8 @@ show_gui_alert:
         gui_alert_built=1
     }
     gui_alert_submitted=0
-    Gui, 14:Show, x75 y62 h167 w369, Alert
+    GuiControl, 14:Text, AlertSeconds, %alert_secs%
+    Gui, 14:Show, x289 y62 h167 w369, Alert
     GuiControl, 14:Focus, AlertSeconds
     Send, ^a
     SetTimer,hide_gui_alert,-5000
