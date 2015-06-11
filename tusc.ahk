@@ -249,6 +249,7 @@ SHOWTIP_BIG=4
 SHOWTIP_SAY=5
 SHOWTIP_MODE=6
 SHOWTIP_ERR=7
+SILENT_ALERT_POPUP=8
 
 SHOWTIP_BIG_X=0
 SHOWTIP_BIG_Y=50
@@ -390,7 +391,7 @@ ocred_msecs=2000
 process_ocred()
 
 poker_msecs=15000
-poker_msecs=300000
+poker_msecs=600000
 process_poker()
 
 Gosub, initialize_volume
@@ -674,6 +675,24 @@ return
      DisablePoker:  ;
 ;--------------------
     Progress, %PROGRESS_POKER%:Off
+return
+
+
+;--------------------
+     silent_alert:  ; Pop up instead of sound
+;--------------------
+    debug({ param1: "silent_alert", linenumber: A_LineNumber })
+    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
+    Sleep, 500
+    Progress, %SILENT_ALERT_POPUP%:Off
+    Sleep, 500
+    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
+    Sleep, 500
+    Progress, %SILENT_ALERT_POPUP%:Off
+    Sleep, 500
+    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
+    Sleep, 3000
+    Progress, %SILENT_ALERT_POPUP%:Off
 return
 
 
@@ -1643,7 +1662,7 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 TempR:
 ;------------------------------------------------------------------------------
     gui_hide()
-    Gosub, do_alert
+    Gosub, silent_alert
 return
 
 
@@ -1952,21 +1971,36 @@ return
 ;----------------------
     Sleep, 250
     Gosub, do_mute
-    Gosub, do_ding
+    Gosub, do_gnid
     Gosub, do_mute
-    Gosub, do_ding
+    Gosub, do_gnid
+return
+
+
+;----------------------
+     do_silent_alert: ;
+;----------------------
+    Gosub, silent_alert
+    Gosub, turn_alert_off
+return
+
+
+;----------------------
+     do_noisy_alert:  ;
+;----------------------
+    Sleep, 250
+    Gosub, do_mute
+    Gosub, do_gnid
+    Gosub, do_mute
+    Gosub, do_gnid
+    Gosub, turn_alert_off
 return
 
 
 ;----------------------
      do_alert:        ;
 ;----------------------
-    Sleep, 250
-    Gosub, do_mute
-    Gosub, multi_ding
-    Gosub, do_mute
-    Gosub, multi_ding
-    Gosub, turn_alert_off
+    Gosub, do_silent_alert
 return
 
 
@@ -4675,10 +4709,16 @@ return
 
 
 ;--------------------
+     do_gnid:       ;
+;--------------------
+    SoundPlay, %A_ScriptDir%\sound\gnid.wav, wait
+return
+
+
+;--------------------
      do_ding:       ;
 ;--------------------
-    SoundPlay, %A_ScriptDir%\sound\ding.wav
-    Sleep, 500
+    SoundPlay, %A_ScriptDir%\sound\ding.wav, wait
 return
 
 
