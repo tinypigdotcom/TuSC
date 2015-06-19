@@ -1016,42 +1016,26 @@ Return
 ;--------------------
      ocred:         ; Auto-enter credentials xtimer
 ;--------------------
-
     CoordMode, Pixel, Screen
     CoordMode, Mouse, Screen
 
-    ;Unknown
-    ;PY1=825
-    ;PY2=852
-
-    ;Small screen
-    PX1=61
-    PY1=800
-    PX2=162
-    PY2=839
-
-    ;Universal
-    PX1=61
-    PY1=1
-    PX2=207
-    PY2=1014
-
-    ;Big or Small screen
-    PX1=61
-    PY1=800
-    PX2=207
-    PY2=1014
-
-    ;Big screen
-    PX1=74
-    PY1=990
-    PX2=207
-    PY2=1014
+    ; NOTE: this might be successfully done with percentages or something
+    if A_ScreenWidth = 1600
+    {
+        PX1=61
+        PY1=800
+        PX2=162
+        PY2=839
+    }
+    else
+    {
+        PX1=74
+        PY1=990
+        PX2=207
+        PY2=1014
+    }
 
     ; This is flaky as HELL.
-;    MouseMove,%PX1%,%PY1%
-;    Sleep, 1000
-;    MouseMove,%PX2%,%PY2%
     ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *12 %ImageDir%\pwd.png
     EL := ErrorLevel
 
@@ -1064,31 +1048,32 @@ Return
         SendInput, {enter}
     }
 
-    IfWinExist, Connect ahk_class #32770, Password
-    {
-        refresh_ini_value("mystring0", "string")
-        Gosub, esc_key
-        WinActivate
-        SendInput, !uitservices\db5170
-        SendInput, !p{Raw}%mystring0%
-        SendInput, {enter}
-    }
-    IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
-    {
-        if (!q_window_found)
-        {
-            refresh_ini_value("mystring6", "string")
-            Gosub, esc_key
-            WinActivate
-            SendInput, {Raw}%mystring6%
-            SendInput, {enter}
-            q_window_found++
-        }
-    }
-    else
-    {
-        q_window_found=0
-    }
+;SAVE THESE, THEY WORK!
+;    IfWinExist, Connect ahk_class #32770, Password
+;    {
+;        refresh_ini_value("mystring0", "string")
+;        Gosub, esc_key
+;        WinActivate
+;        SendInput, !uitservices\db5170
+;        SendInput, !p{Raw}%mystring0%
+;        SendInput, {enter}
+;    }
+;    IfWinExist, Enterprise Messenger ahk_class SunAwtDialog
+;    {
+;        if (!q_window_found)
+;        {
+;            refresh_ini_value("mystring6", "string")
+;            Gosub, esc_key
+;            WinActivate
+;            SendInput, {Raw}%mystring6%
+;            SendInput, {enter}
+;            q_window_found++
+;        }
+;    }
+;    else
+;    {
+;        q_window_found=0
+;    }
 return
 
 
