@@ -1660,6 +1660,30 @@ TempR:
     GoApp("gmv", "GridMove", target, 0)
 return
 
+;Combining Perl with AHK in the same script using ActivePerl
+;Notes:
+;  wperl allows the script to run without opening an additional window
+;  -x flag says to read from #!perl line to end of file
+;------------------------------------------------------------------------------
+^!r::
+;---Set the input for the routine---
+perl_input=%ClipBoard%
+;---Set the function you want to run from your perl script---
+perl_action=perl2json
+Gosub, PerlRun
+;---Display the output---
+ClipBoard=%perl_output%
+return
+;==========Everything below this line is the Perl "library"====================
+;---First, the AHK Perl interface---
+PerlRun:
+ClipBoard0=%ClipBoardAll%
+ClipBoard=%perl_input%
+RunWait, C:\strawberry\perl\bin\wperl -x %A_ScriptFullPath% %perl_action%
+perl_action=
+perl_output=%ClipBoard%
+ClipBoard=%ClipBoard0%
+return
 
 ;------------------------------------------------------------------------------
 vi:
@@ -6368,4 +6392,66 @@ break
 detectHiddenWindows, %detectHiddenWindows_old%
 return idxTB
 }
+
+/******************************************************************************
+#!perl
+# For giving Perl capability to ahk
+
+use strict;
+
+use JSON;
+use Win32::Clipboard;
+
+my $wc = Win32::Clipboard();
+my $data = $wc->Get();
+my $action = $ARGV[0];
+
+if($action eq
+
+
+#------------------------------------------------------------------------------
+'perl2json'
+#------------------------------------------------------------------------------
+) {
+
+    my $pretty=0;
+    my $VAR1;
+    my $json = JSON->new->allow_nonref;
+    eval $data;
+    if ( $pretty ) {
+        $json = $json->pretty;
+    }
+    $data = $json->encode( $VAR1 );
+
+} elsif($action eq
+
+
+#------------------------------------------------------------------------------
+'no_whitespace'
+#------------------------------------------------------------------------------
+) {
+  $data =~ s/\s//g;
+} elsif($action eq
+
+
+#------------------------------------------------------------------------------
+'files_bytes'
+#------------------------------------------------------------------------------
+) {
+  for($data) {
+    $_ = join(';',split /[^\d,]+/, $data);
+    s/,//g;
+  }
+} else {
+
+
+#------------------------------------------------------------------------------
+# Default action
+#------------------------------------------------------------------------------
+  $data =~ s/s/x/g;
+}
+$wc->Set($data);
+
+__END__
+*/
 
