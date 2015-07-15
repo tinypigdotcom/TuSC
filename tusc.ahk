@@ -122,6 +122,8 @@ all, script is dying.
 
 tray_iconCleanup()
 
+add_work_item("sysmsg: TuSC started")
+
 Gui +LastFound
 hwnd := WinExist() ; getting a handle to the script gui
 
@@ -1151,11 +1153,11 @@ sessionChange(wparam, lparam, msg, hwnd)
 ;------------------------------------------------------------------------------
 {
     if wparam = 7
-        add_work_item("lock: locked")
+        add_work_item("sysmsg: locked")
     else if wparam = 8
-        add_work_item("lock: unlocked")
+        add_work_item("sysmsg: unlocked")
     else
-        add_work_item("lock: code " . wparam)
+        add_work_item("sysmsg: code " . wparam)
 }
 
 
