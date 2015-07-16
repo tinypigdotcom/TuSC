@@ -1657,9 +1657,6 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 ;------------------------------------------------------------------------------
 TempR:
 ;------------------------------------------------------------------------------
-    gui_hide()
-    target := find_link("GridMove")
-    GoApp("gmv", "GridMove", target, 0)
 return
 
 ;Combining Perl with AHK in the same script using ActivePerl
@@ -2207,6 +2204,16 @@ RestartScript:
 ;------------------------------------------------------------------------------
     Loading_Progress(25,"RE")
     Reload
+return
+
+
+;------------------------------------------------------------------------------
+RestartRBTray:
+;------------------------------------------------------------------------------
+    gui_hide()
+    Runwait, taskkill /im RBTray.exe /f
+    target := find_link("RBTray")
+    GoApp("rbt", "RBTray", target, 0)
 return
 
 
@@ -3088,6 +3095,7 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,     x3 y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
+Gui, 11:Add, Picture,    x32 y1 w19 h19 gRestartRBTray                      , %ImageDir%\rbtray.png        ; RestartRBTray
 Gui, 11:Add, Picture,    x90 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
 Gui, 11:Add, Picture,    x90 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 Gui, 11:font, s12, Courier bold
