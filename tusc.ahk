@@ -2211,7 +2211,12 @@ return
 RestartRBTray:
 ;------------------------------------------------------------------------------
     gui_hide()
+    ;_({say: "Killing RBTray.exe"})
+    say({ param1: "Killing RBTray.exe", linenumber: A_LineNumber })
     Runwait, taskkill /im RBTray.exe /f
+    Sleep, 5000
+    ;_({say: "Starting RBTray.exe"})
+    say({ param1: "Starting RBTray.exe", linenumber: A_LineNumber })
     target := find_link("RBTray")
     GoApp("rbt", "RBTray", target, 0)
 return
