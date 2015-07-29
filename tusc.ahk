@@ -2210,11 +2210,26 @@ return
 ;------------------------------------------------------------------------------
 RestartRBTray:
 ;------------------------------------------------------------------------------
+    Gosub, KillRBTray
+;    Sleep, 60000
+    Sleep, 5000
+    Gosub, StartRBTray
+return
+
+
+;------------------------------------------------------------------------------
+KillRBTray:
+;------------------------------------------------------------------------------
     gui_hide()
     ;_({say: "Killing RBTray.exe"})
     say({ param1: "Killing RBTray.exe", linenumber: A_LineNumber })
     Runwait, taskkill /im RBTray.exe /f
-    Sleep, 60000
+return
+
+
+;------------------------------------------------------------------------------
+StartRBTray:
+;------------------------------------------------------------------------------
     ;_({say: "Starting RBTray.exe"})
     say({ param1: "Starting RBTray.exe", linenumber: A_LineNumber })
     target := find_link("RBTray")
@@ -3100,7 +3115,8 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,     x3 y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
-Gui, 11:Add, Picture,    x32 y1 w19 h19 gRestartRBTray                      , %ImageDir%\rbtray.png        ; RestartRBTray
+Gui, 11:Add, Picture,    x32 y1 w19 h19 gKillRBTray                         , %ImageDir%\rbtraybw.png      ; KillRBTray
+Gui, 11:Add, Picture,    x54 y1 w19 h19 gStartRBTray                        , %ImageDir%\rbtray.png        ; StartRBTray
 Gui, 11:Add, Picture,    x90 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
 Gui, 11:Add, Picture,    x90 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 Gui, 11:font, s12, Courier bold
