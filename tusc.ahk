@@ -1129,6 +1129,7 @@ Hibernate:
         return
     IfMsgBox Cancel
         return
+    add_work_item("sysmsg: TuSC hibernated")
     DllCall("PowrProf\SetSuspendState", "int", 1, "int", 0, "int", 0)
 return
 
