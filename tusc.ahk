@@ -685,19 +685,15 @@ return
 
 
 ;--------------------
-     silent_alert:  ; Pop up instead of sound
+    red_popup:      ;
 ;--------------------
-    debug({ param1: "silent_alert", linenumber: A_LineNumber })
-    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
-    Sleep, 500
-    Progress, %SILENT_ALERT_POPUP%:Off
-    Sleep, 500
-    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
-    Sleep, 500
-    Progress, %SILENT_ALERT_POPUP%:Off
-    Sleep, 500
-    Progress, %SILENT_ALERT_POPUP%:x0 y0 h74 w243 cwFF0000 ctFFFFFF m2 b fs16 zh0, `nDING,, , Courier New
-    Sleep, 3000
+    Progress, %SILENT_ALERT_POPUP%:x0 y0 h100 w100 cwFF0000 ctFFFFFF m2 b fs16 zh0, `n2
+return
+
+
+;--------------------
+dismiss_red_popup:  ;
+;--------------------
     Progress, %SILENT_ALERT_POPUP%:Off
 return
 
@@ -1057,6 +1053,44 @@ Return
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, %mystring9%
         SendInput, {enter}
+    }
+
+    LX1=741
+    LY1=175
+    LX2=1277
+    LY2=470
+    ; This is flaky as HELL.
+    ImageSearch, FoundX, FoundY, LX1, LY1, LX2, LY2, *12 %ImageDir%\login.png
+    EL := ErrorLevel
+    if(!EL)
+    {
+        Sleep, 1000
+        MouseClick, ,%FoundX%, %FoundY%
+    }
+
+    ;advanced.png
+    ;proceed.png
+    If WinActive("Privacy error - Google Chrome")
+    {
+        RX1=460
+        RY1=380
+        RX2=1300
+        RY2=900
+        ; This is flaky as HELL.
+        ImageSearch, FoundX, FoundY, RX1, RY1, RX2, RY2, *12 %ImageDir%\advanced.png
+        EL := ErrorLevel
+        if(!EL)
+        {
+            MouseClick, ,%FoundX%, %FoundY%
+        }
+        Sleep, 500
+        ; This is flaky as HELL.
+        ImageSearch, FoundX, FoundY, RX1, RY1, RX2, RY2, *12 %ImageDir%\proceed.png
+        EL := ErrorLevel
+        if(!EL)
+        {
+            MouseClick, ,%FoundX%, %FoundY%
+        }
     }
 
 ;SAVE THESE, THEY WORK!
@@ -1988,6 +2022,13 @@ return
 ;----------------------
      mid_alert:       ;
 ;----------------------
+    Gosub, red_popup
+return
+
+
+;----------------------
+     old_mid_alert:   ;
+;----------------------
     Sleep, 250
     Gosub, do_mute
     Gosub, do_gnid
@@ -1999,7 +2040,7 @@ return
 ;----------------------
      do_silent_alert: ;
 ;----------------------
-    Gosub, silent_alert
+    Gosub, dismiss_red_popup
     Gosub, turn_alert_off
 return
 
@@ -2027,6 +2068,7 @@ return
 turn_alert_off:
 ;------------------------------------------------------------------------------
     alert_on=0
+    Gui, 11:Color, Default
     Gui, 14:Hide
     GuiControl, 11:Hide, AlertOn
     SetTimer,mid_alert, Off
@@ -2068,6 +2110,7 @@ process_alert:
         mid_alert_msecs := Ceil(alert_msecs/2)
         SetTimer,mid_alert,%mid_alert_msecs%
         SetTimer,do_alert,%alert_msecs%
+        Progress, %SILENT_ALERT_POPUP%:x0 y0 h100 w100 cw00FF00 ct000000 m2 b fs16 zh0, `n1
     }
     else
     {
