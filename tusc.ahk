@@ -2071,6 +2071,7 @@ turn_alert_off:
     Gui, 11:Color, Default
     Gui, 14:Hide
     GuiControl, 11:Hide, AlertOn
+    Progress, %SILENT_ALERT_POPUP%:Off
     SetTimer,mid_alert, Off
     SetTimer,do_alert, Off
     SetTimer,hide_gui_alert, Off
