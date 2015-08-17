@@ -140,9 +140,10 @@ fileArray := { }
 winList := { }
 vimList := { }
 
-VERSION=jasper ;vv
-;tourmaline, carnelian, sugilite, malachite, rose quartz, ruby, amethyst
-;PREVIOUS: tigerseye, pyrite, chrysocolla, lapis_lazuli, obsidian, quartz
+VERSION=tourmaline ;vv
+;carnelian, sugilite, malachite, rose quartz, ruby, amethyst
+;PREVIOUS: tigerseye, pyrite, chrysocolla, lapis_lazuli, obsidian, quartz,
+;jasper
 
 prog = TuSC %VERSION%
 compname = %A_ComputerName%
@@ -392,6 +393,7 @@ process_ohide()
 
 toolbar_update_msecs=1000
 gvim_update_msecs=100
+autocopy_msecs=500
 
 ocred_msecs=2000
 process_ocred()
@@ -430,6 +432,7 @@ Gosub, init_guis
 SetTimer,attention,%attention_msecs%
 SetTimer,toolbar_update,%toolbar_update_msecs%
 SetTimer,oneify_gvim_windows,%gvim_update_msecs%
+SetTimer,autocopy,%autocopy_msecs%
 
 OnMessage(0x1001,"ReceiveMessage")
 
@@ -6239,6 +6242,18 @@ oneify_gvim_windows:
     }
     If update_flag
         WinActivate ahk_id %lastwin%
+return
+
+
+autocopy:
+    InFile=%copy_dir%\a.in
+    FileRead, InVar, %InFile%
+    if not ErrorLevel
+    {
+        FileDelete, %InFile%
+        Clipboard := InVar
+        Gosub, BuffCopy
+    }
 return
 
 
