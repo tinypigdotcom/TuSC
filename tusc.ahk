@@ -764,9 +764,7 @@ return
 ;--------------------
      ohide:         ; Hide annoying windows xtimer
 ;--------------------
-    WinHide, Mozilla Thunderbird
-    WinHide, Microsoft Visual C++ Runtime Library ahk_class #32770
-    WinClose, Fences Update Available
+    WinHide, Get Windows 10
 return
 
 
