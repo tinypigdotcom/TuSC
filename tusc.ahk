@@ -434,6 +434,8 @@ SetTimer,toolbar_update,%toolbar_update_msecs%
 SetTimer,oneify_gvim_windows,%gvim_update_msecs%
 SetTimer,autocopy,%autocopy_msecs%
 
+oneify_all_windows()
+
 OnMessage(0x1001,"ReceiveMessage")
 
 OnMessage(0x200, "WM_MOUSEMOVE")
@@ -6216,6 +6218,19 @@ find_link(filename)
     }
     SplashTextOff
     MsgBox, Failed to find %filename%.
+}
+
+
+oneify_all_windows()
+{
+    WinGet, id, list,,, Program Manager
+    Loop, %id%
+    {
+        this_id := id%A_Index%
+        WinActivate, ahk_id %this_id%
+        Send, ^!1
+    }
+    return
 }
 
 
