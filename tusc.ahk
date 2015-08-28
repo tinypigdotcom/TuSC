@@ -6098,12 +6098,12 @@ note_cont:
     }
     else if(out_file = "wl")
     {
-        RegExMatch(out_text, "\+(\d+)\s*$", m)
+        RegExMatch(out_text, "\s*\+(\d+)\s*$", m)
 
         if(m1)
         {
-            out_text := RegExReplace(out_text, "\+\d+\s*$", "")
-            NoteText := RegExReplace(NoteText, "\+\d+\s*$", "")
+            out_text := RegExReplace(out_text, "\s*\+\d+\s*$", "")
+            NoteText := RegExReplace(NoteText, "\s*\+\d+\s*$", "")
             now += -%m1%, minutes
             FormatTime, timestamp, %now%, yyyy_MM_dd_HH_mm_ss
         }
