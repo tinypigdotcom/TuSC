@@ -388,7 +388,7 @@ eye_attention=0
 note_attention=0
 attention_msecs=500
 
-ohide_msecs=500
+ohide_msecs=100
 process_ohide()
 
 toolbar_update_msecs=1000
