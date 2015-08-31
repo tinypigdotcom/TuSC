@@ -83,7 +83,6 @@ WON'T DO
 Example macros:
 
         ;_({say: "HEY!"})
-        say({ param1: "HEY!", linenumber: A_LineNumber })
 
             becomes
 
@@ -91,7 +90,6 @@ Example macros:
 
 
         ;_({debug: "hi", debug_level: 1})
-        debug({ param1: "hi", debug_level: 1, linenumber: A_LineNumber })
 
             becomes
 
@@ -1697,7 +1695,7 @@ TempR:
 ;------------------------------------------------------------------------------
 return
 
-;Combining Perl with AHK in the same script using ActivePerl
+;Combining Perl with AHK in the same script using Strawberry Perl
 ;Notes:
 ;  wperl allows the script to run without opening an additional window
 ;  -x flag says to read from #!perl line to end of file
@@ -1716,9 +1714,20 @@ return
 PerlRun:
 ClipBoard0=%ClipBoardAll%
 ClipBoard=%perl_input%
+perl_error=
+perl_output=
+perl_status=
 RunWait, C:\strawberry\perl\bin\wperl -x %A_ScriptFullPath% %perl_action%
 perl_action=
-perl_output=%ClipBoard%
+perl_status := SubStr(ClipBoard, 1, 1)
+if ( perl_status = 1 )
+{
+    perl_output := SubStr(ClipBoard, 2)
+}
+else
+{
+    perl_error := SubStr(ClipBoard, 2)
+}
 ClipBoard=%ClipBoard0%
 return
 
@@ -2300,6 +2309,27 @@ restart_all:
 ;------------------------------------------------------------------------------
     Gosub, restart_gridmove
     Gosub, RestartScript
+return
+
+
+;------------------------------------------------------------------------------
+ProcessJson:
+;------------------------------------------------------------------------------
+    perl_input=%ClipBoard%
+    perl_action=process_json
+    Gosub, PerlRun
+    ClipBoard=%perl_output%
+    if (perl_error)
+    {
+        MsgBox, INVALID JSON`n`n%perl_error%
+    }
+    else
+    {
+        ClearTip(SHOWTIP_BIG)
+        show_tip=Valid JSON`n`n%ClipBoard%
+        Gosub, big_tip
+        SetTimer,clear_big_tip,-2500
+    }
 return
 
 
@@ -3707,6 +3737,8 @@ NEO_Jmenu:
         Gosub, PrivateToggle
     else if buffer_key = r
         Gosub, RestartScript
+    else if buffer_key = s
+        Gosub, ProcessJson
     else if buffer_key = t
         Gosub, TotalKill
     else if buffer_key = u
@@ -6504,10 +6536,12 @@ return idxTB
 use strict;
 
 use JSON;
+use Try::Tiny;
 use Win32::Clipboard;
 
 my $wc = Win32::Clipboard();
 my $data = $wc->Get();
+my $error;
 my $action = $ARGV[0];
 
 if($action eq
@@ -6526,6 +6560,26 @@ if($action eq
         $json = $json->pretty;
     }
     $data = $json->encode( $VAR1 );
+
+} elsif($action eq
+
+#------------------------------------------------------------------------------
+'process_json'
+#------------------------------------------------------------------------------
+) {
+
+    my $perlvar;
+    my $json = JSON->new->allow_nonref;
+    $json = $json->pretty;
+    my $input = $data;
+    $data = '';
+    try {
+        $perlvar = $json->decode( $input );
+        $data = $json->encode( $perlvar );
+    }
+    catch {
+        $error = $_;
+    };
 
 } elsif($action eq
 
@@ -6554,6 +6608,8 @@ if($action eq
 #------------------------------------------------------------------------------
   $data =~ s/s/x/g;
 }
+
+$data = $error ? "0$error" : "1$data";
 $wc->Set($data);
 
 __END__
