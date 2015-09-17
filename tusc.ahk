@@ -6572,6 +6572,7 @@ if($action eq
     my $json = JSON->new->allow_nonref;
     $json = $json->pretty;
     my $input = $data;
+    $input =~ s{^(\s*)(\w+)}{$1"$2"}mg;
     $data = '';
     try {
         $perlvar = $json->decode( $input );
