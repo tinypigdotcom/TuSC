@@ -432,7 +432,7 @@ SetTimer,toolbar_update,%toolbar_update_msecs%
 SetTimer,oneify_gvim_windows,%gvim_update_msecs%
 SetTimer,autocopy,%autocopy_msecs%
 
-oneify_all_windows()
+;oneify_all_windows()
 
 OnMessage(0x1001,"ReceiveMessage")
 
