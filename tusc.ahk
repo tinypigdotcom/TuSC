@@ -1691,6 +1691,26 @@ Clear_Loading_Progress() ; Clear_Loading_Progress:
 
 
 ;------------------------------------------------------------------------------
+Oneify_Progress(oneify_progress=1) ; Oneify_Progress:
+;------------------------------------------------------------------------------
+{
+    global
+    Progress, b w250, , Oneify
+    Progress, %oneify_progress%
+    return
+}
+
+
+;------------------------------------------------------------------------------
+Clear_Oneify_Progress() ; Clear_Oneify_Progress:
+;------------------------------------------------------------------------------
+{
+    Progress, Off
+    return 0
+}
+
+
+;------------------------------------------------------------------------------
 TempR:
 ;------------------------------------------------------------------------------
 return
@@ -2271,6 +2291,14 @@ RestartRBTray:
 ;    Sleep, 60000
     Sleep, 5000
     Gosub, StartRBTray
+return
+
+
+;------------------------------------------------------------------------------
+OneifyAllWindows:
+;------------------------------------------------------------------------------
+    gui_hide()
+    oneify_all_windows()
 return
 
 
@@ -3193,8 +3221,8 @@ init_gui_toolbar:
 ; Moved to column 1 for more space
 Gui, 11:+Owner
 Gui, 11:Add, Picture,     x3 y1 w19 h19 gTotalKill                          , %ImageDir%\bkillicon.png     ; TotalKill
-Gui, 11:Add, Picture,    x32 y1 w19 h19 gKillRBTray                         , %ImageDir%\rbtraybw.png      ; KillRBTray
-Gui, 11:Add, Picture,    x54 y1 w19 h19 gStartRBTray                        , %ImageDir%\rbtray.png        ; StartRBTray
+Gui, 11:Add, Picture,    x32 y1 w19 h19 gOneifyAllWindows                   , %ImageDir%\rbtray.png        ; OneifyAllWindows
+;Gui, 11:Add, Picture,    x54 y1 w19 h19 gStartRBTray                        , %ImageDir%\rbtray.png        ; StartRBTray
 Gui, 11:Add, Picture,    x90 y1 w20 h20                                     , %ImageDir%\exclbw.png        ;
 Gui, 11:Add, Picture,    x90 y1 w20 h20 Hidden vExclaim                     , %ImageDir%\excl.png          ; Exclaim
 Gui, 11:font, s12, Courier bold
@@ -6255,13 +6283,26 @@ find_link(filename)
 
 oneify_all_windows()
 {
+    Oneify_Progress(1)
     WinGet, id, list,,, Program Manager
+    totes=0
+    Loop, %id%
+        totes++
     Loop, %id%
     {
         this_id := id%A_Index%
-        WinActivate, ahk_id %this_id%
-        Send, ^!1
+        WinGetClass, this_class, ahk_id %this_id%
+        WinGetTitle, this_title, ahk_id %this_id%
+        if(this_class <> "WindowsForms10.Window.8.app.0.34f5582_r11_ad1" or InStr(this_title, "paint.net"))
+        {
+            WinActivate, ahk_id %this_id%
+            Send, ^!1
+        }
+        tot_percent := ( A_Index / totes ) * 100
+        Transform, tot_percent, Round, %tot_percent%
+        Oneify_Progress(tot_percent)
     }
+    Clear_Oneify_Progress()
     return
 }
 
