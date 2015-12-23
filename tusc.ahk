@@ -1044,6 +1044,21 @@ Return
     }
 
     ; This is flaky as HELL.
+    ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *12 %ImageDir%\username.png
+    EL := ErrorLevel
+
+    if(!EL)
+    {
+        refresh_ini_value("mystring9", "string")
+        FoundX += 50
+        MouseClick, ,%FoundX%, %FoundY%
+        SendInput, dbradford{enter}
+        Sleep, 500
+        SendInput, %mystring9%
+        SendInput, {enter}
+    }
+
+    ; This is flaky as HELL.
     ImageSearch, FoundX, FoundY, PX1, PY1, PX2, PY2, *12 %ImageDir%\pwd.png
     EL := ErrorLevel
 
