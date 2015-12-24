@@ -1049,13 +1049,9 @@ Return
 
     if(!EL)
     {
-        refresh_ini_value("mystring9", "string")
         FoundX += 50
         MouseClick, ,%FoundX%, %FoundY%
         SendInput, dbradford{enter}
-        Sleep, 500
-        SendInput, %mystring9%
-        SendInput, {enter}
     }
 
     ; This is flaky as HELL.
