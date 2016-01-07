@@ -3702,6 +3702,10 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 
 ::xe::expeditions
 
+::vscc::/var/spool/cron/crontabs
+
+::lt::ls -lart
+
 #z::Goto NEO_Jmenu
 
 ;------------------------------------------------------------------------------
