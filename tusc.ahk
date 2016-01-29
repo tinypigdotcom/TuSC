@@ -4508,7 +4508,7 @@ oYank:
         if ( task_flag )
         {
             ClipBoard := RegExReplace(ClipBoard, "^Task (\d+)  ", "$1 ")
-            ClipBoard := RegExReplace(ClipBoard, "\s*\(.*\)", "")
+            ClipBoard := RegExReplace(ClipBoard, "\s*\(.*\)\s*$", "")
         }
         ClipBoard = %ClipBoard% ; trim spaces
         cb_in=%ClipBoard%
