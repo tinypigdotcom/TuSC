@@ -283,6 +283,8 @@ shimmy_timer=250
 shimmy_amt=1
 shimmy_speed=100
 
+present_esc=0
+
 outlook_esc=0
 volume_esc =0
 outlook_x=139
@@ -2459,6 +2461,13 @@ esc_key:
         Hotkey, Enter, Off
         volume_esc =0
     }
+    If present_esc
+    {
+        ClearTip()
+        Hotkey, pgup, Off
+        Hotkey, pgdn, Off
+        present_esc=0
+    }
     If mouse_esc
     {
         SetTimer,mouse_shimmy,Off
@@ -2599,21 +2608,6 @@ Do_Jmenu_Complete:
     FileMove, %source_path%, M:\complete, 1
 return
 
-
-; TODO: MAKE A MODE!!
-;;------------------------------------------------------------------------------
-;pgup::
-;;------------------------------------------------------------------------------
-;    Send, p{enter}
-;return
-;
-;
-;;------------------------------------------------------------------------------
-;pgdn::
-;;------------------------------------------------------------------------------
-;    Send, {enter}
-;return
-;
 
 ;------------------------------------------------------------------------------
 #1::
@@ -2766,6 +2760,7 @@ init_guis:
           Workstation,   M&ouseKeys,       ; MouseKeys
           Workstation,   M&inimizeAll,     ; MinimizeAll
           Workstation,   &Mute,            ; Mute
+          Workstation,   &PresentationMode ; PresentationMode
           Workstation,   Vol&ume,          ; Volume
     )
 
@@ -6118,6 +6113,41 @@ j_menu=
 */
 j_menu=Mouse Mode %mouse_step%
     ShowTip(j_menu, 0, 0)
+return
+
+
+;------------------------------------------------------------------------------
+present_notice:
+;------------------------------------------------------------------------------
+    j_menu=(p)
+    ShowTip(j_menu, 0, 0)
+return
+
+
+;------------------------------------------------------------------------------
+present_up:
+;------------------------------------------------------------------------------
+    Send, p{enter}
+return
+
+
+;------------------------------------------------------------------------------
+present_down:
+;------------------------------------------------------------------------------
+    Send, {enter}
+return
+
+
+;------------------------------------------------------------------------------
+PresentationMode:
+;------------------------------------------------------------------------------
+    gui_hide()
+    Gosub, present_notice
+    Hotkey, pgup, present_up
+    Hotkey, pgdn, present_down
+    Hotkey, pgup, On
+    Hotkey, pgdn, On
+    present_esc=1
 return
 
 
