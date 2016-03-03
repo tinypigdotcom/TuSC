@@ -767,6 +767,7 @@ return
      ohide:         ; Hide annoying windows xtimer
 ;--------------------
     WinHide, Get Windows 10
+    WinClose, NotificationListView
 return
 
 
