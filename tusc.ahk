@@ -157,6 +157,8 @@ ini_file = %A_ScriptDir%\%ini_file_nopath%
 IfNotExist, %ini_file%
     Gosub, build_ini
 
+idle_file = %sys_drive%\idle
+
 custom_dir := f_IniRead({ filename:   ini_file
                         , category:   "settings"
                         , variable:   "customization_dir"
@@ -782,6 +784,12 @@ return
 ;--------------------
     toolbar_update: ; Update the toolbar with time/date and debug info xtimer
 ;--------------------
+    if (A_TimeIdlePhysical > 420000) { ; 7 minutes
+        FileAppend, x, %idle_file%
+    }
+    else {
+        FileDelete, %idle_file%
+    }
 
     if ( last_screenwidth <> A_ScreenWidth ) {
         Gosub, restart_all
