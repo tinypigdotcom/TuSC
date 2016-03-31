@@ -236,6 +236,9 @@ last_eye_alert := last_eye_frequency
 last_eye_flex=5
 last_eye_debug=0
 
+present_flag=0
+advance_presentation_msecs=15000
+
 switch_back_flag=0
 reminder_count=0
 timeout=5
@@ -1575,6 +1578,29 @@ SetGaimWin:
     gui_hide()
     gaim_id=%lastwin%
     WinActivate ahk_id %lastwin%
+return
+
+
+;------------------------------------------------------------------------------
+^!p::
+;------------------------------------------------------------------------------
+    if ( present_flag )
+    {
+        SetTimer,advance_presentation, Off
+        present_flag = 0
+    }
+    else
+    {
+        SetTimer,advance_presentation,%advance_presentation_msecs%
+        present_flag = 1
+    }
+return
+
+
+;----------------------
+advance_presentation: ;
+;----------------------
+    SendInput, {pgdn}
 return
 
 
