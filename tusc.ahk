@@ -3769,11 +3769,13 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 
 ::pq::postgresql
 
-::tb::taubman
+::qp::plasmanet
 
-::xn::natgeo
+::qt::taubman
 
-::xe::expeditions
+::qn::natgeo
+
+::qe::expeditions
 
 ::vscc::/var/spool/cron/crontabs
 
