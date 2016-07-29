@@ -1184,7 +1184,7 @@ Hibernate:
 ;------------------------------------------------------------------------------
     gui_hide()
     SoundBeep,700,700
-    MsgBox, 4099, ,Hibernating in 5 seconds unless you cancel..., 5
+    MsgBox, 4099, ,Hibernating in 10 seconds unless you cancel..., 10
     IfMsgBox No
         return
     IfMsgBox Cancel
@@ -3768,6 +3768,8 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ::ahh::autohotkey
 
 ::pq::postgresql
+
+::qf::freelotto
 
 ::qp::plasmanet
 
