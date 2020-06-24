@@ -545,10 +545,10 @@ build_dir_file:
 FileAppend,
 (
 &C | C:\
-C&ygwin home | C:\cygwin\home\dave
-Des&ktop | C:\Users\dave\Desktop
+C&ygwin home | C:\cygwin\home\dbradford
+Des&ktop | C:\Users\dbradford\Desktop
 &Docs | C:\docs
-Do&wnloads | C:\Users\dave\Downloads
+Do&wnloads | C:\Users\dbradford\Downloads
 Dr&opbox | C:\Dropbox
 &MMNTS | C:\docs\MMNTS
 P&rogram Files | C:\Program Files
@@ -3766,22 +3766,6 @@ refresh_ini_value(var, section) ; refresh_ini_value:
 ;=============================================================================+
 
 ::ahh::autohotkey
-
-::pq::postgresql
-
-::qo::freelotto
-
-::qp::plasmanet
-
-::qt::taubman
-
-::qn::natgeo
-
-::qe::expeditions
-
-::vscc::/var/spool/cron/crontabs
-
-::lt::ls -lart
 
 #z::Goto NEO_Jmenu
 
