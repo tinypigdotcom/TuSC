@@ -201,16 +201,16 @@ Loading_Progress(20)
 ; How Debug works:
 ; ================
 ; Default level for debug statements is 2.  Debug statements will only print if
-; Master Debug Level >= statement level.  So, if you create a level 1 debug
-; statement and set Master Debug Level to 1, only that one will print.  Setting
-; Master Debug Level to 2 will trigger a lot of debug output.
+; global_debug_level >= statement level.  So, if you create a level 1 debug
+; statement and set global_debug_level to 1, only that one will print.  Setting
+; global_debug_level to 2 will trigger a lot of debug output.
 ;
 ; tscdebug.txt is created in script directory with all debug output
 ;
-; Template debug statement:
+; Example debug statement:
+; debug({ param1: concat(["FindWindow found id by asking: ", this_id]), linenumber: A_LineNumber })
 ;
-; E-CINT: Counter-intuitive - spaces between dot are significant, ex: ."text" is
-; an empty string. Solve with concat()!
+; Also see "Example macros"
 ;
 
 
