@@ -208,7 +208,7 @@ Loading_Progress(20)
 ; tscdebug.txt is created in script directory with all debug output
 ;
 ; Example debug statement:
-; debug({ param1: concat(["FindWindow found id by asking: ", this_id]), linenumber: A_LineNumber })
+; debug({ param1: concat(["FindWindow found id by asking: ", this_id]), debug_level: 1, linenumber: A_LineNumber })
 ;
 ; Also see "Example macros"
 ;
